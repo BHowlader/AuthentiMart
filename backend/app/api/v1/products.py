@@ -1,0 +1,206 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.orm import Session
+from typing import Optional, List
+from app.database import get_db
+from app.models import Product, ProductImage, Category
+from app.schemas import ProductResponse, ProductListResponse, ProductCreate, ProductUpdate
+from app.utils import get_current_admin, generate_slug
+from math import ceil
+
+router = APIRouter(prefix="/products", tags=["Products"])
+
+@router.get("", response_model=dict)
+async def get_products(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(12, ge=1, le=50),
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    sort: Optional[str] = "newest",
+    is_featured: Optional[bool] = None,
+    is_new: Optional[bool] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(Product).filter(Product.is_active == True)
+    
+    # Filter by category
+    if category:
+        cat = db.query(Category).filter(Category.slug == category).first()
+        if cat:
+            query = query.filter(Product.category_id == cat.id)
+    
+    # Search
+    if search:
+        query = query.filter(Product.name.ilike(f"%{search}%"))
+    
+    # Price filter
+    if min_price:
+        query = query.filter(Product.price >= min_price)
+    if max_price:
+        query = query.filter(Product.price <= max_price)
+    
+    # Featured filter
+    if is_featured is not None:
+        query = query.filter(Product.is_featured == is_featured)
+    
+    # New filter
+    if is_new is not None:
+        query = query.filter(Product.is_new == is_new)
+    
+    # Sorting
+    if sort == "newest":
+        query = query.order_by(Product.created_at.desc())
+    elif sort == "price_low":
+        query = query.order_by(Product.price.asc())
+    elif sort == "price_high":
+        query = query.order_by(Product.price.desc())
+    elif sort == "rating":
+        query = query.order_by(Product.rating.desc())
+    elif sort == "popular":
+        query = query.order_by(Product.review_count.desc())
+    
+    # Get total count
+    total = query.count()
+    
+    # Pagination
+    offset = (page - 1) * page_size
+    products = query.offset(offset).limit(page_size).all()
+    
+    # Format response
+    items = []
+    for product in products:
+        primary_image = next((img for img in product.images if img.is_primary), None)
+        items.append({
+            "id": product.id,
+            "name": product.name,
+            "slug": product.slug,
+            "price": product.price,
+            "original_price": product.original_price,
+            "discount": product.discount,
+            "stock": product.stock,
+            "category_id": product.category_id,
+            "brand": product.brand,
+            "is_featured": product.is_featured,
+            "is_new": product.is_new,
+            "rating": product.rating,
+            "review_count": product.review_count,
+            "image": primary_image.url if primary_image else (product.images[0].url if product.images else None),
+            "category": product.category.name if product.category else None
+        })
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": ceil(total / page_size)
+    }
+
+@router.get("/{slug}", response_model=ProductResponse)
+async def get_product(slug: str, db: Session = Depends(get_db)):
+    product = db.query(Product).filter(
+        Product.slug == slug,
+        Product.is_active == True
+    ).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    return product
+
+@router.post("", response_model=ProductResponse)
+async def create_product(
+    product_data: ProductCreate,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    # Check if slug already exists
+    existing = db.query(Product).filter(Product.slug == product_data.slug).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Product with this slug already exists"
+        )
+    
+    # Create product
+    product = Product(
+        name=product_data.name,
+        slug=product_data.slug,
+        description=product_data.description,
+        price=product_data.price,
+        original_price=product_data.original_price,
+        discount=product_data.discount,
+        stock=product_data.stock,
+        category_id=product_data.category_id,
+        brand=product_data.brand,
+        sku=product_data.sku,
+        is_featured=product_data.is_featured,
+        is_new=product_data.is_new
+    )
+    
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    
+    # Add images
+    for img_data in product_data.images:
+        image = ProductImage(
+            product_id=product.id,
+            url=img_data.url,
+            is_primary=img_data.is_primary,
+            sort_order=img_data.sort_order
+        )
+        db.add(image)
+    
+    db.commit()
+    db.refresh(product)
+    
+    return product
+
+@router.put("/{product_id}", response_model=ProductResponse)
+async def update_product(
+    product_id: int,
+    product_data: ProductUpdate,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    # Update fields
+    for field, value in product_data.dict(exclude_unset=True).items():
+        setattr(product, field, value)
+    
+    db.commit()
+    db.refresh(product)
+    
+    return product
+
+@router.delete("/{product_id}")
+async def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    admin = Depends(get_current_admin)
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    
+    # Soft delete
+    product.is_active = False
+    db.commit()
+    
+    return {"message": "Product deleted successfully"}
