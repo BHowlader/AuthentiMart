@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const BASE_URL = API_URL.replace('/api/v1', '')
 
 const AdminAnalytics = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const [loading, setLoading] = useState(true)
     const [period, setPeriod] = useState('30d')
     const [revenueData, setRevenueData] = useState(null)
@@ -21,7 +21,7 @@ const AdminAnalytics = () => {
     const fetchAnalytics = async () => {
         try {
             setLoading(true)
-            const headers = { 'Authorization': `Bearer ${token}` }
+            const headers = { 'Authorization': `Bearer ${adminToken}` }
 
             const [revenueRes, customerRes, topRes, leastRes] = await Promise.all([
                 fetch(`${API_URL}/admin/analytics/revenue?period=${period}`, { headers }),
@@ -284,7 +284,7 @@ const AdminAnalytics = () => {
                                     <span className="product-rank success">{index + 1}</span>
                                     <div className="product-image">
                                         {product.image ? (
-                                            <img src={`${BASE_URL}${product.image}`} alt={product.name} />
+                                            <img src={product.image.startsWith('http') ? product.image : `${BASE_URL}${product.image}`} alt={product.name} />
                                         ) : (
                                             <div className="no-image">📦</div>
                                         )}
@@ -316,7 +316,7 @@ const AdminAnalytics = () => {
                                     <span className="product-rank warning">{index + 1}</span>
                                     <div className="product-image">
                                         {product.image ? (
-                                            <img src={`${BASE_URL}${product.image}`} alt={product.name} />
+                                            <img src={product.image.startsWith('http') ? product.image : `${BASE_URL}${product.image}`} alt={product.name} />
                                         ) : (
                                             <div className="no-image">📦</div>
                                         )}

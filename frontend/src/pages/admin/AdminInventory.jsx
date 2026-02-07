@@ -1,33 +1,55 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const BASE_URL = API_URL.replace('/api/v1', '')
 
 const AdminInventory = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [inventory, setInventory] = useState([])
+    const [allInventory, setAllInventory] = useState([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState(searchParams.get('filter') || 'all')
     const [editingStock, setEditingStock] = useState(null)
     const [newStock, setNewStock] = useState('')
 
     useEffect(() => {
+        fetchAllInventory()
+    }, [])
+
+    useEffect(() => {
         fetchInventory()
     }, [filter])
+
+    const fetchAllInventory = async () => {
+        try {
+            const response = await fetch(`${API_URL}/admin/inventory?filter=all`, {
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            })
+            if (response.ok) {
+                setAllInventory(await response.json())
+            }
+        } catch (error) {
+            console.error('Error fetching all inventory:', error)
+        }
+    }
 
     const fetchInventory = async () => {
         try {
             setLoading(true)
             const response = await fetch(`${API_URL}/admin/inventory?filter=${filter}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
-                setInventory(await response.json())
+                const data = await response.json()
+                setInventory(data)
+                if (filter === 'all') {
+                    setAllInventory(data)
+                }
             }
         } catch (error) {
             console.error('Error fetching inventory:', error)
@@ -40,12 +62,13 @@ const AdminInventory = () => {
         try {
             const response = await fetch(`${API_URL}/admin/inventory/${productId}/stock?stock=${newStock}`, {
                 method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 setEditingStock(null)
                 setNewStock('')
                 fetchInventory()
+                fetchAllInventory()
             }
         } catch (error) {
             console.error('Error updating stock:', error)
@@ -71,11 +94,11 @@ const AdminInventory = () => {
     }
 
     const stats = {
-        total: inventory.length,
-        healthy: inventory.filter(i => i.status === 'healthy').length,
-        low: inventory.filter(i => i.status === 'low').length,
-        critical: inventory.filter(i => i.status === 'critical').length,
-        outOfStock: inventory.filter(i => i.status === 'out_of_stock').length
+        total: allInventory.length,
+        healthy: allInventory.filter(i => i.status === 'healthy').length,
+        low: allInventory.filter(i => i.status === 'low').length,
+        critical: allInventory.filter(i => i.status === 'critical').length,
+        outOfStock: allInventory.filter(i => i.status === 'out_of_stock').length
     }
 
     return (
@@ -165,7 +188,7 @@ const AdminInventory = () => {
                                             <div className="product-cell">
                                                 <div className="product-image">
                                                     {item.image ? (
-                                                        <img src={`${BASE_URL}${item.image}`} alt={item.name} />
+                                                        <img src={item.image.startsWith('http') ? item.image : `${BASE_URL}${item.image}`} alt={item.name} />
                                                     ) : (
                                                         <div className="no-image">📦</div>
                                                     )}

@@ -1922,3 +1922,69 @@
     font-size: 0.7rem;
     color: var(--text-muted);
 }
+
+/* Enhanced Prediction Badges */
+.prediction-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.trend-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.trend-badge.trend-rising {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-green);
+}
+
+.trend-badge.trend-declining {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--accent-red);
+}
+
+.trend-badge.trend-stable {
+    background: rgba(156, 163, 175, 0.2);
+    color: var(--text-muted);
+}
+
+/* Prediction Footer */
+.prediction-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.75rem;
+}
+
+.confidence-badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.confidence-badge.confidence-high {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-green);
+}
+
+.confidence-badge.confidence-medium {
+    background: rgba(251, 191, 36, 0.2);
+    color: var(--accent-yellow);
+}
+
+.confidence-badge.confidence-low {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--accent-red);
+}
+
+.data-points {
+    color: var(--text-muted);
+}

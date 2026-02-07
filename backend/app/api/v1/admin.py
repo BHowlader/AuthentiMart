@@ -63,6 +63,13 @@ class PredictionData(BaseModel):
     days_until_stockout: int
     recommended_reorder: int
     urgency: str
+    # Enhanced prediction fields
+    avg_daily_sales: float
+    trend: str  # "rising", "stable", "declining"
+    trend_percentage: float
+    seasonal_factor: float
+    confidence: str  # "high", "medium", "low"
+    data_points: int  # Number of days with sales data
 
 class RecentOrder(BaseModel):
     id: int
@@ -446,44 +453,218 @@ async def update_stock(
 
 # ============ Predictions ============
 
+def get_seasonal_multiplier(target_date: datetime) -> float:
+    """
+    Get seasonal multiplier for Bangladesh market.
+    Accounts for Eid seasons, weekends (Friday-Saturday), and general patterns.
+    """
+    multiplier = 1.0
+
+    # Weekend boost (Friday-Saturday in Bangladesh)
+    if target_date.weekday() in [4, 5]:  # Friday=4, Saturday=5
+        multiplier *= 1.15
+
+    # Month-based seasonality for Bangladesh
+    month = target_date.month
+    seasonal_factors = {
+        1: 0.9,   # January - post-holiday slowdown
+        2: 0.95,  # February - normal
+        3: 1.1,   # March - Pohela Boishakh prep starts
+        4: 1.25,  # April - Pohela Boishakh (Bengali New Year)
+        5: 1.0,   # May - normal
+        6: 1.0,   # June - normal
+        7: 1.15,  # July - Eid-ul-Adha typical month (varies)
+        8: 1.0,   # August - normal
+        9: 1.0,   # September - normal
+        10: 1.2,  # October - Durga Puja
+        11: 1.1,  # November - pre-winter shopping
+        12: 1.15, # December - winter season, year-end sales
+    }
+    multiplier *= seasonal_factors.get(month, 1.0)
+
+    # Eid seasons (approximate - Eid dates vary each year)
+    # In production, integrate with a proper Islamic calendar API
+    # Eid-ul-Fitr window (roughly March-May depending on year)
+    # Eid-ul-Adha window (roughly June-August depending on year)
+    if month in [3, 4, 5, 6, 7, 8]:  # Eid-prone months
+        multiplier *= 1.1
+
+    return min(multiplier, 1.5)  # Cap at 1.5x to avoid over-prediction
+
+
+def get_weighted_daily_sales(db: Session, product_id: int, days: int = 30) -> tuple:
+    """
+    Calculate weighted moving average where recent sales matter more.
+    Returns (weighted_avg, trend, trend_pct, data_points)
+    """
+    now = datetime.utcnow()
+
+    # Get daily sales for the past N days
+    daily_sales = []
+    for i in range(days):
+        day_start = now - timedelta(days=i+1)
+        day_end = now - timedelta(days=i)
+
+        sales = db.query(func.sum(OrderItem.quantity)).join(Order).filter(
+            and_(
+                OrderItem.product_id == product_id,
+                Order.created_at >= day_start,
+                Order.created_at < day_end,
+                Order.payment_status == PaymentStatus.COMPLETED
+            )
+        ).scalar() or 0
+
+        daily_sales.append(sales)
+
+    # Count days with actual sales (data points)
+    data_points = sum(1 for s in daily_sales if s > 0)
+
+    if sum(daily_sales) == 0:
+        return 0, "stable", 0, 0
+
+    # Weighted moving average: recent days weighted more
+    # Week 1 (days 0-6): weight 4
+    # Week 2 (days 7-13): weight 3
+    # Week 3 (days 14-20): weight 2
+    # Week 4 (days 21-29): weight 1
+    weights = []
+    for i in range(days):
+        if i < 7:
+            weights.append(4)
+        elif i < 14:
+            weights.append(3)
+        elif i < 21:
+            weights.append(2)
+        else:
+            weights.append(1)
+
+    weighted_sum = sum(s * w for s, w in zip(daily_sales, weights))
+    total_weight = sum(weights)
+    weighted_avg = weighted_sum / total_weight
+
+    # Calculate trend by comparing recent week to older weeks
+    recent_week = sum(daily_sales[:7]) / 7 if daily_sales[:7] else 0
+    older_weeks = sum(daily_sales[7:]) / max(len(daily_sales[7:]), 1) if daily_sales[7:] else 0
+
+    if older_weeks > 0:
+        trend_pct = ((recent_week - older_weeks) / older_weeks) * 100
+    else:
+        trend_pct = 100 if recent_week > 0 else 0
+
+    # Determine trend direction
+    if trend_pct > 15:
+        trend = "rising"
+    elif trend_pct < -15:
+        trend = "declining"
+    else:
+        trend = "stable"
+
+    return weighted_avg, trend, round(trend_pct, 1), data_points
+
+
+def get_category_average_sales(db: Session, category_id: int, days: int = 30) -> float:
+    """
+    Get average daily sales for a category (fallback for new products).
+    """
+    start_date = datetime.utcnow() - timedelta(days=days)
+
+    # Get all products in category
+    products = db.query(Product.id).filter(Product.category_id == category_id).all()
+    product_ids = [p.id for p in products]
+
+    if not product_ids:
+        return 0
+
+    total_sales = db.query(func.sum(OrderItem.quantity)).join(Order).filter(
+        and_(
+            OrderItem.product_id.in_(product_ids),
+            Order.created_at >= start_date,
+            Order.payment_status == PaymentStatus.COMPLETED
+        )
+    ).scalar() or 0
+
+    # Average per product per day
+    return total_sales / (len(product_ids) * days)
+
+
 @router.get("/predictions", response_model=List[PredictionData])
 async def get_demand_predictions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
-    """Get demand predictions for products"""
-    
-    # Get products with their sales data from last 30 days
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    
+    """
+    Get AI-powered demand predictions for products.
+
+    Features:
+    - Weighted moving average (recent sales weighted 4x more)
+    - Seasonal multipliers for Bangladesh market (Eid, weekends, festivals)
+    - Category-based fallback for new products
+    - Trend analysis (rising/stable/declining)
+    - Confidence scoring based on data availability
+    """
+
     products = db.query(Product).filter(Product.is_active == True).all()
-    
+
+    # Pre-calculate category averages for fallback
+    category_averages = {}
+    for product in products:
+        if product.category_id not in category_averages:
+            category_averages[product.category_id] = get_category_average_sales(
+                db, product.category_id
+            )
+
+    # Get seasonal multiplier for next 30 days (average)
+    seasonal_multipliers = []
+    for i in range(30):
+        future_date = datetime.utcnow() + timedelta(days=i)
+        seasonal_multipliers.append(get_seasonal_multiplier(future_date))
+    avg_seasonal_factor = sum(seasonal_multipliers) / len(seasonal_multipliers)
+
     predictions = []
     for product in products:
-        # Calculate average daily sales
-        sales_data = db.query(func.sum(OrderItem.quantity)).join(Order).filter(
-            and_(
-                OrderItem.product_id == product.id,
-                Order.created_at >= thirty_days_ago,
-                Order.payment_status == PaymentStatus.COMPLETED
-            )
-        ).scalar() or 0
-        
-        avg_daily_sales = sales_data / 30
-        
-        # Predict demand for next 30 days (simple linear projection with 20% buffer)
-        predicted_demand = math.ceil(avg_daily_sales * 30 * 1.2)
-        
-        # Days until stockout
-        if avg_daily_sales > 0:
-            days_until_stockout = math.floor(product.stock / avg_daily_sales)
+        # Get weighted daily sales with trend analysis
+        weighted_avg, trend, trend_pct, data_points = get_weighted_daily_sales(
+            db, product.id, days=30
+        )
+
+        # Use category average as fallback for new products
+        if weighted_avg == 0 and product.category_id in category_averages:
+            weighted_avg = category_averages[product.category_id]
+            used_fallback = True
         else:
-            days_until_stockout = 999  # Basically infinite
-        
-        # Recommended reorder quantity
-        recommended_reorder = max(0, predicted_demand - product.stock + 10)  # +10 safety stock
-        
-        # Urgency level
+            used_fallback = False
+
+        # Apply trend adjustment
+        trend_multiplier = 1.0
+        if trend == "rising":
+            trend_multiplier = 1.0 + (min(abs(trend_pct), 50) / 100)  # Up to 1.5x
+        elif trend == "declining":
+            trend_multiplier = 1.0 - (min(abs(trend_pct), 30) / 100)  # Down to 0.7x
+
+        # Calculate predicted demand with all factors
+        base_demand = weighted_avg * 30
+        adjusted_demand = base_demand * trend_multiplier * avg_seasonal_factor
+
+        # Add safety buffer (20%) and round up
+        predicted_demand = math.ceil(adjusted_demand * 1.2)
+
+        # Calculate days until stockout using weighted average
+        if weighted_avg > 0:
+            days_until_stockout = math.floor(product.stock / weighted_avg)
+        else:
+            days_until_stockout = 999
+
+        # Recommended reorder with dynamic safety stock
+        # Higher safety stock for rising trends and seasonal peaks
+        safety_stock = 10
+        if trend == "rising":
+            safety_stock = 15
+        if avg_seasonal_factor > 1.1:
+            safety_stock = int(safety_stock * 1.2)
+
+        recommended_reorder = max(0, predicted_demand - product.stock + safety_stock)
+
+        # Determine urgency
         if days_until_stockout <= 3:
             urgency = "critical"
         elif days_until_stockout <= 7:
@@ -492,12 +673,20 @@ async def get_demand_predictions(
             urgency = "medium"
         else:
             urgency = "low"
-        
+
+        # Determine confidence level
+        if data_points >= 15:
+            confidence = "high"
+        elif data_points >= 7 or used_fallback:
+            confidence = "medium"
+        else:
+            confidence = "low"
+
         # Get primary image
         image = db.query(ProductImage).filter(
             and_(ProductImage.product_id == product.id, ProductImage.is_primary == True)
         ).first()
-        
+
         predictions.append(PredictionData(
             id=product.id,
             name=product.name,
@@ -506,13 +695,19 @@ async def get_demand_predictions(
             predicted_demand=predicted_demand,
             days_until_stockout=min(days_until_stockout, 999),
             recommended_reorder=recommended_reorder,
-            urgency=urgency
+            urgency=urgency,
+            avg_daily_sales=round(weighted_avg, 2),
+            trend=trend,
+            trend_percentage=trend_pct,
+            seasonal_factor=round(avg_seasonal_factor, 2),
+            confidence=confidence,
+            data_points=data_points
         ))
-    
-    # Sort by urgency (critical first)
+
+    # Sort by urgency (critical first), then by days until stockout
     urgency_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
     predictions.sort(key=lambda x: (urgency_order.get(x.urgency, 4), x.days_until_stockout))
-    
+
     return predictions
 
 # ============ Product Management ============

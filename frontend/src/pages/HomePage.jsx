@@ -156,9 +156,9 @@ const HomePage = () => {
             cta: "Shop Beauty",
             link: "/products/lip-products",
             theme: "beauty",
-            bgImage: "/images/hero-beauty.jpg",
-            accentColor: "#FF6B9D",
-            secondaryAccent: "#C44569"
+            bgImage: "/images/hero-beauty-new.jpg",
+            accentColor: "#3d3630",
+            secondaryAccent: "#302b26"
         },
         {
             title: "Skincare",
@@ -167,9 +167,9 @@ const HomePage = () => {
             cta: "Shop Skincare",
             link: "/products/skincare",
             theme: "skincare",
-            bgImage: "/images/hero-skincare.jpg",
-            accentColor: "#00D9FF",
-            secondaryAccent: "#0099CC"
+            bgImage: "/images/hero-skin_care-new.jpg",
+            accentColor: "#884a0e",
+            secondaryAccent: "#6c3b0b"
         },
         {
             title: "Tech",
@@ -178,9 +178,9 @@ const HomePage = () => {
             cta: "Shop Tech",
             link: "/products/tech-accessories",
             theme: "tech",
-            bgImage: "/images/hero-tech.jpg",
-            accentColor: "#8B5CF6",
-            secondaryAccent: "#6366F1"
+            bgImage: "/images/tech_new.jpg",
+            accentColor: "#d96200",
+            secondaryAccent: "#ad4e00"
         },
         {
             title: "Home Appliances",
@@ -189,9 +189,9 @@ const HomePage = () => {
             cta: "Shop Appliances",
             link: "/products/home-appliances",
             theme: "appliances",
-            bgImage: "/images/hero-home-appliances.png",
-            accentColor: "#F59E0B",
-            secondaryAccent: "#B45309"
+            bgImage: "/images/hero-appliances-new.jpg",
+            accentColor: "#d8cfc0",
+            secondaryAccent: "#b8a88d"
         },
         {
             title: "Home Decor",
@@ -200,9 +200,9 @@ const HomePage = () => {
             cta: "Discover Decor",
             link: "/products/home-decor",
             theme: "decor",
-            bgImage: "/images/hero-home-decor.png",
-            accentColor: "#10B981",
-            secondaryAccent: "#047857"
+            bgImage: "/images/hero-decor-new.jpg",
+            accentColor: "#784634",
+            secondaryAccent: "#603829"
         },
         {
             title: "Ladies Fashion",
@@ -211,9 +211,9 @@ const HomePage = () => {
             cta: "Shop Fashion",
             link: "/products/ladies-fashion",
             theme: "fashion",
-            bgImage: "/images/category-ladies-fashion.jpg",
-            accentColor: "#D946EF",
-            secondaryAccent: "#A21CAF"
+            bgImage: "/images/hero-ladies_fashion-new.jpg",
+            accentColor: "#884b20",
+            secondaryAccent: "#6c3c19"
         },
         {
             title: "Baby & Kids",
@@ -222,9 +222,9 @@ const HomePage = () => {
             cta: "Shop Kids",
             link: "/products/baby-kids",
             theme: "kids",
-            bgImage: "/images/category-baby-kids.jpg",
-            accentColor: "#38BDF8",
-            secondaryAccent: "#0284C7"
+            bgImage: "/images/category-baby-kids_new.jpg",
+            accentColor: "#8b5c4e",
+            secondaryAccent: "#6f493e"
         },
         {
             title: "Travel Gear",
@@ -233,9 +233,9 @@ const HomePage = () => {
             cta: "Shop Travel",
             link: "/products/travel-luggage",
             theme: "travel",
-            bgImage: "/images/category-travel-luggage.jpg",
-            accentColor: "#F97316",
-            secondaryAccent: "#C2410C"
+            bgImage: "/images/hero-travel_gear-new.jpg",
+            accentColor: "#553929",
+            secondaryAccent: "#442d20"
         },
         {
             title: "Toys & Fun",
@@ -244,9 +244,9 @@ const HomePage = () => {
             cta: "Shop Toys",
             link: "/products/toys-collectibles",
             theme: "toys",
-            bgImage: "/images/category-toys-collectibles.jpg",
-            accentColor: "#84CC16",
-            secondaryAccent: "#4D7C0F"
+            bgImage: "/images/hero-toys-new.jpg",
+            accentColor: "#251610",
+            secondaryAccent: "#1d110c"
         },
         {
             title: "Smart Home",
@@ -255,9 +255,9 @@ const HomePage = () => {
             cta: "Shop Smart",
             link: "/products/smart-home",
             theme: "smarthome",
-            bgImage: "/images/category-smart-home.jpg",
-            accentColor: "#06B6D4",
-            secondaryAccent: "#0891B2"
+            bgImage: "/images/hero-smart_home-new.jpg",
+            accentColor: "#9b0147",
+            secondaryAccent: "#7c0038"
         },
         {
             title: "Gift Bundles",
@@ -266,9 +266,9 @@ const HomePage = () => {
             cta: "Shop Bundles",
             link: "/products/bundles",
             theme: "bundles",
-            bgImage: "/images/category-bundles.jpg",
-            accentColor: "#E11D48",
-            secondaryAccent: "#BE123C"
+            bgImage: "/images/hero-bundles-new.png",
+            accentColor: "#5d100b",
+            secondaryAccent: "#4a0c08"
         }
     ]
 

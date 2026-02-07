@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const BASE_URL = API_URL.replace('/api/v1', '')
 
 const AdminProducts = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const navigate = useNavigate()
     const [searchParams, setSearchParams] = useSearchParams()
 
@@ -36,7 +36,7 @@ const AdminProducts = () => {
             if (categoryFilter) params.append('category_id', categoryFilter)
 
             const response = await fetch(`${API_URL}/admin/products?${params}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 const data = await response.json()
@@ -53,7 +53,7 @@ const AdminProducts = () => {
     const fetchCategories = async () => {
         try {
             const response = await fetch(`${API_URL}/admin/categories`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 setCategories(await response.json())
@@ -73,7 +73,7 @@ const AdminProducts = () => {
         try {
             const response = await fetch(`${API_URL}/admin/products/${productId}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 setShowDeleteModal(null)
@@ -182,7 +182,7 @@ const AdminProducts = () => {
                                             <div className="product-cell">
                                                 <div className="product-image">
                                                     {product.image ? (
-                                                        <img src={`${BASE_URL}${product.image}`} alt={product.name} />
+                                                        <img src={product.image.startsWith('http') ? product.image : `${BASE_URL}${product.image}`} alt={product.name} />
                                                     ) : (
                                                         <div className="no-image">📦</div>
                                                     )}

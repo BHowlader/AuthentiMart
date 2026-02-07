@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const AdminLayout = () => {
-    const { user, logout } = useAuth()
+    const { admin, adminLogout, loading } = useAdminAuth()
     const location = useLocation()
     const navigate = useNavigate()
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
     useEffect(() => {
-        // Check if user is admin
-        if (!user || user.role !== 'admin') {
+        // Check if admin is authenticated
+        if (!loading && !admin) {
             navigate('/admin/login')
         }
-    }, [user, navigate])
+    }, [admin, loading, navigate])
 
     const menuItems = [
         {
@@ -100,7 +100,7 @@ const AdminLayout = () => {
         return location.pathname.startsWith(path)
     }
 
-    if (!user || user.role !== 'admin') {
+    if (loading || !admin) {
         return null
     }
 
@@ -151,7 +151,7 @@ const AdminLayout = () => {
                         </span>
                         {!sidebarCollapsed && <span className="nav-label">Back to Store</span>}
                     </Link>
-                    <button onClick={logout} className="nav-item logout-btn">
+                    <button onClick={adminLogout} className="nav-item logout-btn">
                         <span className="nav-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

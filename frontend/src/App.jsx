@@ -27,6 +27,7 @@ import AdminInventory from './pages/admin/AdminInventory'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminPredictions from './pages/admin/AdminPredictions'
+import AdminAuthWrapper from './components/AdminAuthWrapper'
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
@@ -91,19 +92,19 @@ function App() {
                             }
                         />
 
-                        {/* Admin Login - Separate from Admin Routes */}
-                        <Route path="/admin/login" element={<AdminLoginPage />} />
-
-                        {/* Admin Routes */}
-                        <Route path="/admin" element={<AdminLayout />}>
-                            <Route index element={<AdminDashboard />} />
-                            <Route path="products" element={<AdminProducts />} />
-                            <Route path="products/new" element={<ProductForm />} />
-                            <Route path="products/:id/edit" element={<ProductForm />} />
-                            <Route path="inventory" element={<AdminInventory />} />
-                            <Route path="orders" element={<AdminOrders />} />
-                            <Route path="analytics" element={<AdminAnalytics />} />
-                            <Route path="predictions" element={<AdminPredictions />} />
+                        {/* Admin Routes - All wrapped with shared AdminAuthProvider */}
+                        <Route element={<AdminAuthWrapper />}>
+                            <Route path="/admin/login" element={<AdminLoginPage />} />
+                            <Route path="/admin" element={<AdminLayout />}>
+                                <Route index element={<AdminDashboard />} />
+                                <Route path="products" element={<AdminProducts />} />
+                                <Route path="products/new" element={<ProductForm />} />
+                                <Route path="products/:id/edit" element={<ProductForm />} />
+                                <Route path="inventory" element={<AdminInventory />} />
+                                <Route path="orders" element={<AdminOrders />} />
+                                <Route path="analytics" element={<AdminAnalytics />} />
+                                <Route path="predictions" element={<AdminPredictions />} />
+                            </Route>
                         </Route>
                     </Routes>
                 </main>

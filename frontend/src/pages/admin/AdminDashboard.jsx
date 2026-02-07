@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const BASE_URL = API_URL.replace('/api/v1', '')
 
 const AdminDashboard = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const [stats, setStats] = useState(null)
     const [salesData, setSalesData] = useState([])
     const [recentOrders, setRecentOrders] = useState([])
@@ -21,7 +21,7 @@ const AdminDashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const headers = { 'Authorization': `Bearer ${token}` }
+            const headers = { 'Authorization': `Bearer ${adminToken}` }
 
             const [statsRes, salesRes, ordersRes, topRes] = await Promise.all([
                 fetch(`${API_URL}/admin/dashboard/stats`, { headers }),
@@ -282,7 +282,7 @@ const AdminDashboard = () => {
                                     <span className="product-rank">{index + 1}</span>
                                     <div className="product-image">
                                         {product.image ? (
-                                            <img src={`${BASE_URL}${product.image}`} alt={product.name} />
+                                            <img src={product.image.startsWith('http') ? product.image : `${BASE_URL}${product.image}`} alt={product.name} />
                                         ) : (
                                             <div className="no-image">📦</div>
                                         )}

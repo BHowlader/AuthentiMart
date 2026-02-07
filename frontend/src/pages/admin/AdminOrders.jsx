@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 const AdminOrders = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [orders, setOrders] = useState([])
@@ -28,7 +28,7 @@ const AdminOrders = () => {
             if (statusFilter) params.append('status', statusFilter)
 
             const response = await fetch(`${API_URL}/admin/orders?${params}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 const data = await response.json()
@@ -47,7 +47,7 @@ const AdminOrders = () => {
             setUpdatingStatus(orderId)
             const response = await fetch(`${API_URL}/admin/orders/${orderId}/status?status=${newStatus}`, {
                 method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 fetchOrders()

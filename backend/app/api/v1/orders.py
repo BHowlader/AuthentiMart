@@ -67,44 +67,49 @@ async def create_order(
     # Validate and calculate order
     subtotal = 0
     order_items = []
-    
+
     for item in order_data.items:
         product = db.query(Product).filter(
             Product.id == item.product_id,
             Product.is_active == True
         ).first()
-        
+
         if not product:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Product {item.product_id} not found"
             )
-        
+
         if product.stock < item.quantity:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Insufficient stock for {product.name}"
             )
-        
+
         item_total = product.price * item.quantity
         subtotal += item_total
-        
+
         order_items.append({
             "product_id": product.id,
             "quantity": item.quantity,
             "price": product.price,
             "total": item_total
         })
-    
+
     # Calculate shipping
     shipping_cost = calculate_shipping(subtotal, order_data.shipping_city)
     total = subtotal + shipping_cost
-    
+
+    # Determine initial status based on payment method
+    # COD orders are auto-confirmed since payment is collected on delivery
+    is_cod = order_data.payment_method.value == "cod"
+    initial_status = OrderStatus.CONFIRMED if is_cod else OrderStatus.PENDING
+
     # Create order
     order = Order(
         order_number=generate_order_number(),
         user_id=current_user.id,
-        status=OrderStatus.PENDING,
+        status=initial_status,
         payment_status=PaymentStatus.PENDING,
         payment_method=order_data.payment_method.value,
         subtotal=subtotal,
@@ -118,11 +123,11 @@ async def create_order(
         shipping_city=order_data.shipping_city,
         notes=order_data.notes
     )
-    
+
     db.add(order)
     db.commit()
     db.refresh(order)
-    
+
     # Create initial tracking
     tracking = OrderTracking(
         order_id=order.id,
@@ -130,7 +135,16 @@ async def create_order(
         description="Your order has been placed successfully"
     )
     db.add(tracking)
-    
+
+    # If COD, add confirmation tracking
+    if is_cod:
+        confirmation_tracking = OrderTracking(
+            order_id=order.id,
+            status="Confirmed",
+            description="Order auto-confirmed (Cash on Delivery)"
+        )
+        db.add(confirmation_tracking)
+
     # Create order items and update stock
     for item_data in order_items:
         order_item = OrderItem(
@@ -141,14 +155,14 @@ async def create_order(
             total=item_data["total"]
         )
         db.add(order_item)
-        
+
         # Update product stock
         product = db.query(Product).filter(Product.id == item_data["product_id"]).first()
         product.stock -= item_data["quantity"]
-    
+
     db.commit()
     db.refresh(order)
-    
+
     return order
 
 @router.put("/{order_number}/status", response_model=OrderResponse)

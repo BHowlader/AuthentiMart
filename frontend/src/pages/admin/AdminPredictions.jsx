@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const BASE_URL = API_URL.replace('/api/v1', '')
 
 const AdminPredictions = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const [loading, setLoading] = useState(true)
     const [predictions, setPredictions] = useState([])
     const [filter, setFilter] = useState('all')
@@ -19,7 +19,7 @@ const AdminPredictions = () => {
         try {
             setLoading(true)
             const response = await fetch(`${API_URL}/admin/predictions`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 setPredictions(await response.json())
@@ -44,6 +44,18 @@ const AdminPredictions = () => {
             low: { class: 'low', label: 'Low', icon: '🟢', description: 'Stock is healthy' }
         }
         return info[urgency] || info.low
+    }
+
+    const getTrendInfo = (trend, percentage) => {
+        if (trend === 'rising') return { icon: '📈', label: `Rising +${Math.abs(percentage)}%`, class: 'trend-rising' }
+        if (trend === 'declining') return { icon: '📉', label: `Declining ${percentage}%`, class: 'trend-declining' }
+        return { icon: '➡️', label: 'Stable', class: 'trend-stable' }
+    }
+
+    const getConfidenceInfo = (confidence) => {
+        if (confidence === 'high') return { icon: '✓✓', label: 'High Confidence', class: 'confidence-high' }
+        if (confidence === 'medium') return { icon: '✓', label: 'Medium Confidence', class: 'confidence-medium' }
+        return { icon: '?', label: 'Low Confidence', class: 'confidence-low' }
     }
 
     const stats = {
@@ -117,12 +129,13 @@ const AdminPredictions = () => {
 
             {/* Info Banner */}
             <div className="info-banner">
-                <div className="info-icon">💡</div>
+                <div className="info-icon">🤖</div>
                 <div className="info-content">
-                    <strong>How predictions work:</strong>
-                    <p>We analyze your last 30 days of sales data to predict future demand. The "Days Until Stockout"
-                        is calculated based on current stock and average daily sales. Recommended reorder quantities include
-                        a 20% buffer plus 10 units of safety stock.</p>
+                    <strong>AI-Powered Predictions:</strong>
+                    <p>Our algorithm uses <b>weighted moving averages</b> (recent sales weighted 4x more),
+                        <b>seasonal factors</b> for Bangladesh market (Eid, weekends, festivals),
+                        <b>trend analysis</b>, and <b>category fallbacks</b> for new products.
+                        Confidence levels indicate data quality.</p>
                 </div>
             </div>
 
@@ -137,21 +150,28 @@ const AdminPredictions = () => {
                 <div className="predictions-grid">
                     {filteredPredictions.map(prediction => {
                         const urgencyInfo = getUrgencyInfo(prediction.urgency)
+                        const trendInfo = getTrendInfo(prediction.trend, prediction.trend_percentage)
+                        const confidenceInfo = getConfidenceInfo(prediction.confidence)
                         return (
                             <div key={prediction.id} className={`prediction-card ${urgencyInfo.class}`}>
                                 <div className="prediction-header">
                                     <div className="product-image">
                                         {prediction.image ? (
-                                            <img src={`${BASE_URL}${prediction.image}`} alt={prediction.name} />
+                                            <img src={prediction.image.startsWith('http') ? prediction.image : `${BASE_URL}${prediction.image}`} alt={prediction.name} />
                                         ) : (
                                             <div className="no-image">📦</div>
                                         )}
                                     </div>
                                     <div className="product-info">
                                         <h3>{prediction.name}</h3>
-                                        <span className={`urgency-badge ${urgencyInfo.class}`}>
-                                            {urgencyInfo.icon} {urgencyInfo.label}
-                                        </span>
+                                        <div className="prediction-badges">
+                                            <span className={`urgency-badge ${urgencyInfo.class}`}>
+                                                {urgencyInfo.icon} {urgencyInfo.label}
+                                            </span>
+                                            <span className={`trend-badge ${trendInfo.class}`}>
+                                                {trendInfo.icon} {trendInfo.label}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -163,6 +183,10 @@ const AdminPredictions = () => {
                                         </span>
                                     </div>
                                     <div className="pred-stat">
+                                        <span className="pred-stat-label">Avg Daily Sales</span>
+                                        <span className="pred-stat-value">{prediction.avg_daily_sales} units/day</span>
+                                    </div>
+                                    <div className="pred-stat">
                                         <span className="pred-stat-label">Predicted Demand (30d)</span>
                                         <span className="pred-stat-value">{prediction.predicted_demand} units</span>
                                     </div>
@@ -172,12 +196,28 @@ const AdminPredictions = () => {
                                             {prediction.days_until_stockout >= 999 ? '∞' : `${prediction.days_until_stockout} days`}
                                         </span>
                                     </div>
+                                    <div className="pred-stat">
+                                        <span className="pred-stat-label">Seasonal Factor</span>
+                                        <span className="pred-stat-value">
+                                            {prediction.seasonal_factor > 1 ? `+${((prediction.seasonal_factor - 1) * 100).toFixed(0)}%` : 'Normal'}
+                                        </span>
+                                    </div>
                                     <div className="pred-stat recommended">
                                         <span className="pred-stat-label">Recommended Reorder</span>
                                         <span className="pred-stat-value highlight">
                                             {prediction.recommended_reorder > 0 ? `+${prediction.recommended_reorder} units` : 'No reorder needed'}
                                         </span>
                                     </div>
+                                </div>
+
+                                {/* Confidence & Data Quality */}
+                                <div className="prediction-footer">
+                                    <span className={`confidence-badge ${confidenceInfo.class}`}>
+                                        {confidenceInfo.icon} {confidenceInfo.label}
+                                    </span>
+                                    <span className="data-points">
+                                        {prediction.data_points} days of sales data
+                                    </span>
                                 </div>
 
                                 {prediction.recommended_reorder > 0 && (

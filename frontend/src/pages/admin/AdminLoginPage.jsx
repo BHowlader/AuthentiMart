@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, Lock, Shield, ArrowRight } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminLoginPage.css'
 
 const AdminLoginPage = () => {
@@ -11,38 +11,27 @@ const AdminLoginPage = () => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-    const { login, user, loading: authLoading } = useAuth()
+    const { adminLogin, admin, loading: authLoading } = useAdminAuth()
     const navigate = useNavigate()
 
     // Redirect if already logged in as admin
     useEffect(() => {
-        if (!authLoading && user && user.role === 'admin') {
+        if (!authLoading && admin) {
             navigate('/admin')
         }
-    }, [user, authLoading, navigate])
+    }, [admin, authLoading, navigate])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
         setError('')
 
-        const result = await login(email, password)
+        const result = await adminLogin(email, password)
 
         if (result.success) {
-            // Check if the user is an admin after login
-            const storedUser = JSON.parse(localStorage.getItem('user'))
-            if (storedUser && storedUser.role === 'admin') {
-                navigate('/admin')
-            } else {
-                // Not an admin, show error and clear session
-                setError('Access denied. Admin credentials required.')
-                localStorage.removeItem('token')
-                localStorage.removeItem('user')
-                // Also need to reload to reset auth state
-                window.location.reload()
-            }
+            navigate('/admin')
         } else {
-            setError(result.error ? `${result.error} (Debug: ${JSON.stringify(result)})` : 'Invalid credentials')
+            setError(result.error || 'Invalid credentials')
         }
         setLoading(false)
     }

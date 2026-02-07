@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 const BASE_URL = API_URL.replace('/api/v1', '')
 
 const ProductForm = () => {
-    const { token } = useAuth()
+    const { adminToken } = useAdminAuth()
     const navigate = useNavigate()
     const { id } = useParams()
     const isEditing = Boolean(id)
@@ -47,7 +47,7 @@ const ProductForm = () => {
     const fetchCategories = async () => {
         try {
             const response = await fetch(`${API_URL}/admin/categories`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (response.ok) {
                 setCategories(await response.json())
@@ -142,7 +142,7 @@ const ProductForm = () => {
             const response = await fetch(url, {
                 method: isEditing ? 'PUT' : 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${adminToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(productData)
@@ -163,7 +163,7 @@ const ProductForm = () => {
 
                 await fetch(`${API_URL}/admin/products/${productId}/images`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { 'Authorization': `Bearer ${adminToken}` },
                     body: formDataImg
                 })
             }
