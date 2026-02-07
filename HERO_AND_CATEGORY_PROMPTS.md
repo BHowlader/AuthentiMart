@@ -18,6 +18,16 @@ cinematic wide shot professional skincare photography, pristine water splash and
 cinematic wide shot professional tech product photography, sleek modern gadgets floating in zero gravity, wireless earbuds and power banks and smart accessories, neon purple and blue cyberpunk lighting, dark minimal futuristic background, abstract geometric shapes, high-tech premium commercial aesthetic, 8k resolution, highly detailed, photorealistic
 ```
 
+### 4. Home Appliances Hero Slide
+```
+cinematic wide shot professional home appliance photography, modern digital air fryer and sleek electric kettle on premium kitchen island, matte black and stainless steel finishes, warm cozy kitchen lighting with bokeh city view window in background, elegant lifestyle aesthetic, 8k resolution, photorealistic, luxury home atmosphere
+```
+
+### 5. Home Decor Hero Slide
+```
+cinematic wide shot professional home decor photography, chic ceramic vases and premium scented candles arranged on oak coffee table, cozy living room background with soft throw blankets, warm ambient sunset lighting, beige and earth tone palette, high-end interior design aesthetic, 8k resolution, photorealistic
+```
+
 ---
 
 ## CATEGORY THUMBNAILS (Square 1024x1024)

@@ -94,6 +94,54 @@ const categories = [
         image: "/images/category-beauty-tools.jpg",
         count: 3,
         icon: "🖌️"
+    },
+    {
+        id: 11,
+        name: "Ladies Fashion",
+        slug: "ladies-fashion",
+        image: "/images/category-ladies-fashion.jpg",
+        count: 5,
+        icon: "👜"
+    },
+    {
+        id: 12,
+        name: "Baby & Kids",
+        slug: "baby-kids",
+        image: "/images/category-baby-kids.jpg",
+        count: 5,
+        icon: "👶"
+    },
+    {
+        id: 13,
+        name: "Travel & Luggage",
+        slug: "travel-luggage",
+        image: "/images/category-travel-luggage.jpg",
+        count: 5,
+        icon: "🧳"
+    },
+    {
+        id: 14,
+        name: "Toys & Collectibles",
+        slug: "toys-collectibles",
+        image: "/images/category-toys-collectibles.jpg",
+        count: 5,
+        icon: "🧸"
+    },
+    {
+        id: 15,
+        name: "Smart Home",
+        slug: "smart-home",
+        image: "/images/category-smart-home.jpg",
+        count: 5,
+        icon: "📷"
+    },
+    {
+        id: 16,
+        name: "Gift Bundles",
+        slug: "bundles",
+        image: "/images/category-bundles.jpg",
+        count: 12,
+        icon: "🎁"
     }
 ]
 
@@ -133,6 +181,94 @@ const HomePage = () => {
             bgImage: "/images/hero-tech.jpg",
             accentColor: "#8B5CF6",
             secondaryAccent: "#6366F1"
+        },
+        {
+            title: "Home Appliances",
+            subtitle: "Modern Living",
+            description: "Upgrade your home with premium air fryers, kettles & smart devices",
+            cta: "Shop Appliances",
+            link: "/products/home-appliances",
+            theme: "appliances",
+            bgImage: "/images/hero-home-appliances.png",
+            accentColor: "#F59E0B",
+            secondaryAccent: "#B45309"
+        },
+        {
+            title: "Home Decor",
+            subtitle: "Elevate Your Space",
+            description: "Chic vases, candles & aesthetic pieces for a cozy home",
+            cta: "Discover Decor",
+            link: "/products/home-decor",
+            theme: "decor",
+            bgImage: "/images/hero-home-decor.png",
+            accentColor: "#10B981",
+            secondaryAccent: "#047857"
+        },
+        {
+            title: "Ladies Fashion",
+            subtitle: "Trendy & Elegant",
+            description: "Shop the latest bags, jewelry, and watches for every occasion.",
+            cta: "Shop Fashion",
+            link: "/products/ladies-fashion",
+            theme: "fashion",
+            bgImage: "/images/category-ladies-fashion.jpg",
+            accentColor: "#D946EF",
+            secondaryAccent: "#A21CAF"
+        },
+        {
+            title: "Baby & Kids",
+            subtitle: "Care & Comfort",
+            description: "Safe, high-quality essentials for your little ones.",
+            cta: "Shop Kids",
+            link: "/products/baby-kids",
+            theme: "kids",
+            bgImage: "/images/category-baby-kids.jpg",
+            accentColor: "#38BDF8",
+            secondaryAccent: "#0284C7"
+        },
+        {
+            title: "Travel Gear",
+            subtitle: "Explore the World",
+            description: "Durable luggage and accessories for your next adventure.",
+            cta: "Shop Travel",
+            link: "/products/travel-luggage",
+            theme: "travel",
+            bgImage: "/images/category-travel-luggage.jpg",
+            accentColor: "#F97316",
+            secondaryAccent: "#C2410C"
+        },
+        {
+            title: "Toys & Fun",
+            subtitle: "Play & Collect",
+            description: "From STEM toys to premium anime collectibles.",
+            cta: "Shop Toys",
+            link: "/products/toys-collectibles",
+            theme: "toys",
+            bgImage: "/images/category-toys-collectibles.jpg",
+            accentColor: "#84CC16",
+            secondaryAccent: "#4D7C0F"
+        },
+        {
+            title: "Smart Home",
+            subtitle: "Intelligent Living",
+            description: "Secure and automate your home with potential tech.",
+            cta: "Shop Smart",
+            link: "/products/smart-home",
+            theme: "smarthome",
+            bgImage: "/images/category-smart-home.jpg",
+            accentColor: "#06B6D4",
+            secondaryAccent: "#0891B2"
+        },
+        {
+            title: "Gift Bundles",
+            subtitle: "Perfect Presents",
+            description: "Save up to 30% with exclusive curated gift sets.",
+            cta: "Shop Bundles",
+            link: "/products/bundles",
+            theme: "bundles",
+            bgImage: "/images/category-bundles.jpg",
+            accentColor: "#E11D48",
+            secondaryAccent: "#BE123C"
         }
     ]
 

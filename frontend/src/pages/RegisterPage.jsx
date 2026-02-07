@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -19,6 +19,15 @@ const RegisterPage = () => {
 
     const { register } = useAuth()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        // Disable scroll on mount
+        document.body.style.overflow = 'hidden'
+        return () => {
+            // Enable scroll on unmount
+            document.body.style.overflow = 'unset'
+        }
+    }, [])
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -91,7 +100,7 @@ const RegisterPage = () => {
                     <div className="auth-form-section">
                         <div className="auth-header">
                             <Link to="/" className="auth-logo">
-                                <div className="logo-icon">A</div>
+                                <div className="logo-icon">🛍️</div>
                                 <span>AuthentiMart</span>
                             </Link>
                             <h1>Create account</h1>
@@ -115,36 +124,38 @@ const RegisterPage = () => {
                                 {errors.name && <span className="error-message">{errors.name}</span>}
                             </div>
 
-                            <div className="input-group">
-                                <label className="input-label">Email Address</label>
-                                <div className={`input-wrapper ${errors.email ? 'error' : ''}`}>
-                                    <Mail size={20} />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        className="input-field"
-                                        placeholder="Enter your email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                    />
+                            <div className="input-row">
+                                <div className="input-group">
+                                    <label className="input-label">Email Address</label>
+                                    <div className={`input-wrapper ${errors.email ? 'error' : ''}`}>
+                                        <Mail size={20} />
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            className="input-field"
+                                            placeholder="Enter your email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    {errors.email && <span className="error-message">{errors.email}</span>}
                                 </div>
-                                {errors.email && <span className="error-message">{errors.email}</span>}
-                            </div>
 
-                            <div className="input-group">
-                                <label className="input-label">Phone Number</label>
-                                <div className={`input-wrapper ${errors.phone ? 'error' : ''}`}>
-                                    <Phone size={20} />
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        className="input-field"
-                                        placeholder="01XXXXXXXXX"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                    />
+                                <div className="input-group">
+                                    <label className="input-label">Phone Number</label>
+                                    <div className={`input-wrapper ${errors.phone ? 'error' : ''}`}>
+                                        <Phone size={20} />
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            className="input-field"
+                                            placeholder="01XXXXXXXXX"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    {errors.phone && <span className="error-message">{errors.phone}</span>}
                                 </div>
-                                {errors.phone && <span className="error-message">{errors.phone}</span>}
                             </div>
 
                             <div className="input-row">

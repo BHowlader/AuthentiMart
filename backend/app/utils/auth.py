@@ -108,3 +108,13 @@ async def get_current_admin(
             detail="Admin access required",
         )
     return current_user
+
+async def get_current_delivery_man(
+    current_user: User = Depends(get_current_user_required)
+) -> User:
+    if current_user.role not in ["delivery", "admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Delivery access required",
+        )
+    return current_user

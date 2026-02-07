@@ -67,6 +67,12 @@ const Navbar = () => {
         { name: 'Tech Accessories', path: '/products/tech-accessories', icon: '🎧' },
         { name: 'Home Appliances', path: '/products/home-appliances', icon: '🏠' },
         { name: 'Home Decor', path: '/products/home-decor', icon: '🪴' },
+        { name: 'Ladies Fashion', path: '/products/ladies-fashion', icon: '👜' },
+        { name: 'Baby & Kids', path: '/products/baby-kids', icon: '👶' },
+        { name: 'Travel', path: '/products/travel-luggage', icon: '🧳' },
+        { name: 'Toys & Gifts', path: '/products/toys-collectibles', icon: '🧸' },
+        { name: 'Smart Home', path: '/products/smart-home', icon: '📷' },
+        { name: 'Gift Bundles', path: '/products/bundles', icon: '🎁' },
     ]
 
     return (

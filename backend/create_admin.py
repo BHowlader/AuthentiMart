@@ -1,11 +1,16 @@
 """
 Script to create an admin user in the database
 """
-from app.database import SessionLocal
+import sys
+import os
+sys.path.append(os.getcwd())
+
+from app.database import SessionLocal, engine, Base
 from app.models import User, UserRole
 from app.utils import get_password_hash
 
 def create_admin_user():
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     
     try:

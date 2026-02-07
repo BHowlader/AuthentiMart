@@ -30,9 +30,55 @@ const ProductDetailPage = () => {
     const product = allProducts.find(p => p.id === parseInt(id))
     const inWishlist = product ? isInWishlist(product.id) : false
 
-    const relatedProducts = allProducts
-        .filter(p => p.category === product?.category && p.id !== product?.id)
-        .slice(0, 4)
+    // Cross-Sell Logic
+    const getRelatedProducts = (currentProduct) => {
+        if (!currentProduct) return []
+
+        // Define the Cross-Sell Matrix
+        // Key: Current Category Slug -> Value: Suggested Category Slug
+        const crossSellMatrix = {
+            'skincare': 'beauty-tools',          // Skincare -> Needs tools/pouches
+            'ladies-fashion': 'beauty-tools',    // Fashion -> Needs makeup/beauty
+            'tech-accessories': 'gaming',        // Tech -> Might like gaming
+            'gaming': 'tech-accessories',        // Gaming -> Needs cables/chargers
+            'home-appliances': 'home-decor',     // Appliances -> Decor
+            'smart-home': 'tech-accessories',    // Smart Home -> Needs networking/cables
+            'baby-kids': 'home-decor',           // Kids -> Decor for nursery
+            'travel-luggage': 'tech-accessories', // Travel -> Needs chargers/adapters
+            'toys-collectibles': 'gaming',       // Toys -> Gaming overlaps
+            'beauty-tools': 'skincare',          // Tools -> Needs skincare products
+            'home-decor': 'home-appliances',     // Decor -> Appliances
+            'bundles': 'all'                     // Bundles -> Show popular items
+        }
+
+        const targetCategorySlug = crossSellMatrix[currentProduct.categorySlug]
+
+        let suggestions = []
+
+        if (targetCategorySlug === 'all') {
+            // Random mix for bundles
+            suggestions = allProducts.filter(p => p.id !== currentProduct.id)
+        } else if (targetCategorySlug) {
+            // 1. Prioritize items from the Cross-Sell Matrix category
+            suggestions = allProducts.filter(p => p.categorySlug === targetCategorySlug)
+        }
+
+        // 2. If not enough suggestions, fill with same category (Fall back)
+        if (suggestions.length < 4) {
+            const sameCategoryParams = allProducts.filter(p =>
+                p.categorySlug === currentProduct.categorySlug &&
+                p.id !== currentProduct.id
+            )
+            suggestions = [...suggestions, ...sameCategoryParams]
+        }
+
+        // 3. Randomize and slice to get 4 items
+        return suggestions
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 4)
+    }
+
+    const relatedProducts = getRelatedProducts(product)
 
     if (!product) {
         return (

@@ -65,7 +65,27 @@ export const AuthProvider = ({ children }) => {
             showToast('Account created successfully!', 'success')
             return { success: true }
         } catch (error) {
-            const message = error.response?.data?.detail || 'Registration failed'
+            const message = error.response?.data?.detail || error.message || 'Registration failed'
+            showToast(message, 'error')
+            return { success: false, error: message }
+        }
+    }
+
+    const socialLogin = async (provider, token) => {
+        try {
+            const response = await authAPI.socialLogin({ provider, token })
+            const { token: accessToken, user: userData } = response.data
+
+            localStorage.setItem('token', accessToken)
+            localStorage.setItem('user', JSON.stringify(userData))
+
+            setToken(accessToken)
+            setUser(userData)
+            showToast(`Welcome ${userData.name}!`, 'success')
+            return { success: true }
+        } catch (error) {
+            console.error('Social login error:', error)
+            const message = error.response?.data?.detail || 'Social login failed'
             showToast(message, 'error')
             return { success: false, error: message }
         }
@@ -101,6 +121,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin: user?.role === 'admin',
         login,
         register,
+        socialLogin,
         logout,
         updateProfile,
     }

@@ -17,6 +17,12 @@ const categories = [
     { name: 'Home Appliances', slug: 'home-appliances' },
     { name: 'Home Decor', slug: 'home-decor' },
     { name: 'Beauty Tools', slug: 'beauty-tools' },
+    { name: 'Ladies Fashion', slug: 'ladies-fashion' },
+    { name: 'Baby & Kids', slug: 'baby-kids' },
+    { name: 'Travel & Luggage', slug: 'travel-luggage' },
+    { name: 'Toys & Collectibles', slug: 'toys-collectibles' },
+    { name: 'Smart Home', slug: 'smart-home' },
+    { name: 'Gift Bundles', slug: 'bundles' },
 ]
 
 const sortOptions = [

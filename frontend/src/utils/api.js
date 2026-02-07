@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.0.6:5000/api/v1'
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
 
 const api = axios.create({
     baseURL: API_URL,
@@ -13,7 +13,9 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token')
-        if (token) {
+        // Don't attach token for auth endpoints
+        const isAuthEndpoint = config.url?.includes('/auth/login') || config.url?.includes('/auth/register')
+        if (token && !isAuthEndpoint) {
             config.headers.Authorization = `Bearer ${token}`
         }
         return config
@@ -56,9 +58,10 @@ export const authAPI = {
     },
     getProfile: () => api.get('/auth/me'),
     updateProfile: (data) => api.put('/auth/me', data),
-    changePassword: (data) => api.put('/auth/change-password', data),
+    changePassword: (data) => api.post('/auth/change-password', data), // Changed from put to post as per backend
     forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
     resetPassword: (data) => api.post('/auth/reset-password', data),
+    socialLogin: (data) => api.post('/auth/social-login', data),
 }
 
 // Products API

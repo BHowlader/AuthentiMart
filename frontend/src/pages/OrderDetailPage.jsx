@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
     Package,
@@ -8,77 +9,77 @@ import {
     Phone,
     Mail,
     ArrowLeft,
-    Download
+    Download,
+    AlertCircle
 } from 'lucide-react'
+import { ordersAPI } from '../utils/api'
 import './OrderDetailPage.css'
 
-// Sample order data
-const sampleOrder = {
-    id: 'ORD-2024-001',
-    date: '2024-02-01',
-    status: 'delivered',
-    paymentMethod: 'bKash',
-    shippingAddress: {
-        name: 'John Doe',
-        phone: '01712345678',
-        email: 'john@example.com',
-        address: 'House 10, Road 5, Block C',
-        area: 'Banani',
-        city: 'Dhaka'
-    },
-    items: [
-        {
-            id: 1,
-            name: "L'Oreal Paris Revitalift Anti-Wrinkle Cream",
-            price: 1850,
-            quantity: 2,
-            image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=100"
-        },
-        {
-            id: 2,
-            name: "MAC Matte Lipstick - Ruby Woo",
-            price: 2150,
-            quantity: 1,
-            image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=100"
-        }
-    ],
-    subtotal: 5850,
-    shipping: 0,
-    total: 5850,
-    timeline: [
-        { status: 'ordered', date: '2024-02-01 10:30 AM', completed: true },
-        { status: 'confirmed', date: '2024-02-01 11:00 AM', completed: true },
-        { status: 'shipped', date: '2024-02-02 09:00 AM', completed: true },
-        { status: 'delivered', date: '2024-02-03 02:30 PM', completed: true }
-    ]
+const statusLabels = {
+    pending: 'Order Placed',
+    confirmed: 'Order Confirmed',
+    processing: 'Processing',
+    shipped: 'Shipped',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled'
 }
 
-const statusLabels = {
-    ordered: 'Order Placed',
-    confirmed: 'Order Confirmed',
-    shipped: 'Shipped',
-    delivered: 'Delivered'
-}
+const statusSteps = ['pending', 'confirmed', 'shipped', 'delivered']
 
 const OrderDetailPage = () => {
     const { id } = useParams()
+    const [order, setOrder] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
-    // In real app, fetch order by ID
-    const order = sampleOrder
+    useEffect(() => {
+        const fetchOrder = async () => {
+            try {
+                const response = await ordersAPI.getById(id)
+                setOrder(response.data)
+                setLoading(false)
+            } catch (err) {
+                console.error('Error fetching order:', err)
+                setError('Failed to load order details')
+                setLoading(false)
+            }
+        }
 
-    const getStatusIcon = (status, completed) => {
-        if (completed) {
+        fetchOrder()
+    }, [id])
+
+    const getStatusIcon = (stepStatus, currentStatus) => {
+        const stepIndex = statusSteps.indexOf(stepStatus)
+        const currentIndex = statusSteps.indexOf(currentStatus)
+
+        if (order.status === 'cancelled') {
+            return <AlertCircle size={20} />
+        }
+
+        if (currentIndex >= stepIndex) {
             return <CheckCircle size={20} />
         }
-        switch (status) {
+
+        switch (stepStatus) {
             case 'shipped':
                 return <Truck size={20} />
             case 'delivered':
-                return <CheckCircle size={20} />
+                return <Package size={20} />
             default:
                 return <Clock size={20} />
         }
     }
+
+    const isStepCompleted = (stepStatus) => {
+        if (order.status === 'cancelled') return false
+        const stepIndex = statusSteps.indexOf(stepStatus)
+        const currentIndex = statusSteps.indexOf(order.status)
+        return currentIndex >= stepIndex
+    }
+
+    if (loading) return <div className="loading-spinner">Loading...</div>
+    if (error) return <div className="error-message">{error}</div>
+    if (!order) return <div className="error-message">Order not found</div>
 
     return (
         <div className="order-detail-page">
@@ -94,13 +95,15 @@ const OrderDetailPage = () => {
                     <div>
                         <h1>
                             <Package size={28} />
-                            Order {order.id}
+                            Order #{order.order_number}
                         </h1>
                         <p className="text-secondary">
-                            Placed on {new Date(order.date).toLocaleDateString('en-US', {
+                            Placed on {new Date(order.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
-                                day: 'numeric'
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
                             })}
                         </p>
                     </div>
@@ -114,26 +117,59 @@ const OrderDetailPage = () => {
                     {/* Order Progress */}
                     <div className="order-section glass-card">
                         <h2>Order Status</h2>
-                        <div className="order-timeline">
-                            {order.timeline.map((step, index) => (
-                                <div
-                                    key={step.status}
-                                    className={`timeline-step ${step.completed ? 'completed' : ''}`}
-                                >
-                                    <div className="timeline-icon">
-                                        {getStatusIcon(step.status, step.completed)}
-                                    </div>
-                                    <div className="timeline-content">
-                                        <span className="timeline-label">{statusLabels[step.status]}</span>
-                                        <span className="timeline-date">{step.date}</span>
-                                    </div>
-                                    {index < order.timeline.length - 1 && (
-                                        <div className={`timeline-line ${step.completed ? 'completed' : ''}`}></div>
-                                    )}
-                                </div>
-                            ))}
+                        <div className="order-status-badge">
+                            <span className={`status-badge ${order.status}`}>
+                                {statusLabels[order.status]}
+                            </span>
                         </div>
+
+                        {order.status !== 'cancelled' && (
+                            <div className="order-timeline">
+                                {statusSteps.map((step, index) => (
+                                    <div
+                                        key={step}
+                                        className={`timeline-step ${isStepCompleted(step) ? 'completed' : ''}`}
+                                    >
+                                        <div className="timeline-icon">
+                                            {getStatusIcon(step, order.status)}
+                                        </div>
+                                        <div className="timeline-content">
+                                            <span className="timeline-label">{statusLabels[step]}</span>
+                                        </div>
+                                        {index < statusSteps.length - 1 && (
+                                            <div className={`timeline-line ${isStepCompleted(step) ? 'completed' : ''}`}></div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
+
+                    {/* Dynamic Tracking History */}
+                    {order.tracking && order.tracking.length > 0 && (
+                        <div className="order-section glass-card">
+                            <h2>Tracking History</h2>
+                            <div className="tracking-history">
+                                {order.tracking.map((track) => (
+                                    <div key={track.id} className="tracking-item">
+                                        <div className="tracking-icon">
+                                            <div className="dot"></div>
+                                            <div className="line"></div>
+                                        </div>
+                                        <div className="tracking-content">
+                                            <div className="tracking-header">
+                                                <span className="tracking-status">{track.status}</span>
+                                                <span className="tracking-date">
+                                                    {new Date(track.created_at).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <p className="tracking-desc">{track.description}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Order Items */}
                     <div className="order-section glass-card">
@@ -141,16 +177,22 @@ const OrderDetailPage = () => {
                         <div className="order-items-list">
                             {order.items.map((item) => (
                                 <div key={item.id} className="order-item-detail">
-                                    <img src={item.image} alt={item.name} />
+                                    {/* Assuming item.product.image or similar structure. 
+                                        Since we use OrderResponse, items are OrderItemResponse which has 'product' field 
+                                    */}
+                                    <img
+                                        src={item.product?.image || item.product?.images?.[0]?.url || 'https://via.placeholder.com/100'}
+                                        alt={item.product?.name || 'Product'}
+                                    />
                                     <div className="item-info">
-                                        <Link to={`/product/${item.id}`} className="item-name">
-                                            {item.name}
+                                        <Link to={`/product/${item.product_id}`} className="item-name">
+                                            {item.product?.name || `Product #${item.product_id}`}
                                         </Link>
                                         <span className="item-qty">Quantity: {item.quantity}</span>
                                     </div>
                                     <div className="item-price">
                                         <span className="unit-price">৳{item.price.toLocaleString()} × {item.quantity}</span>
-                                        <strong>৳{(item.price * item.quantity).toLocaleString()}</strong>
+                                        <strong>৳{item.total.toLocaleString()}</strong>
                                     </div>
                                 </div>
                             ))}
@@ -163,7 +205,7 @@ const OrderDetailPage = () => {
                             </div>
                             <div className="total-row">
                                 <span>Shipping</span>
-                                <span>{order.shipping === 0 ? 'FREE' : `৳${order.shipping}`}</span>
+                                <span>{order.shipping_cost === 0 ? 'FREE' : `৳${order.shipping_cost}`}</span>
                             </div>
                             <div className="total-row final">
                                 <span>Total</span>
@@ -181,17 +223,19 @@ const OrderDetailPage = () => {
                                 Shipping Address
                             </h3>
                             <div className="address-info">
-                                <p className="address-name">{order.shippingAddress.name}</p>
-                                <p>{order.shippingAddress.address}</p>
-                                <p>{order.shippingAddress.area}, {order.shippingAddress.city}</p>
+                                <p className="address-name">{order.shipping_name}</p>
+                                <p>{order.shipping_address}</p>
+                                <p>{order.shipping_area}, {order.shipping_city}</p>
                                 <p className="address-contact">
                                     <Phone size={14} />
-                                    {order.shippingAddress.phone}
+                                    {order.shipping_phone}
                                 </p>
-                                <p className="address-contact">
-                                    <Mail size={14} />
-                                    {order.shippingAddress.email}
-                                </p>
+                                {order.shipping_email && (
+                                    <p className="address-contact">
+                                        <Mail size={14} />
+                                        {order.shipping_email}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
@@ -199,10 +243,14 @@ const OrderDetailPage = () => {
                         <div className="sidebar-card glass-card">
                             <h3>
                                 <Package size={18} />
-                                Payment Method
+                                Payment Info
                             </h3>
-                            <p className="payment-method">{order.paymentMethod}</p>
-                            <span className="payment-status paid">Paid</span>
+                            <p className="payment-method">
+                                Method: {order.payment_method?.toUpperCase()}
+                            </p>
+                            <span className={`payment-status ${order.payment_status}`}>
+                                {order.payment_status?.replace('_', ' ').toUpperCase()}
+                            </span>
                         </div>
                     </div>
                 </div>

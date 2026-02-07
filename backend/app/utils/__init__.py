@@ -6,6 +6,7 @@ from app.utils.auth import (
     get_current_user,
     get_current_user_required,
     get_current_admin,
+    get_current_delivery_man,
     oauth2_scheme
 )
 from app.utils.helpers import (
@@ -24,6 +25,7 @@ __all__ = [
     "get_current_user",
     "get_current_user_required",
     "get_current_admin",
+    "get_current_delivery_man",
     "oauth2_scheme",
     "generate_slug",
     "generate_order_number",

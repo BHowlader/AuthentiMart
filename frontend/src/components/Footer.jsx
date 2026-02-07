@@ -176,7 +176,11 @@ const Footer = () => {
             <div className="footer-bottom">
                 <div className="container">
                     <div className="footer-bottom-content">
-                        <p>&copy; {currentYear} AuthentiMart. All rights reserved.</p>
+                        <p>
+                            &copy; {currentYear} AuthentiMart. All rights reserved.
+                            <span className="footer-divider">|</span>
+                            Built by <a href="https://www.bibekhowlader.com" target="_blank" rel="noopener noreferrer" className="footer-branding-link">Bibek Howlader</a>
+                        </p>
                         <div className="footer-links">
                             <Link to="/privacy">Privacy Policy</Link>
                             <Link to="/terms">Terms of Service</Link>

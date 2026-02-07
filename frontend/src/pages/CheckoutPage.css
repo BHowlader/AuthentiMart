@@ -402,3 +402,76 @@
         flex-direction: column;
     }
 }
+
+@media (max-width: 480px) {
+    .checkout-page {
+        padding-top: 80px;
+    }
+
+    .checkout-steps {
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .step-line {
+        width: 30px;
+    }
+
+    .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .step span {
+        display: none;
+    }
+
+    .form-section {
+        padding: 20px;
+    }
+
+    .form-section h2 {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+
+    .order-summary {
+        padding: 20px;
+    }
+
+    .order-summary h3 {
+        font-size: 1.1rem;
+    }
+
+    .payment-option {
+        padding: 12px 14px;
+    }
+
+    .payment-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .payment-name {
+        font-size: 0.95rem;
+    }
+
+    .payment-desc {
+        font-size: 0.8rem;
+    }
+
+    .summary-item {
+        gap: 10px;
+    }
+
+    .item-image {
+        width: 50px;
+        height: 50px;
+    }
+
+    .input-wrapper .input-field {
+        font-size: 16px; /* Prevents iOS zoom */
+    }
+}

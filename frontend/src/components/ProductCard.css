@@ -202,4 +202,51 @@
         opacity: 1;
         transform: translateY(0);
     }
+
+    .product-card:hover {
+        transform: none;
+    }
+
+    .product-card-content {
+        padding: 12px;
+    }
+
+    .product-card-title {
+        font-size: 0.9rem;
+    }
+
+    .product-card-price-current {
+        font-size: 1.1rem;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .product-card-action {
+        width: 34px;
+        height: 34px;
+    }
+
+    .product-card-action svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .product-card-badges .badge {
+        font-size: 0.65rem;
+        padding: 3px 6px;
+    }
+
+    .product-card-add-btn {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .product-card-category {
+        font-size: 0.7rem;
+    }
+
+    .product-card-rating span {
+        font-size: 0.75rem;
+    }
 }

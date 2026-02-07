@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -44,18 +44,29 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
 
+class ForgotPassword(BaseModel):
+    email: EmailStr
+
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8)
+
 class UserResponse(UserBase):
     id: int
     role: str
     is_active: bool
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
+    picture: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+class SocialLoginRequest(BaseModel):
+    provider: str  # "google" or "facebook"
+    token: str     # id_token for Google, access_token for Facebook
 
 class TokenWithUser(BaseModel):
     token: str
@@ -81,9 +92,8 @@ class AddressResponse(AddressBase):
     id: int
     user_id: int
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Category Schemas ---
 class CategoryBase(BaseModel):
@@ -99,9 +109,8 @@ class CategoryCreate(CategoryBase):
 class CategoryResponse(CategoryBase):
     id: int
     is_active: bool
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Product Schemas ---
 class ProductImageBase(BaseModel):
@@ -111,9 +120,8 @@ class ProductImageBase(BaseModel):
 
 class ProductImageResponse(ProductImageBase):
     id: int
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductBase(BaseModel):
     name: str
@@ -153,9 +161,8 @@ class ProductResponse(ProductBase):
     created_at: datetime
     images: List[ProductImageResponse] = []
     category: Optional[CategoryResponse] = None
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductListResponse(BaseModel):
     id: int
@@ -173,9 +180,8 @@ class ProductListResponse(BaseModel):
     review_count: int = 0
     image: Optional[str] = None
     category: Optional[str] = None
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Order Schemas ---
 class OrderItemCreate(BaseModel):
@@ -189,9 +195,8 @@ class OrderItemResponse(BaseModel):
     price: float
     total: float
     product: Optional[ProductListResponse] = None
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
@@ -203,6 +208,14 @@ class OrderCreate(BaseModel):
     shipping_area: Optional[str] = None
     shipping_city: str
     notes: Optional[str] = None
+
+class OrderTrackingResponse(BaseModel):
+    id: int
+    status: str
+    description: Optional[str] = None
+    created_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class OrderResponse(BaseModel):
     id: int
@@ -222,13 +235,19 @@ class OrderResponse(BaseModel):
     shipping_city: str
     notes: Optional[str] = None
     created_at: datetime
+    courier_name: Optional[str] = None
+    courier_tracking_id: Optional[str] = None
     items: List[OrderItemResponse] = []
-    
-    class Config:
-        from_attributes = True
+    tracking: List[OrderTrackingResponse] = []  # Added tracking
+
+    model_config = ConfigDict(from_attributes=True)
 
 class OrderStatusUpdate(BaseModel):
     status: OrderStatus
+    description: Optional[str] = None
+
+class CourierAssign(BaseModel):
+    courier_name: str # pathao, steadfast
 
 # --- Payment Schemas ---
 class PaymentCreate(BaseModel):
@@ -247,9 +266,8 @@ class PaymentResponse(BaseModel):
     transaction_id: Optional[str] = None
     status: str
     created_at: datetime
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Review Schemas ---
 class ReviewCreate(BaseModel):
@@ -266,9 +284,8 @@ class ReviewResponse(BaseModel):
     is_verified: bool
     created_at: datetime
     user: Optional[UserResponse] = None
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Wishlist Schemas ---
 class WishlistItemCreate(BaseModel):
@@ -280,9 +297,8 @@ class WishlistItemResponse(BaseModel):
     product_id: int
     created_at: datetime
     product: Optional[ProductListResponse] = None
-    
-    class Config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Cart Schemas (handled in frontend, but for API) ---
 class CartItem(BaseModel):
@@ -305,3 +321,6 @@ class PaginatedResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+class OrderListResponse(PaginatedResponse):
+    items: List[OrderResponse]

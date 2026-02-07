@@ -12,7 +12,8 @@ from app.models.models import (
     PaymentStatus,
     PaymentMethod,
     Review,
-    WishlistItem
+    WishlistItem,
+    OrderTracking
 )
 
 __all__ = [
@@ -29,5 +30,7 @@ __all__ = [
     "PaymentStatus",
     "PaymentMethod",
     "Review",
-    "WishlistItem"
+    "WishlistItem",
+    "OrderTracking"
 ]
+

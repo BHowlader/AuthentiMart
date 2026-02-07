@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import timedelta
+from datetime import timedelta, datetime
 from app.database import get_db
 from app.models import User, UserRole
-from app.schemas import UserCreate, UserResponse, Token, TokenWithUser, UserUpdate
+from app.schemas import UserCreate, UserResponse, Token, TokenWithUser, UserUpdate, ForgotPassword, ResetPassword, SocialLoginRequest
 from app.utils import (
     verify_password, 
     get_password_hash, 
@@ -12,6 +12,7 @@ from app.utils import (
     get_current_user_required
 )
 from app.config import settings
+import uuid
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -31,7 +32,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         email=user_data.email,
         phone=user_data.phone,
         password_hash=get_password_hash(user_data.password),
-        role=UserRole.USER
+        role=UserRole.USER.value
     )
     
     db.add(new_user)
@@ -40,9 +41,9 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     
     # Create access token
     access_token = create_access_token(
-        data={"sub": str(new_user.id), "role": new_user.role}
+        data={"sub": str(new_user.id), "role": str(new_user.role)}
     )
-    
+
     return {"token": access_token, "user": new_user}
 
 @router.post("/login", response_model=TokenWithUser)
@@ -68,9 +69,9 @@ async def login(
     
     # Create access token
     access_token = create_access_token(
-        data={"sub": str(user.id), "role": user.role}
+        data={"sub": str(user.id), "role": str(user.role)}
     )
-    
+
     return {"token": access_token, "user": user}
 
 @router.get("/me", response_model=UserResponse)
@@ -97,11 +98,13 @@ async def update_profile(
 
 @router.post("/change-password")
 async def change_password(
-    current_password: str,
-    new_password: str,
+    password_data: dict,
     current_user: User = Depends(get_current_user_required),
     db: Session = Depends(get_db)
 ):
+    current_password = password_data.get("current_password")
+    new_password = password_data.get("new_password")
+    
     if not verify_password(current_password, current_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -112,3 +115,149 @@ async def change_password(
     db.commit()
     
     return {"message": "Password changed successfully"}
+
+@router.post("/forgot-password")
+async def forgot_password(
+    data: ForgotPassword,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        # Don't reveal if user exists
+        return {"message": "If this email is registered, you will receive password reset instructions."}
+    
+    # Generate reset token
+    token = str(uuid.uuid4())
+    user.reset_token = token
+    user.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+    db.commit()
+    
+    # In a real app, send email here
+    # For now, just print to console for development
+    print(f"RESET LINK: {settings.app_url}/reset-password?token={token}")
+    
+    return {"message": "If this email is registered, you will receive password reset instructions."}
+
+@router.post("/reset-password")
+async def reset_password(
+    data: ResetPassword,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.reset_token == data.token).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired token"
+        )
+        
+    if user.reset_token_expiry < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token has expired"
+        )
+    
+    # Reset password
+    user.password_hash = get_password_hash(data.new_password)
+    user.reset_token = None
+    user.reset_token_expiry = None
+    db.commit()
+    
+    return {"message": "Password has been reset successfully"}
+
+import httpx
+@router.post("/social-login", response_model=TokenWithUser)
+async def social_login(
+    data: SocialLoginRequest,
+    db: Session = Depends(get_db)
+):
+    email = None
+    name = None
+    picture = None
+    provider_id = None
+    
+    # verify token with provider
+    async with httpx.AsyncClient() as client:
+        if data.provider == "google":
+            # Verify Google Access Token (compat with frontend useGoogleLogin hook)
+            resp = await client.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={data.token}")
+            
+            # If that fails, try as ID Token (compat with <GoogleLogin/> component)
+            if resp.status_code != 200:
+                resp = await client.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={data.token}")
+                
+            if resp.status_code != 200:
+                raise HTTPException(status_code=400, detail="Invalid Google token")
+                
+            user_info = resp.json()
+            email = user_info.get("email")
+            name = user_info.get("name")
+            picture = user_info.get("picture")
+            provider_id = user_info.get("sub")
+            
+        elif data.provider == "facebook":
+            # Verify Facebook Access Token
+            # Need fields: id,name,email,picture
+            resp = await client.get(f"https://graph.facebook.com/me?access_token={data.token}&fields=id,name,email,picture")
+            if resp.status_code != 200:
+                raise HTTPException(status_code=400, detail="Invalid Facebook token")
+            user_info = resp.json()
+            email = user_info.get("email")
+            name = user_info.get("name")
+            # FB picture structure is different: picture.data.url
+            picture = user_info.get("picture", {}).get("data", {}).get("url")
+            provider_id = user_info.get("id")
+            
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported provider")
+            
+    if not email:
+         raise HTTPException(status_code=400, detail="Email not found in social profile")
+
+    # Check if user exists
+    user = db.query(User).filter(User.email == email).first()
+    
+    if user:
+        # Update missing social info if any
+        needs_commit = False
+        if data.provider == "google" and not user.google_id:
+            user.google_id = provider_id
+            needs_commit = True
+        if data.provider == "facebook" and not user.facebook_id:
+            user.facebook_id = provider_id
+            needs_commit = True
+        if picture and not user.picture:
+            user.picture = picture
+            needs_commit = True
+            
+        if needs_commit:
+            db.commit()
+            db.refresh(user)
+    else:
+        # Register new user
+        # We need a dummy password since it's required by our model but user logs in via social
+        # Using uuid as random password
+        dummy_pw = str(uuid.uuid4())
+        
+        user = User(
+            email=email,
+            name=name,
+            password_hash=get_password_hash(dummy_pw),
+            role=UserRole.USER.value,
+            picture=picture,
+            is_active=True
+        )
+        if data.provider == "google":
+            user.google_id = provider_id
+        elif data.provider == "facebook":
+            user.facebook_id = provider_id
+            
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+    access_token = create_access_token(
+        data={"sub": str(user.id), "role": str(user.role)}
+    )
+    
+    return {"token": access_token, "user": user}

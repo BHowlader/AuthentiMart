@@ -7,6 +7,7 @@ import enum
 class UserRole(str, enum.Enum):
     USER = "user"
     ADMIN = "admin"
+    DELIVERY = "delivery"
 
 class OrderStatus(str, enum.Enum):
     PENDING = "pending"
@@ -36,13 +37,23 @@ class User(Base):
     email = Column(String(100), unique=True, index=True, nullable=False)
     phone = Column(String(20), nullable=True)
     password_hash = Column(String(255), nullable=False)
-    role = Column(String(20), default=UserRole.USER)
+    role = Column(String(20), default="user")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
+    # Password Reset
+    reset_token = Column(String(100), nullable=True)
+    reset_token_expiry = Column(DateTime(timezone=True), nullable=True)
+    
+    # Social Login
+    google_id = Column(String(100), nullable=True, unique=True)
+    facebook_id = Column(String(100), nullable=True, unique=True)
+    picture = Column(String(255), nullable=True)
+    
     addresses = relationship("Address", back_populates="user")
-    orders = relationship("Order", back_populates="user")
+    orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")
+    # orders_to_deliver = relationship("Order", back_populates="delivery_man", foreign_keys="Order.delivery_man_id")
     reviews = relationship("Review", back_populates="user")
     wishlist_items = relationship("WishlistItem", back_populates="user")
 
@@ -107,6 +118,15 @@ class Product(Base):
     order_items = relationship("OrderItem", back_populates="product")
     wishlist_items = relationship("WishlistItem", back_populates="product")
 
+    @property
+    def image(self):
+        if self.images:
+            for img in self.images:
+                if img.is_primary:
+                    return img.url
+            return self.images[0].url
+        return None
+
 # Product Image Model
 class ProductImage(Base):
     __tablename__ = "product_images"
@@ -126,6 +146,11 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     order_number = Column(String(50), unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Courier / Third-party Delivery info
+    courier_name = Column(String(50), nullable=True) # e.g. "steadfast", "pathao"
+    courier_tracking_id = Column(String(100), nullable=True) # Consignment ID
+
     status = Column(String(20), default=OrderStatus.PENDING)
     payment_status = Column(String(20), default=PaymentStatus.PENDING)
     payment_method = Column(String(20), nullable=True)
@@ -145,9 +170,22 @@ class Order(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    user = relationship("User", back_populates="orders")
+    user = relationship("User", foreign_keys=[user_id], back_populates="orders")
     items = relationship("OrderItem", back_populates="order")
     payment = relationship("Payment", back_populates="order", uselist=False)
+    tracking = relationship("OrderTracking", back_populates="order", order_by="desc(OrderTracking.created_at)")
+
+# Order Tracking Model
+class OrderTracking(Base):
+    __tablename__ = "order_tracking"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
+    status = Column(String(50), nullable=False)
+    description = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    order = relationship("Order", back_populates="tracking")
 
 # Order Item Model
 class OrderItem(Base):

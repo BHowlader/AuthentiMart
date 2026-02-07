@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import Order, OrderItem, Product, User, PaymentStatus, OrderStatus
-from app.schemas import OrderCreate, OrderResponse, OrderStatusUpdate
+from app.models import Order, OrderItem, Product, User, PaymentStatus, OrderStatus, OrderTracking
+from app.schemas import OrderCreate, OrderResponse, OrderStatusUpdate, OrderListResponse
 from app.utils import get_current_user_required, get_current_admin, generate_order_number, calculate_shipping
 from math import ceil
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
-@router.get("", response_model=dict)
+@router.get("", response_model=OrderListResponse)
 async def get_user_orders(
     page: int = 1,
     page_size: int = 10,
@@ -123,6 +123,14 @@ async def create_order(
     db.commit()
     db.refresh(order)
     
+    # Create initial tracking
+    tracking = OrderTracking(
+        order_id=order.id,
+        status="Order Placed",
+        description="Your order has been placed successfully"
+    )
+    db.add(tracking)
+    
     # Create order items and update stock
     for item_data in order_items:
         order_item = OrderItem(
@@ -159,6 +167,15 @@ async def update_order_status(
         )
     
     order.status = status_data.status.value
+    
+    # Add tracking entry
+    tracking = OrderTracking(
+        order_id=order.id,
+        status=status_data.status.value.replace("_", " ").title(),
+        description=status_data.description or f"Order status updated to {status_data.status.value}"
+    )
+    db.add(tracking)
+    
     db.commit()
     db.refresh(order)
     
@@ -198,6 +215,15 @@ async def cancel_order(
             product.stock += item.quantity
     
     order.status = OrderStatus.CANCELLED.value
+    
+    # Add tracking entry
+    tracking = OrderTracking(
+        order_id=order.id,
+        status="Cancelled",
+        description="Order has been cancelled"
+    )
+    db.add(tracking)
+    
     db.commit()
     db.refresh(order)
     
