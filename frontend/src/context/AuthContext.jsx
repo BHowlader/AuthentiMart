@@ -113,6 +113,20 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const uploadAvatar = async (formData) => {
+        try {
+            const response = await authAPI.uploadAvatar(formData)
+            setUser(response.data)
+            localStorage.setItem('user', JSON.stringify(response.data))
+            showToast('Profile photo updated', 'success')
+            return { success: true }
+        } catch (error) {
+            const message = error.response?.data?.detail || 'Upload failed'
+            showToast(message, 'error')
+            return { success: false, error: message }
+        }
+    }
+
     const value = {
         user,
         token,
@@ -124,6 +138,7 @@ export const AuthProvider = ({ children }) => {
         socialLogin,
         logout,
         updateProfile,
+        uploadAvatar,
     }
 
     return (

@@ -62,6 +62,11 @@ export const authAPI = {
     forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
     resetPassword: (data) => api.post('/auth/reset-password', data),
     socialLogin: (data) => api.post('/auth/social-login', data),
+    uploadAvatar: (formData) => api.post('/auth/upload-avatar', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }),
 }
 
 // Products API

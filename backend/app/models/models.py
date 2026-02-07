@@ -50,6 +50,7 @@ class User(Base):
     google_id = Column(String(100), nullable=True, unique=True)
     facebook_id = Column(String(100), nullable=True, unique=True)
     picture = Column(String(255), nullable=True)
+    is_custom_picture = Column(Boolean, default=False)
     
     addresses = relationship("Address", back_populates="user")
     orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")

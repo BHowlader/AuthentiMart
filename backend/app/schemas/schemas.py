@@ -57,6 +57,7 @@ class UserResponse(UserBase):
     is_active: bool
     created_at: datetime
     picture: Optional[str] = None
+    is_custom_picture: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

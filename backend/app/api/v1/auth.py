@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta, datetime
@@ -13,6 +13,9 @@ from app.utils import (
 )
 from app.config import settings
 import uuid
+import httpx
+import os
+import shutil
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -165,7 +168,6 @@ async def reset_password(
     
     return {"message": "Password has been reset successfully"}
 
-import httpx
 @router.post("/social-login", response_model=TokenWithUser)
 async def social_login(
     data: SocialLoginRequest,
@@ -228,9 +230,8 @@ async def social_login(
     
     if user:
         # Update missing or changed social info
-        # We always update the picture if we got a new one from social login
-        # This keeps the profile fresh
-        if picture and picture != user.picture:
+        # We update the picture ONLY if the user hasn't set a custom picture
+        if picture and picture != user.picture and not user.is_custom_picture:
             user.picture = picture
         
         if data.provider == "google" and not user.google_id:
@@ -268,3 +269,39 @@ async def social_login(
     )
     
     return {"token": access_token, "user": user}
+
+@router.post("/upload-avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user_required),
+    db: Session = Depends(get_db)
+):
+    # Validate file type
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Create upload directory
+    upload_dir = "uploads/avatars"
+    os.makedirs(upload_dir, exist_ok=True)
+    
+    # Generate unique filename
+    file_extension = os.path.splitext(file.filename)[1]
+    filename = f"user_{current_user.id}_{uuid.uuid4()}{file_extension}"
+    file_path = f"{upload_dir}/{filename}"
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # Update user profile
+    # URL should be relative path that frontend can access via static mount
+    # Mounted at /uploads
+    image_url = f"{settings.api_url}/uploads/avatars/{filename}"
+    
+    current_user.picture = image_url
+    current_user.is_custom_picture = True
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user

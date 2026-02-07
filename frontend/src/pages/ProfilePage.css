@@ -77,6 +77,33 @@
     color: white;
 }
 
+.avatar-edit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.avatar-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: var(--glass-bg);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .profile-name {
     font-size: 1.25rem;
     margin-bottom: 4px;

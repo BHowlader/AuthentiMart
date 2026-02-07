@@ -1,15 +1,48 @@
-import { useState } from 'react'
-import { User, Mail, Phone, MapPin, Lock, Save, Camera } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { User, Mail, Phone, MapPin, Lock, Save, Camera, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import './ProfilePage.css'
 
 const ProfilePage = () => {
-    const { user, updateProfile } = useAuth()
+    const { user, updateProfile, uploadAvatar } = useAuth()
     const { showToast } = useToast()
+    const fileInputRef = useRef(null)
 
     const [activeTab, setActiveTab] = useState('profile')
     const [loading, setLoading] = useState(false)
+    const [avatarLoading, setAvatarLoading] = useState(false)
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click()
+    }
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showToast('Please select an image file', 'error')
+            return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image size must be less than 5MB', 'error')
+            return
+        }
+
+        setAvatarLoading(true)
+        const formData = new FormData()
+        formData.append('file', file)
+
+        await uploadAvatar(formData)
+        setAvatarLoading(false)
+
+        // Clear the input so the same file can be selected again
+        e.target.value = ''
+    }
 
     const [profileData, setProfileData] = useState({
         name: user?.name || '',
@@ -94,8 +127,19 @@ const ProfilePage = () => {
                     {/* Sidebar */}
                     <aside className="profile-sidebar glass-card">
                         <div className="profile-avatar">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleAvatarChange}
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                            />
                             <div className="avatar-image">
-                                {user?.picture ? (
+                                {avatarLoading ? (
+                                    <div className="avatar-loading">
+                                        <Loader2 size={24} className="spin" />
+                                    </div>
+                                ) : user?.picture ? (
                                     <img
                                         src={user.picture}
                                         alt={user.name}
@@ -106,7 +150,12 @@ const ProfilePage = () => {
                                     user?.name?.charAt(0).toUpperCase() || 'U'
                                 )}
                             </div>
-                            <button className="avatar-edit">
+                            <button
+                                className="avatar-edit"
+                                onClick={handleAvatarClick}
+                                disabled={avatarLoading}
+                                title="Change profile photo"
+                            >
                                 <Camera size={16} />
                             </button>
                         </div>
