@@ -299,6 +299,7 @@
     border: none;
 }
 
+
 .user-avatar,
 .user-avatar-lg {
     display: flex;
@@ -308,7 +309,16 @@
     color: white;
     font-weight: 600;
     border-radius: var(--radius-full);
+    overflow: hidden;
+    /* Added to clip image */
 }
+
+.user-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 
 .user-avatar {
     width: 40px;

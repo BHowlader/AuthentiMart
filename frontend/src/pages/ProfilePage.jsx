@@ -95,7 +95,16 @@ const ProfilePage = () => {
                     <aside className="profile-sidebar glass-card">
                         <div className="profile-avatar">
                             <div className="avatar-image">
-                                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                {user?.picture ? (
+                                    <img
+                                        src={user.picture}
+                                        alt={user.name}
+                                        className="avatar-img-full"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                ) : (
+                                    user?.name?.charAt(0).toUpperCase() || 'U'
+                                )}
                             </div>
                             <button className="avatar-edit">
                                 <Camera size={16} />

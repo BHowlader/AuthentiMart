@@ -1,4 +1,3 @@
-```javascript
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
@@ -113,7 +112,7 @@ const ResetPasswordPage = () => {
                                             className="input-field"
                                             placeholder="Enter new password"
                                             value={formData.newPassword}
-                                            onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                                             required
                                             minLength={8}
                                         />
@@ -136,14 +135,14 @@ const ResetPasswordPage = () => {
                                             className="input-field"
                                             placeholder="Confirm new password"
                                             value={formData.confirmPassword}
-                                            onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                             required
                                         />
                                     </div>
                                 </div>
 
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="btn btn-primary btn-lg auth-submit"
                                     disabled={status === 'loading'}
                                 >

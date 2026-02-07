@@ -152,7 +152,16 @@ const Navbar = () => {
                                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                             >
                                 <div className="user-avatar">
-                                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                    {user?.picture ? (
+                                        <img
+                                            src={user.picture}
+                                            alt={user.name}
+                                            className="user-avatar-img"
+                                            referrerPolicy="no-referrer"
+                                        />
+                                    ) : (
+                                        user?.name?.charAt(0).toUpperCase() || 'U'
+                                    )}
                                 </div>
                             </button>
                             {isUserMenuOpen && (
@@ -161,7 +170,16 @@ const Navbar = () => {
                                     <div className="user-dropdown">
                                         <div className="user-info">
                                             <div className="user-avatar-lg">
-                                                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                                                {user?.picture ? (
+                                                    <img
+                                                        src={user.picture}
+                                                        alt={user.name}
+                                                        className="user-avatar-img"
+                                                        referrerPolicy="no-referrer"
+                                                    />
+                                                ) : (
+                                                    user?.name?.charAt(0).toUpperCase() || 'U'
+                                                )}
                                             </div>
                                             <div>
                                                 <p className="user-name">{user?.name}</p>

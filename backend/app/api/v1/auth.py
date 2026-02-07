@@ -179,28 +179,37 @@ async def social_login(
     # verify token with provider
     async with httpx.AsyncClient() as client:
         if data.provider == "google":
-            # Verify Google Access Token (compat with frontend useGoogleLogin hook)
-            resp = await client.get(f"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={data.token}")
+            # 1. Try as Access Token with userinfo endpoint (Standard OAuth2)
+            # This ensures we get profile info including picture
+            headers = {"Authorization": f"Bearer {data.token}"}
+            resp = await client.get("https://www.googleapis.com/oauth2/v3/userinfo", headers=headers)
             
-            # If that fails, try as ID Token (compat with <GoogleLogin/> component)
-            if resp.status_code != 200:
+            if resp.status_code == 200:
+                user_info = resp.json()
+                email = user_info.get("email")
+                name = user_info.get("name")
+                picture = user_info.get("picture")
+                provider_id = user_info.get("sub")
+            else:
+                # 2. If that fails, try as ID Token (compat with <GoogleLogin/> component which returns id_token)
                 resp = await client.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={data.token}")
                 
-            if resp.status_code != 200:
-                raise HTTPException(status_code=400, detail="Invalid Google token")
-                
-            user_info = resp.json()
-            email = user_info.get("email")
-            name = user_info.get("name")
-            picture = user_info.get("picture")
-            provider_id = user_info.get("sub")
+                if resp.status_code != 200:
+                    raise HTTPException(status_code=400, detail="Invalid Google token")
+                    
+                user_info = resp.json()
+                email = user_info.get("email")
+                name = user_info.get("name")
+                picture = user_info.get("picture")
+                provider_id = user_info.get("sub")
             
         elif data.provider == "facebook":
             # Verify Facebook Access Token
-            # Need fields: id,name,email,picture
-            resp = await client.get(f"https://graph.facebook.com/me?access_token={data.token}&fields=id,name,email,picture")
+            # Need fields: id,name,email,picture.type(large)
+            resp = await client.get(f"https://graph.facebook.com/me?access_token={data.token}&fields=id,name,email,picture.type(large)")
             if resp.status_code != 200:
                 raise HTTPException(status_code=400, detail="Invalid Facebook token")
+            
             user_info = resp.json()
             email = user_info.get("email")
             name = user_info.get("name")
@@ -218,21 +227,19 @@ async def social_login(
     user = db.query(User).filter(User.email == email).first()
     
     if user:
-        # Update missing social info if any
-        needs_commit = False
+        # Update missing or changed social info
+        # We always update the picture if we got a new one from social login
+        # This keeps the profile fresh
+        if picture and picture != user.picture:
+            user.picture = picture
+        
         if data.provider == "google" and not user.google_id:
             user.google_id = provider_id
-            needs_commit = True
         if data.provider == "facebook" and not user.facebook_id:
             user.facebook_id = provider_id
-            needs_commit = True
-        if picture and not user.picture:
-            user.picture = picture
-            needs_commit = True
             
-        if needs_commit:
-            db.commit()
-            db.refresh(user)
+        db.commit()
+        db.refresh(user)
     else:
         # Register new user
         # We need a dummy password since it's required by our model but user logs in via social
