@@ -157,7 +157,7 @@ const HomePage = () => {
             cta: "Shop Bundles",
             link: "/products/bundles",
             theme: "bundles",
-            bgImage: "/images/hero-bundles-new.png",
+            bgImage: "/images/gift-box.jpg",
             accentColor: "#5d100b",
             secondaryAccent: "#4a0c08"
         }
