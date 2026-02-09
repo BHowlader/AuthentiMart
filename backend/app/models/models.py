@@ -150,11 +150,11 @@ class ProductImage(Base):
 # Order Model
 class Order(Base):
     __tablename__ = "orders"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     order_number = Column(String(50), unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
+
     # Courier / Third-party Delivery info
     courier_name = Column(String(50), nullable=True) # e.g. "steadfast", "pathao"
     courier_tracking_id = Column(String(100), nullable=True) # Consignment ID
@@ -165,6 +165,11 @@ class Order(Base):
     subtotal = Column(Float, nullable=False)
     shipping_cost = Column(Float, default=0)
     total = Column(Float, nullable=False)
+
+    # Voucher fields
+    voucher_id = Column(Integer, ForeignKey("vouchers.id"), nullable=True)
+    voucher_code = Column(String(50), nullable=True)
+    voucher_discount = Column(Float, default=0)
     
     # Shipping info
     shipping_name = Column(String(100), nullable=False)
@@ -264,3 +269,116 @@ class CartItem(Base):
 
     user = relationship("User", back_populates="cart_items")
     product = relationship("Product", back_populates="cart_items")
+
+
+# ============================================
+# FLASH SALE MODELS
+# ============================================
+
+class FlashSale(Base):
+    __tablename__ = "flash_sales"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)
+    slug = Column(String(200), unique=True, index=True, nullable=False)
+    description = Column(Text, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    end_time = Column(DateTime(timezone=True), nullable=False)
+    banner_image = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    items = relationship("FlashSaleItem", back_populates="flash_sale", cascade="all, delete-orphan")
+
+
+class FlashSaleItem(Base):
+    __tablename__ = "flash_sale_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    flash_sale_id = Column(Integer, ForeignKey("flash_sales.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    flash_price = Column(Float, nullable=False)
+    flash_stock = Column(Integer, nullable=False)
+    sold_count = Column(Integer, default=0)
+    sort_order = Column(Integer, default=0)
+
+    flash_sale = relationship("FlashSale", back_populates="items")
+    product = relationship("Product")
+
+
+# ============================================
+# VOUCHER MODELS
+# ============================================
+
+class DiscountType(str, enum.Enum):
+    PERCENTAGE = "percentage"
+    FIXED = "fixed"
+
+
+class Voucher(Base):
+    __tablename__ = "vouchers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, index=True, nullable=False)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    discount_type = Column(String(20), nullable=False)  # percentage or fixed
+    discount_value = Column(Float, nullable=False)
+    min_order_amount = Column(Float, default=0)
+    max_discount_amount = Column(Float, nullable=True)  # Cap for percentage discounts
+    usage_limit = Column(Integer, nullable=True)  # Total times voucher can be used
+    usage_count = Column(Integer, default=0)
+    per_user_limit = Column(Integer, default=1)  # Times per user
+    start_date = Column(DateTime(timezone=True), nullable=True)
+    end_date = Column(DateTime(timezone=True), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    usages = relationship("VoucherUsage", back_populates="voucher")
+
+
+class VoucherUsage(Base):
+    __tablename__ = "voucher_usages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    voucher_id = Column(Integer, ForeignKey("vouchers.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    used_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    voucher = relationship("Voucher", back_populates="usages")
+    user = relationship("User")
+    order = relationship("Order")
+
+
+# ============================================
+# PRODUCT ACCESSORY MODEL
+# ============================================
+
+class ProductAccessory(Base):
+    __tablename__ = "product_accessories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    accessory_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    sort_order = Column(Integer, default=0)
+
+    product = relationship("Product", foreign_keys=[product_id], backref="accessory_links")
+    accessory = relationship("Product", foreign_keys=[accessory_id])
+
+
+# ============================================
+# PRODUCT SPECIFICATION MODEL
+# ============================================
+
+class ProductSpecification(Base):
+    __tablename__ = "product_specifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    spec_group = Column(String(100), nullable=False)  # e.g., "Display", "Performance"
+    spec_name = Column(String(100), nullable=False)   # e.g., "Screen Size", "RAM"
+    spec_value = Column(String(255), nullable=False)  # e.g., "6.1 inches", "8GB"
+    sort_order = Column(Integer, default=0)
+
+    product = relationship("Product", backref="specifications")

@@ -9,12 +9,13 @@ import {
     Gift
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
+import { FlashSaleSection } from '../components/FlashSale'
 import { productsAPI, categoriesAPI } from '../utils/api'
 import './HomePage.css'
 
 // Category icons mapping (fallback when not from API)
 const categoryIcons = {
-    'lip-products': '💄',
+    'lip-products': '👄',
     'eye-products': '👁️',
     'face-products': '✨',
     'skincare': '🧴',
@@ -358,25 +359,8 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* Flash Sale Banner */}
-            <section className="flash-sale-banner">
-                <div className="container">
-                    <div className="flash-sale-content">
-                        <div className="flash-sale-info">
-                            <span className="flash-badge">
-                                <Zap size={20} />
-                                Flash Sale
-                            </span>
-                            <h2>Up to 50% Off!</h2>
-                            <p>Limited time offer on selected items. Hurry before it's gone!</p>
-                        </div>
-                        <Link to="/products?sale=true" className="btn btn-primary btn-lg">
-                            Shop Sale Items
-                            <ArrowRight size={20} />
-                        </Link>
-                    </div>
-                </div>
-            </section>
+            {/* Flash Sale Section */}
+            <FlashSaleSection />
 
             {/* New Arrivals Section */}
             <section className="section">

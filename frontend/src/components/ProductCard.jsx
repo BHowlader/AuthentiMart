@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom'
-import { Heart, ShoppingCart, Eye, Star } from 'lucide-react'
+import { Heart, ShoppingCart, Star, GitCompare } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
+import { useCompare } from '../context/CompareContext'
 import './ProductCard.css'
 
 const ProductCard = ({ product }) => {
     const { addToCart } = useCart()
     const { toggleWishlist, isInWishlist } = useWishlist()
+    const { toggleCompare, isInCompare } = useCompare()
 
     const {
         id,
@@ -24,6 +26,7 @@ const ProductCard = ({ product }) => {
     } = product
 
     const inWishlist = isInWishlist(id)
+    const inCompare = isInCompare(id)
 
     const handleAddToCart = (e) => {
         e.preventDefault()
@@ -35,6 +38,12 @@ const ProductCard = ({ product }) => {
         e.preventDefault()
         e.stopPropagation()
         toggleWishlist(product)
+    }
+
+    const handleToggleCompare = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        toggleCompare(product)
     }
 
     return (
@@ -60,10 +69,11 @@ const ProductCard = ({ product }) => {
                         <Heart size={18} fill={inWishlist ? 'currentColor' : 'none'} />
                     </button>
                     <button
-                        className="product-card-action"
-                        aria-label="Quick view"
+                        className={`product-card-action ${inCompare ? 'active' : ''}`}
+                        onClick={handleToggleCompare}
+                        aria-label="Compare"
                     >
-                        <Eye size={18} />
+                        <GitCompare size={18} />
                     </button>
                 </div>
             </div>

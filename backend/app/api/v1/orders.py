@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
+from datetime import datetime, timezone
 from app.database import get_db
-from app.models import Order, OrderItem, Product, User, PaymentStatus, OrderStatus, OrderTracking
+from app.models import Order, OrderItem, Product, User, PaymentStatus, OrderStatus, OrderTracking, Voucher, VoucherUsage
 from app.schemas import OrderCreate, OrderResponse, OrderStatusUpdate, OrderListResponse
 from app.utils import get_current_user_required, get_current_admin, generate_order_number, calculate_shipping
 from math import ceil
@@ -96,9 +98,74 @@ async def create_order(
             "total": item_total
         })
 
+    # Handle voucher if provided
+    voucher = None
+    voucher_discount = 0
+
+    if order_data.voucher_code:
+        voucher = db.query(Voucher).filter(
+            Voucher.code == order_data.voucher_code.upper(),
+            Voucher.is_active == True
+        ).first()
+
+        if not voucher:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid voucher code"
+            )
+
+        # Validate voucher
+        now = datetime.now(timezone.utc)
+
+        if voucher.start_date and voucher.start_date > now:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This voucher is not yet valid"
+            )
+
+        if voucher.end_date and voucher.end_date < now:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This voucher has expired"
+            )
+
+        if subtotal < voucher.min_order_amount:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Minimum order amount is ৳{voucher.min_order_amount:.0f}"
+            )
+
+        if voucher.usage_limit and voucher.usage_count >= voucher.usage_limit:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This voucher has reached its usage limit"
+            )
+
+        # Check per-user limit
+        user_usage_count = db.query(func.count(VoucherUsage.id)).filter(
+            VoucherUsage.voucher_id == voucher.id,
+            VoucherUsage.user_id == current_user.id
+        ).scalar()
+
+        if user_usage_count >= voucher.per_user_limit:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have already used this voucher"
+            )
+
+        # Calculate discount
+        if voucher.discount_type == "percentage":
+            voucher_discount = subtotal * (voucher.discount_value / 100)
+            if voucher.max_discount_amount and voucher_discount > voucher.max_discount_amount:
+                voucher_discount = voucher.max_discount_amount
+        else:  # fixed
+            voucher_discount = voucher.discount_value
+
+        voucher_discount = min(voucher_discount, subtotal)
+
     # Calculate shipping
     shipping_cost = calculate_shipping(subtotal, order_data.shipping_city)
-    total = subtotal + shipping_cost
+    total = subtotal + shipping_cost - voucher_discount
 
     # Determine initial status based on payment method
     # COD orders are auto-confirmed since payment is collected on delivery
@@ -115,6 +182,9 @@ async def create_order(
         subtotal=subtotal,
         shipping_cost=shipping_cost,
         total=total,
+        voucher_id=voucher.id if voucher else None,
+        voucher_code=voucher.code if voucher else None,
+        voucher_discount=voucher_discount,
         shipping_name=order_data.shipping_name,
         shipping_phone=order_data.shipping_phone,
         shipping_email=order_data.shipping_email,
@@ -127,6 +197,18 @@ async def create_order(
     db.add(order)
     db.commit()
     db.refresh(order)
+
+    # Record voucher usage if used
+    if voucher:
+        voucher_usage = VoucherUsage(
+            voucher_id=voucher.id,
+            user_id=current_user.id,
+            order_id=order.id
+        )
+        db.add(voucher_usage)
+
+        # Increment voucher usage count
+        voucher.usage_count += 1
 
     # Create initial tracking
     tracking = OrderTracking(

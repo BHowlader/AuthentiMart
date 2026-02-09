@@ -15,6 +15,7 @@ import {
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import ProductCard from '../components/ProductCard'
+import AccessoriesSection from '../components/AccessoriesSection'
 import { productsAPI } from '../utils/api'
 import './ProductDetailPage.css'
 
@@ -357,6 +358,9 @@ const ProductDetailPage = () => {
                         )}
                     </div>
                 </div>
+
+                {/* Accessories Section */}
+                <AccessoriesSection productId={product.id} productName={product.name} />
 
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (

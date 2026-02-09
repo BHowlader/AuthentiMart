@@ -15,7 +15,9 @@ import OrdersPage from './pages/OrdersPage'
 import OrderDetailPage from './pages/OrderDetailPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import ComparePage from './pages/ComparePage'
 import ProtectedRoute from './components/ProtectedRoute'
+import CompareBar from './components/CompareBar'
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout'
@@ -28,6 +30,8 @@ import AdminOrders from './pages/admin/AdminOrders'
 import AdminCustomers from './pages/admin/AdminCustomers'
 import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminPredictions from './pages/admin/AdminPredictions'
+import AdminFlashSales from './pages/admin/AdminFlashSales'
+import AdminVouchers from './pages/admin/AdminVouchers'
 import AdminAuthWrapper from './components/AdminAuthWrapper'
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -56,6 +60,7 @@ function App() {
                         <Route path="/product/:slug" element={<ProductDetailPage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/wishlist" element={<WishlistPage />} />
+                        <Route path="/compare" element={<ComparePage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -111,6 +116,7 @@ function App() {
                     </Routes>
                 </main>
                 {showFooter && <Footer />}
+                {!isAdminRoute && <CompareBar />}
             </div>
         </GoogleOAuthProvider>
     )

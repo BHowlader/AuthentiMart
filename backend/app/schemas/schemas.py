@@ -110,6 +110,7 @@ class CategoryCreate(CategoryBase):
 class CategoryResponse(CategoryBase):
     id: int
     is_active: bool
+    product_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -209,6 +210,7 @@ class OrderCreate(BaseModel):
     shipping_area: Optional[str] = None
     shipping_city: str
     notes: Optional[str] = None
+    voucher_code: Optional[str] = None  # For applying voucher discount
 
 class OrderTrackingResponse(BaseModel):
     id: int
@@ -228,6 +230,8 @@ class OrderResponse(BaseModel):
     subtotal: float
     shipping_cost: float
     total: float
+    voucher_code: Optional[str] = None
+    voucher_discount: float = 0
     shipping_name: str
     shipping_phone: str
     shipping_email: Optional[str] = None
@@ -322,6 +326,176 @@ class CartResponse(BaseModel):
     items: List[CartItemResponse]
     subtotal: float
     item_count: int
+
+
+# --- Flash Sale Schemas ---
+class DiscountType(str, Enum):
+    PERCENTAGE = "percentage"
+    FIXED = "fixed"
+
+
+class FlashSaleItemBase(BaseModel):
+    product_id: int
+    flash_price: float = Field(..., gt=0)
+    flash_stock: int = Field(..., ge=0)
+    sort_order: int = 0
+
+
+class FlashSaleItemCreate(FlashSaleItemBase):
+    pass
+
+
+class FlashSaleItemResponse(FlashSaleItemBase):
+    id: int
+    sold_count: int = 0
+    product: Optional[ProductListResponse] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FlashSaleBase(BaseModel):
+    name: str
+    slug: str
+    description: Optional[str] = None
+    start_time: datetime
+    end_time: datetime
+    banner_image: Optional[str] = None
+
+
+class FlashSaleCreate(FlashSaleBase):
+    items: List[FlashSaleItemCreate] = []
+
+
+class FlashSaleUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    banner_image: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class FlashSaleResponse(FlashSaleBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    items: List[FlashSaleItemResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FlashSaleListResponse(BaseModel):
+    id: int
+    name: str
+    slug: str
+    start_time: datetime
+    end_time: datetime
+    banner_image: Optional[str] = None
+    is_active: bool
+    item_count: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# --- Voucher Schemas ---
+class VoucherBase(BaseModel):
+    code: str = Field(..., min_length=3, max_length=50)
+    name: str
+    description: Optional[str] = None
+    discount_type: DiscountType
+    discount_value: float = Field(..., gt=0)
+    min_order_amount: float = 0
+    max_discount_amount: Optional[float] = None
+    usage_limit: Optional[int] = None
+    per_user_limit: int = 1
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+class VoucherCreate(VoucherBase):
+    pass
+
+
+class VoucherUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    discount_type: Optional[DiscountType] = None
+    discount_value: Optional[float] = None
+    min_order_amount: Optional[float] = None
+    max_discount_amount: Optional[float] = None
+    usage_limit: Optional[int] = None
+    per_user_limit: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    is_active: Optional[bool] = None
+
+
+class VoucherResponse(VoucherBase):
+    id: int
+    usage_count: int = 0
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VoucherValidateRequest(BaseModel):
+    code: str
+    subtotal: float = Field(..., ge=0)
+
+
+class VoucherValidateResponse(BaseModel):
+    valid: bool
+    voucher: Optional[VoucherResponse] = None
+    discount_amount: float = 0
+    message: str
+
+
+# --- Product Specification Schemas ---
+class ProductSpecificationBase(BaseModel):
+    spec_group: str
+    spec_name: str
+    spec_value: str
+    sort_order: int = 0
+
+
+class ProductSpecificationCreate(ProductSpecificationBase):
+    pass
+
+
+class ProductSpecificationResponse(ProductSpecificationBase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductSpecificationsUpdate(BaseModel):
+    specifications: List[ProductSpecificationCreate]
+
+
+# --- Product Accessory Schemas ---
+class ProductAccessoryCreate(BaseModel):
+    accessory_id: int
+    sort_order: int = 0
+
+
+class ProductAccessoryResponse(BaseModel):
+    id: int
+    accessory: ProductListResponse
+    sort_order: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# --- Product Comparison Schema ---
+class ProductCompareRequest(BaseModel):
+    product_ids: List[int] = Field(..., min_length=2, max_length=4)
+
+
+class ProductCompareResponse(BaseModel):
+    products: List[ProductResponse]
+    specifications: dict  # Grouped specifications for comparison
+
 
 # --- Pagination ---
 class PaginatedResponse(BaseModel):

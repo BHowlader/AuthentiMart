@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useToast } from './ToastContext'
-import { cartAPI } from '../utils/api'
+import { cartAPI, vouchersAPI } from '../utils/api'
 
 const CartContext = createContext(null)
 
@@ -16,6 +16,8 @@ export const CartProvider = ({ children }) => {
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(false)
     const [initialized, setInitialized] = useState(false)
+    const [appliedVoucher, setAppliedVoucher] = useState(null)
+    const [voucherLoading, setVoucherLoading] = useState(false)
     const { showToast } = useToast()
 
     // Check if user is authenticated
@@ -197,6 +199,56 @@ export const CartProvider = ({ children }) => {
         return subtotal > 5000 ? 0 : 60
     }
 
+    const getVoucherDiscount = () => {
+        return appliedVoucher?.discount_amount || 0
+    }
+
+    const applyVoucher = async (code) => {
+        if (!isAuthenticated()) {
+            showToast('Please login to apply voucher', 'error')
+            return { success: false, message: 'Please login first' }
+        }
+
+        const subtotal = getSubtotal()
+        if (subtotal === 0) {
+            showToast('Add items to cart first', 'error')
+            return { success: false, message: 'Cart is empty' }
+        }
+
+        try {
+            setVoucherLoading(true)
+            const response = await vouchersAPI.validate(code, subtotal)
+            const data = response.data
+
+            if (data.valid) {
+                setAppliedVoucher({
+                    code: data.voucher.code,
+                    name: data.voucher.name,
+                    discount_type: data.voucher.discount_type,
+                    discount_value: data.voucher.discount_value,
+                    discount_amount: data.discount_amount
+                })
+                showToast(data.message, 'success')
+                return { success: true, message: data.message, discount: data.discount_amount }
+            } else {
+                showToast(data.message, 'error')
+                return { success: false, message: data.message }
+            }
+        } catch (error) {
+            console.error('Error validating voucher:', error)
+            const message = error.response?.data?.detail || 'Failed to apply voucher'
+            showToast(message, 'error')
+            return { success: false, message }
+        } finally {
+            setVoucherLoading(false)
+        }
+    }
+
+    const removeVoucher = () => {
+        setAppliedVoucher(null)
+        showToast('Voucher removed', 'info')
+    }
+
     const value = {
         items,
         loading,
@@ -210,6 +262,12 @@ export const CartProvider = ({ children }) => {
         getTotal,
         getShipping,
         refreshCart: fetchCart,
+        // Voucher
+        appliedVoucher,
+        voucherLoading,
+        applyVoucher,
+        removeVoucher,
+        getVoucherDiscount,
     }
 
     return (

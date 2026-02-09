@@ -16,10 +16,11 @@ import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { addressAPI, ordersAPI } from '../utils/api'
+import VoucherInput from '../components/VoucherInput'
 import './CheckoutPage.css'
 
 const CheckoutPage = () => {
-    const { items, getSubtotal, getShipping, getTotal, clearCart } = useCart()
+    const { items, getSubtotal, getShipping, getTotal, clearCart, appliedVoucher, getVoucherDiscount } = useCart()
     const { user } = useAuth()
     const { showToast } = useToast()
     const navigate = useNavigate()
@@ -173,7 +174,8 @@ const CheckoutPage = () => {
             shipping_address: shippingInfo.address,
             shipping_area: shippingInfo.area || null,
             shipping_city: shippingInfo.city,
-            notes: shippingInfo.notes || null
+            notes: shippingInfo.notes || null,
+            voucher_code: appliedVoucher?.code || null
         }
 
         console.log('Submitting order:', orderData)
@@ -552,7 +554,7 @@ const CheckoutPage = () => {
                                             className="btn btn-primary btn-lg"
                                             disabled={loading}
                                         >
-                                            {loading ? 'Processing...' : `Pay ৳${getTotal().toLocaleString()}`}
+                                            {loading ? 'Processing...' : `Pay ৳${(getTotal() - getVoucherDiscount()).toLocaleString()}`}
                                         </button>
                                     </div>
                                 </div>
@@ -584,6 +586,11 @@ const CheckoutPage = () => {
 
                         <div className="summary-divider"></div>
 
+                        {/* Voucher Input */}
+                        <VoucherInput />
+
+                        <div className="summary-divider"></div>
+
                         <div className="summary-row">
                             <span>Subtotal</span>
                             <span>৳{getSubtotal().toLocaleString()}</span>
@@ -592,10 +599,16 @@ const CheckoutPage = () => {
                             <span>Shipping</span>
                             <span>{getShipping() === 0 ? 'FREE' : `৳${getShipping()}`}</span>
                         </div>
+                        {getVoucherDiscount() > 0 && (
+                            <div className="summary-row discount">
+                                <span>Voucher Discount</span>
+                                <span className="discount-amount">-৳{getVoucherDiscount().toLocaleString()}</span>
+                            </div>
+                        )}
                         <div className="summary-divider"></div>
                         <div className="summary-row total">
                             <span>Total</span>
-                            <span>৳{getTotal().toLocaleString()}</span>
+                            <span>৳{(getTotal() - getVoucherDiscount()).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

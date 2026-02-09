@@ -361,6 +361,14 @@
     color: var(--text-primary);
 }
 
+.summary-row.discount {
+    color: var(--accent-green);
+}
+
+.summary-row.discount .discount-amount {
+    font-weight: 600;
+}
+
 /* Saved Addresses Section */
 .saved-addresses-section {
     margin-bottom: 24px;

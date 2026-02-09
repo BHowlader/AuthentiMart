@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from app.database import get_db
-from app.models import Category
+from app.models import Category, Product
 from app.schemas import CategoryResponse, CategoryCreate
 from app.utils import get_current_admin
 
@@ -14,12 +15,37 @@ async def get_categories(
     db: Session = Depends(get_db)
 ):
     query = db.query(Category)
-    
+
     if not include_inactive:
         query = query.filter(Category.is_active == True)
-    
+
     categories = query.all()
-    return categories
+
+    # Get product counts for each category
+    product_counts = db.query(
+        Product.category_id,
+        func.count(Product.id).label('count')
+    ).filter(Product.is_active == True).group_by(Product.category_id).all()
+
+    # Create a mapping of category_id to product count
+    count_map = {pc.category_id: pc.count for pc in product_counts}
+
+    # Build response with product counts
+    result = []
+    for cat in categories:
+        cat_dict = {
+            'id': cat.id,
+            'name': cat.name,
+            'slug': cat.slug,
+            'description': cat.description,
+            'image': cat.image,
+            'parent_id': cat.parent_id,
+            'is_active': cat.is_active,
+            'product_count': count_map.get(cat.id, 0)
+        }
+        result.append(cat_dict)
+
+    return result
 
 @router.get("/{slug}", response_model=CategoryResponse)
 async def get_category(slug: str, db: Session = Depends(get_db)):

@@ -142,3 +142,42 @@ export const addressAPI = {
     delete: (id) => api.delete(`/addresses/${id}`),
     setDefault: (id) => api.put(`/addresses/${id}/default`),
 }
+
+// Flash Sales API
+export const flashSalesAPI = {
+    getCurrent: () => api.get('/flash-sales/current'),
+    getAll: () => api.get('/flash-sales'),
+    getBySlug: (slug) => api.get(`/flash-sales/${slug}`),
+}
+
+// Vouchers API
+export const vouchersAPI = {
+    validate: (code, subtotal) => api.post('/vouchers/validate', { code, subtotal }),
+}
+
+// Product Comparison API
+export const comparisonAPI = {
+    compare: (productIds) => api.post('/products/compare', { product_ids: productIds }),
+    getSpecifications: (productId) => api.get(`/products/${productId}/specifications`),
+    getAccessories: (productId) => api.get(`/products/${productId}/accessories`),
+}
+
+// Admin Flash Sales API
+export const adminFlashSalesAPI = {
+    getAll: (params) => api.get('/flash-sales', { params }),
+    getById: (id) => api.get(`/flash-sales/${id}`),
+    create: (data) => api.post('/flash-sales', data),
+    update: (id, data) => api.put(`/flash-sales/${id}`, data),
+    delete: (id) => api.delete(`/flash-sales/${id}`),
+    addItem: (flashSaleId, data) => api.post(`/flash-sales/${flashSaleId}/items`, data),
+    removeItem: (flashSaleId, itemId) => api.delete(`/flash-sales/${flashSaleId}/items/${itemId}`),
+}
+
+// Admin Vouchers API
+export const adminVouchersAPI = {
+    getAll: (params) => api.get('/vouchers', { params }),
+    getById: (id) => api.get(`/vouchers/${id}`),
+    create: (data) => api.post('/vouchers', data),
+    update: (id, data) => api.put(`/vouchers/${id}`, data),
+    delete: (id) => api.delete(`/vouchers/${id}`),
+}
