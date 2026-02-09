@@ -46,6 +46,8 @@ export const AuthProvider = ({ children }) => {
             setToken(newToken)
             setUser(newUser)
             showToast('Welcome back!', 'success')
+            // Dispatch event to refresh cart
+            window.dispatchEvent(new Event('userLogin'))
             return { success: true }
         } catch (error) {
             const message = error.response?.data?.detail || error.message || 'Login failed'
@@ -63,6 +65,8 @@ export const AuthProvider = ({ children }) => {
             setToken(newToken)
             setUser(newUser)
             showToast('Account created successfully!', 'success')
+            // Dispatch event to refresh cart
+            window.dispatchEvent(new Event('userLogin'))
             return { success: true }
         } catch (error) {
             const message = error.response?.data?.detail || error.message || 'Registration failed'
@@ -82,6 +86,8 @@ export const AuthProvider = ({ children }) => {
             setToken(accessToken)
             setUser(userData)
             showToast(`Welcome ${userData.name}!`, 'success')
+            // Dispatch event to refresh cart
+            window.dispatchEvent(new Event('userLogin'))
             return { success: true }
         } catch (error) {
             console.error('Social login error:', error)

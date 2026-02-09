@@ -180,9 +180,9 @@ class ProductListResponse(BaseModel):
     rating: float = 0
     review_count: int = 0
     image: Optional[str] = None
-    category: Optional[str] = None
+    category: Optional[str] = Field(None, validation_alias='category_name')
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 # --- Order Schemas ---
 class OrderItemCreate(BaseModel):
@@ -301,19 +301,27 @@ class WishlistItemResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- Cart Schemas (handled in frontend, but for API) ---
-class CartItem(BaseModel):
+# --- Cart Schemas ---
+class CartItemCreate(BaseModel):
+    product_id: int
+    quantity: int = Field(..., gt=0)
+
+class CartItemUpdate(BaseModel):
+    quantity: int = Field(..., gt=0)
+
+class CartItemResponse(BaseModel):
+    id: int
     product_id: int
     quantity: int
-    price: float
-    name: str
-    image: Optional[str] = None
+    created_at: datetime
+    product: Optional[ProductListResponse] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class CartResponse(BaseModel):
-    items: List[CartItem]
+    items: List[CartItemResponse]
     subtotal: float
-    shipping: float
-    total: float
+    item_count: int
 
 # --- Pagination ---
 class PaginatedResponse(BaseModel):

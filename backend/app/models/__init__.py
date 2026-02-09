@@ -1,5 +1,5 @@
 from app.models.models import (
-    User, 
+    User,
     UserRole,
     Address,
     Category,
@@ -13,12 +13,13 @@ from app.models.models import (
     PaymentMethod,
     Review,
     WishlistItem,
-    OrderTracking
+    OrderTracking,
+    CartItem
 )
 
 __all__ = [
     "User",
-    "UserRole", 
+    "UserRole",
     "Address",
     "Category",
     "Product",
@@ -31,6 +32,7 @@ __all__ = [
     "PaymentMethod",
     "Review",
     "WishlistItem",
-    "OrderTracking"
+    "OrderTracking",
+    "CartItem"
 ]
 

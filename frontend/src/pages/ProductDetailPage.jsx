@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
     Star,
@@ -15,11 +15,14 @@ import {
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import ProductCard from '../components/ProductCard'
-import allProducts from '../data/products'
+import { productsAPI } from '../utils/api'
 import './ProductDetailPage.css'
 
 const ProductDetailPage = () => {
-    const { id } = useParams()
+    const { slug } = useParams()
+    const [product, setProduct] = useState(null)
+    const [relatedProducts, setRelatedProducts] = useState([])
+    const [loading, setLoading] = useState(true)
     const [selectedImage, setSelectedImage] = useState(0)
     const [quantity, setQuantity] = useState(1)
     const [activeTab, setActiveTab] = useState('description')
@@ -27,65 +30,103 @@ const ProductDetailPage = () => {
     const { addToCart } = useCart()
     const { toggleWishlist, isInWishlist } = useWishlist()
 
-    const product = allProducts.find(p => p.id === parseInt(id))
-    const inWishlist = product ? isInWishlist(product.id) : false
+    // Fetch product data
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                setLoading(true)
+                const response = await productsAPI.getById(slug)
+                const p = response.data
 
-    // Cross-Sell Logic
-    const getRelatedProducts = (currentProduct) => {
-        if (!currentProduct) return []
+                // Map API response to frontend format
+                const mappedProduct = {
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalPrice: p.original_price,
+                    image: p.images?.[0]?.url || '/images/placeholder.png',
+                    images: p.images?.map(img => img.url) || ['/images/placeholder.png'],
+                    category: p.category?.name || '',
+                    categorySlug: p.category?.slug || '',
+                    brand: p.brand || '',
+                    rating: p.rating || 0,
+                    reviewCount: p.review_count || 0,
+                    stock: p.stock || 0,
+                    isNew: p.is_new || false,
+                    discount: p.discount || 0,
+                    slug: p.slug,
+                    description: p.description || 'No description available.',
+                    features: p.features || [],
+                    specifications: p.specifications || {}
+                }
 
-        // Define the Cross-Sell Matrix
-        // Key: Current Category Slug -> Value: Suggested Category Slug
-        const crossSellMatrix = {
-            'skincare': 'beauty-tools',          // Skincare -> Needs tools/pouches
-            'ladies-fashion': 'beauty-tools',    // Fashion -> Needs makeup/beauty
-            'tech-accessories': 'gaming',        // Tech -> Might like gaming
-            'gaming': 'tech-accessories',        // Gaming -> Needs cables/chargers
-            'home-appliances': 'home-decor',     // Appliances -> Decor
-            'smart-home': 'tech-accessories',    // Smart Home -> Needs networking/cables
-            'baby-kids': 'home-decor',           // Kids -> Decor for nursery
-            'travel-luggage': 'tech-accessories', // Travel -> Needs chargers/adapters
-            'toys-collectibles': 'gaming',       // Toys -> Gaming overlaps
-            'beauty-tools': 'skincare',          // Tools -> Needs skincare products
-            'home-decor': 'home-appliances',     // Decor -> Appliances
-            'bundles': 'all'                     // Bundles -> Show popular items
+                setProduct(mappedProduct)
+
+                // Fetch related products
+                fetchRelatedProducts(mappedProduct.categorySlug)
+            } catch (error) {
+                console.error('Error fetching product:', error)
+                setProduct(null)
+            } finally {
+                setLoading(false)
+            }
         }
 
-        const targetCategorySlug = crossSellMatrix[currentProduct.categorySlug]
+        fetchProduct()
+    }, [slug])
 
-        let suggestions = []
-
-        if (targetCategorySlug === 'all') {
-            // Random mix for bundles
-            suggestions = allProducts.filter(p => p.id !== currentProduct.id)
-        } else if (targetCategorySlug) {
-            // 1. Prioritize items from the Cross-Sell Matrix category
-            suggestions = allProducts.filter(p => p.categorySlug === targetCategorySlug)
+    const fetchRelatedProducts = async (categorySlug) => {
+        try {
+            const response = await productsAPI.getAll({ category: categorySlug, limit: 5 })
+            const products = (response.data.items || response.data || [])
+                .filter(p => p.slug !== slug)
+                .slice(0, 4)
+                .map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalPrice: p.original_price,
+                    image: p.image || (p.images && p.images[0]?.url) || '/images/placeholder.png',
+                    category: p.category || '',
+                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
+                    brand: p.brand || '',
+                    rating: p.rating || 0,
+                    reviewCount: p.review_count || 0,
+                    stock: p.stock || 0,
+                    isNew: p.is_new || false,
+                    discount: p.discount || 0,
+                    slug: p.slug
+                }))
+            setRelatedProducts(products)
+        } catch (error) {
+            console.error('Error fetching related products:', error)
         }
-
-        // 2. If not enough suggestions, fill with same category (Fall back)
-        if (suggestions.length < 4) {
-            const sameCategoryParams = allProducts.filter(p =>
-                p.categorySlug === currentProduct.categorySlug &&
-                p.id !== currentProduct.id
-            )
-            suggestions = [...suggestions, ...sameCategoryParams]
-        }
-
-        // 3. Randomize and slice to get 4 items
-        return suggestions
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 4)
     }
 
-    const relatedProducts = getRelatedProducts(product)
+    const inWishlist = product ? isInWishlist(product.id) : false
+
+    if (loading) {
+        return (
+            <div className="product-detail-page">
+                <div className="container">
+                    <div className="loading-state">
+                        <div className="spinner"></div>
+                        <p>Loading product...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     if (!product) {
         return (
             <div className="product-detail-page">
                 <div className="container">
-                    <p>Product not found.</p>
-                    <Link to="/products">Back to Products</Link>
+                    <div className="not-found-state">
+                        <h2>Product not found</h2>
+                        <p>The product you're looking for doesn't exist or has been removed.</p>
+                        <Link to="/products" className="btn btn-primary">Back to Products</Link>
+                    </div>
                 </div>
             </div>
         )
@@ -111,8 +152,12 @@ const ProductDetailPage = () => {
                     <ChevronRight size={16} />
                     <Link to="/products">Products</Link>
                     <ChevronRight size={16} />
-                    <Link to={`/products/${product.categorySlug}`}>{product.category}</Link>
-                    <ChevronRight size={16} />
+                    {product.category && (
+                        <>
+                            <Link to={`/products/${product.categorySlug}`}>{product.category}</Link>
+                            <ChevronRight size={16} />
+                        </>
+                    )}
                     <span>{product.name}</span>
                 </nav>
 
@@ -127,22 +172,24 @@ const ProductDetailPage = () => {
                                 <span className="badge badge-primary discount-badge">-{product.discount}%</span>
                             )}
                         </div>
-                        <div className="thumbnail-list">
-                            {product.images.map((img, index) => (
-                                <button
-                                    key={index}
-                                    className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
-                                    onClick={() => setSelectedImage(index)}
-                                >
-                                    <img src={img} alt={`${product.name} ${index + 1}`} />
-                                </button>
-                            ))}
-                        </div>
+                        {product.images.length > 1 && (
+                            <div className="thumbnail-list">
+                                {product.images.map((img, index) => (
+                                    <button
+                                        key={index}
+                                        className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
+                                        onClick={() => setSelectedImage(index)}
+                                    >
+                                        <img src={img} alt={`${product.name} ${index + 1}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Product Info */}
                     <div className="product-info">
-                        <div className="product-brand">{product.brand}</div>
+                        {product.brand && <div className="product-brand">{product.brand}</div>}
                         <h1 className="product-title">{product.name}</h1>
 
                         {/* Rating */}
@@ -164,7 +211,7 @@ const ProductDetailPage = () => {
                         {/* Price */}
                         <div className="product-price">
                             <span className="current-price">৳{product.price.toLocaleString()}</span>
-                            {product.originalPrice > product.price && (
+                            {product.originalPrice && product.originalPrice > product.price && (
                                 <>
                                     <span className="original-price">৳{product.originalPrice.toLocaleString()}</span>
                                     <span className="discount-text">Save ৳{(product.originalPrice - product.price).toLocaleString()}</span>
@@ -175,33 +222,35 @@ const ProductDetailPage = () => {
                         {/* Stock Status */}
                         <div className="stock-status">
                             {product.stock > 0 ? (
-                                <span className="in-stock">✓ In Stock ({product.stock} available)</span>
+                                <span className="in-stock">In Stock ({product.stock} available)</span>
                             ) : (
-                                <span className="out-of-stock">✗ Out of Stock</span>
+                                <span className="out-of-stock">Out of Stock</span>
                             )}
                         </div>
 
                         {/* Quantity Selector */}
-                        <div className="quantity-section">
-                            <label>Quantity:</label>
-                            <div className="quantity-selector">
-                                <button
-                                    className="quantity-btn"
-                                    onClick={() => handleQuantityChange(-1)}
-                                    disabled={quantity <= 1}
-                                >
-                                    <Minus size={18} />
-                                </button>
-                                <span className="quantity-value">{quantity}</span>
-                                <button
-                                    className="quantity-btn"
-                                    onClick={() => handleQuantityChange(1)}
-                                    disabled={quantity >= product.stock}
-                                >
-                                    <Plus size={18} />
-                                </button>
+                        {product.stock > 0 && (
+                            <div className="quantity-section">
+                                <label>Quantity:</label>
+                                <div className="quantity-selector">
+                                    <button
+                                        className="quantity-btn"
+                                        onClick={() => handleQuantityChange(-1)}
+                                        disabled={quantity <= 1}
+                                    >
+                                        <Minus size={18} />
+                                    </button>
+                                    <span className="quantity-value">{quantity}</span>
+                                    <button
+                                        className="quantity-btn"
+                                        onClick={() => handleQuantityChange(1)}
+                                        disabled={quantity >= product.stock}
+                                    >
+                                        <Plus size={18} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Actions */}
                         <div className="product-actions">
@@ -269,27 +318,35 @@ const ProductDetailPage = () => {
                         {activeTab === 'description' && (
                             <div className="description-content">
                                 <p>{product.description}</p>
-                                <h4>Key Features:</h4>
-                                <ul>
-                                    {product.features.map((feature, index) => (
-                                        <li key={index}>{feature}</li>
-                                    ))}
-                                </ul>
+                                {product.features && product.features.length > 0 && (
+                                    <>
+                                        <h4>Key Features:</h4>
+                                        <ul>
+                                            {product.features.map((feature, index) => (
+                                                <li key={index}>{feature}</li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )}
                             </div>
                         )}
 
                         {activeTab === 'specifications' && (
                             <div className="specifications-content">
-                                <table>
-                                    <tbody>
-                                        {Object.entries(product.specifications).map(([key, value]) => (
-                                            <tr key={key}>
-                                                <th>{key}</th>
-                                                <td>{value}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                {product.specifications && Object.keys(product.specifications).length > 0 ? (
+                                    <table>
+                                        <tbody>
+                                            {Object.entries(product.specifications).map(([key, value]) => (
+                                                <tr key={key}>
+                                                    <th>{key}</th>
+                                                    <td>{value}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-secondary">No specifications available.</p>
+                                )}
                             </div>
                         )}
 
@@ -302,14 +359,16 @@ const ProductDetailPage = () => {
                 </div>
 
                 {/* Related Products */}
-                <section className="related-products section">
-                    <h2 className="section-title">You May Also Like</h2>
-                    <div className="products-grid">
-                        {relatedProducts.map((prod) => (
-                            <ProductCard key={prod.id} product={prod} />
-                        ))}
-                    </div>
-                </section>
+                {relatedProducts.length > 0 && (
+                    <section className="related-products section">
+                        <h2 className="section-title">You May Also Like</h2>
+                        <div className="products-grid">
+                            {relatedProducts.map((prod) => (
+                                <ProductCard key={prod.id} product={prod} />
+                            ))}
+                        </div>
+                    </section>
+                )}
             </div>
         </div>
     )

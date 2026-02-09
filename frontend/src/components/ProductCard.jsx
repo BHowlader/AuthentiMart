@@ -20,6 +20,7 @@ const ProductCard = ({ product }) => {
         stock,
         isNew,
         discount,
+        slug,
     } = product
 
     const inWishlist = isInWishlist(id)
@@ -37,7 +38,7 @@ const ProductCard = ({ product }) => {
     }
 
     return (
-        <Link to={`/product/${id}`} className="product-card">
+        <Link to={`/product/${slug}`} className="product-card">
             <div className="product-card-image">
                 <img src={image} alt={name} loading="lazy" />
 

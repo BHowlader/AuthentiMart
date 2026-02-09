@@ -10,8 +10,8 @@ import math
 
 from app.database import get_db
 from app.models.models import (
-    User, Product, Order, OrderItem, Category, 
-    ProductImage, UserRole, OrderStatus, PaymentStatus
+    User, Product, Order, OrderItem, Category,
+    ProductImage, UserRole, OrderStatus, PaymentStatus, Address
 )
 from app.utils.auth import get_current_user, get_current_admin
 
@@ -78,6 +78,18 @@ class RecentOrder(BaseModel):
     total: float
     status: str
     payment_status: str
+    created_at: datetime
+
+class CustomerInfo(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: Optional[str]
+    picture: Optional[str]
+    is_active: bool
+    total_orders: int
+    total_spent: float
+    last_order_date: Optional[datetime]
     created_at: datetime
 
 class ProductCreate(BaseModel):
@@ -1158,4 +1170,269 @@ async def get_customer_analytics(
             for c in top_customers
         ],
         "growth_trend": list(reversed(growth))
+    }
+
+# ============ Customer Management ============
+
+@router.get("/customers")
+async def get_all_customers(
+    page: int = 1,
+    limit: int = 20,
+    search: Optional[str] = None,
+    status: Optional[str] = None,  # active, inactive
+    sort_by: Optional[str] = "created_at",  # created_at, total_spent, total_orders
+    sort_order: Optional[str] = "desc",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get all customers with their order statistics"""
+
+    # Base query for users with role USER
+    query = db.query(User).filter(User.role == UserRole.USER)
+
+    # Apply search filter
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            (User.name.ilike(search_pattern)) |
+            (User.email.ilike(search_pattern)) |
+            (User.phone.ilike(search_pattern))
+        )
+
+    # Apply status filter
+    if status == "active":
+        query = query.filter(User.is_active == True)
+    elif status == "inactive":
+        query = query.filter(User.is_active == False)
+
+    # Get total count before pagination
+    total = query.count()
+
+    # Apply sorting
+    if sort_by == "created_at":
+        order_col = User.created_at
+    else:
+        order_col = User.created_at  # Default, actual sorting by stats done below
+
+    if sort_order == "desc":
+        query = query.order_by(desc(order_col))
+    else:
+        query = query.order_by(order_col)
+
+    # Apply pagination
+    customers = query.offset((page - 1) * limit).limit(limit).all()
+
+    # Get order statistics for each customer
+    result = []
+    for customer in customers:
+        # Get total orders (all orders regardless of payment status)
+        total_orders = db.query(func.count(Order.id)).filter(
+            Order.user_id == customer.id
+        ).scalar() or 0
+
+        # Get total spent (only completed payments)
+        total_spent = db.query(func.coalesce(func.sum(Order.total), 0)).filter(
+            and_(
+                Order.user_id == customer.id,
+                Order.payment_status == PaymentStatus.COMPLETED
+            )
+        ).scalar() or 0
+
+        # Get last order date
+        last_order = db.query(Order.created_at).filter(
+            Order.user_id == customer.id
+        ).order_by(desc(Order.created_at)).first()
+
+        result.append({
+            "id": customer.id,
+            "name": customer.name,
+            "email": customer.email,
+            "phone": customer.phone,
+            "picture": customer.picture,
+            "is_active": customer.is_active,
+            "total_orders": total_orders,
+            "total_spent": round(total_spent, 2),
+            "last_order_date": last_order[0] if last_order else None,
+            "created_at": customer.created_at
+        })
+
+    # Sort by total_spent or total_orders if requested
+    if sort_by in ["total_spent", "total_orders"]:
+        result = sorted(
+            result,
+            key=lambda x: x[sort_by],
+            reverse=(sort_order == "desc")
+        )
+
+    return {
+        "customers": result,
+        "total": total,
+        "page": page,
+        "pages": math.ceil(total / limit)
+    }
+
+@router.get("/customers/{customer_id}")
+async def get_customer_detail(
+    customer_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get detailed customer information"""
+
+    customer = db.query(User).filter(
+        and_(User.id == customer_id, User.role == UserRole.USER)
+    ).first()
+
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Get total orders (all orders)
+    total_orders = db.query(func.count(Order.id)).filter(
+        Order.user_id == customer.id
+    ).scalar() or 0
+
+    # Get total spent (only completed payments)
+    total_spent = db.query(func.coalesce(func.sum(Order.total), 0)).filter(
+        and_(
+            Order.user_id == customer.id,
+            Order.payment_status == PaymentStatus.COMPLETED
+        )
+    ).scalar() or 0
+
+    # Get recent orders
+    recent_orders = db.query(Order).filter(
+        Order.user_id == customer.id
+    ).order_by(desc(Order.created_at)).limit(5).all()
+
+    # Get addresses
+    addresses = db.query(Address).filter(Address.user_id == customer.id).all()
+
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "email": customer.email,
+        "phone": customer.phone,
+        "picture": customer.picture,
+        "is_active": customer.is_active,
+        "created_at": customer.created_at,
+        "total_orders": total_orders,
+        "total_spent": round(total_spent, 2),
+        "addresses": [
+            {
+                "id": addr.id,
+                "name": addr.name,
+                "phone": addr.phone,
+                "address": addr.address,
+                "area": addr.area,
+                "city": addr.city,
+                "is_default": addr.is_default
+            }
+            for addr in addresses
+        ],
+        "recent_orders": [
+            {
+                "id": order.id,
+                "order_number": order.order_number,
+                "total": order.total,
+                "status": order.status,
+                "payment_status": order.payment_status,
+                "created_at": order.created_at
+            }
+            for order in recent_orders
+        ]
+    }
+
+@router.get("/customers/{customer_id}/orders")
+async def get_customer_orders(
+    customer_id: int,
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get all orders for a specific customer"""
+
+    customer = db.query(User).filter(
+        and_(User.id == customer_id, User.role == UserRole.USER)
+    ).first()
+
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    # Get orders with pagination
+    query = db.query(Order).filter(Order.user_id == customer_id)
+    total = query.count()
+    orders = query.order_by(desc(Order.created_at)).offset((page - 1) * limit).limit(limit).all()
+
+    result = []
+    for order in orders:
+        # Get order items
+        items = db.query(OrderItem).filter(OrderItem.order_id == order.id).all()
+
+        order_items = []
+        for item in items:
+            product = db.query(Product).filter(Product.id == item.product_id).first()
+            image = db.query(ProductImage).filter(
+                and_(ProductImage.product_id == item.product_id, ProductImage.is_primary == True)
+            ).first() if product else None
+
+            order_items.append({
+                "id": item.id,
+                "product_id": item.product_id,
+                "product_name": product.name if product else "Unknown Product",
+                "product_image": image.url if image else None,
+                "quantity": item.quantity,
+                "price": item.price,
+                "total": item.total
+            })
+
+        result.append({
+            "id": order.id,
+            "order_number": order.order_number,
+            "status": order.status,
+            "payment_status": order.payment_status,
+            "payment_method": order.payment_method,
+            "subtotal": order.subtotal,
+            "shipping_cost": order.shipping_cost,
+            "total": order.total,
+            "shipping_name": order.shipping_name,
+            "shipping_phone": order.shipping_phone,
+            "shipping_address": order.shipping_address,
+            "shipping_area": order.shipping_area,
+            "shipping_city": order.shipping_city,
+            "notes": order.notes,
+            "created_at": order.created_at,
+            "items": order_items
+        })
+
+    return {
+        "orders": result,
+        "total": total,
+        "page": page,
+        "pages": math.ceil(total / limit)
+    }
+
+
+@router.put("/customers/{customer_id}/status")
+async def update_customer_status(
+    customer_id: int,
+    is_active: bool,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Activate or deactivate a customer account"""
+
+    customer = db.query(User).filter(
+        and_(User.id == customer_id, User.role == UserRole.USER)
+    ).first()
+
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    customer.is_active = is_active
+    db.commit()
+
+    return {
+        "message": f"Customer {'activated' if is_active else 'deactivated'} successfully",
+        "is_active": is_active
     }

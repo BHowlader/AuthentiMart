@@ -57,6 +57,7 @@ class User(Base):
     # orders_to_deliver = relationship("Order", back_populates="delivery_man", foreign_keys="Order.delivery_man_id")
     reviews = relationship("Review", back_populates="user")
     wishlist_items = relationship("WishlistItem", back_populates="user")
+    cart_items = relationship("CartItem", back_populates="user", cascade="all, delete-orphan")
 
 # Address Model
 class Address(Base):
@@ -118,6 +119,7 @@ class Product(Base):
     reviews = relationship("Review", back_populates="product")
     order_items = relationship("OrderItem", back_populates="product")
     wishlist_items = relationship("WishlistItem", back_populates="product")
+    cart_items = relationship("CartItem", back_populates="product")
 
     @property
     def image(self):
@@ -127,6 +129,11 @@ class Product(Base):
                     return img.url
             return self.images[0].url
         return None
+
+    @property
+    def category_name(self):
+        """Return category name as string for serialization"""
+        return self.category.name if self.category else None
 
 # Product Image Model
 class ProductImage(Base):
@@ -243,3 +250,17 @@ class WishlistItem(Base):
     
     user = relationship("User", back_populates="wishlist_items")
     product = relationship("Product", back_populates="wishlist_items")
+
+# Cart Item Model
+class CartItem(Base):
+    __tablename__ = "cart_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Integer, default=1, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user = relationship("User", back_populates="cart_items")
+    product = relationship("Product", back_populates="cart_items")

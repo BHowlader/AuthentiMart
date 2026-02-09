@@ -6,6 +6,8 @@ import './CartPage.css'
 const CartPage = () => {
     const {
         items,
+        loading,
+        initialized,
         updateQuantity,
         removeFromCart,
         clearCart,
@@ -13,6 +15,19 @@ const CartPage = () => {
         getShipping,
         getTotal
     } = useCart()
+
+    if (!initialized || loading) {
+        return (
+            <div className="cart-page">
+                <div className="container">
+                    <div className="empty-cart">
+                        <div className="spinner"></div>
+                        <p>Loading cart...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     if (items.length === 0) {
         return (
@@ -54,11 +69,11 @@ const CartPage = () => {
                         {items.map((item) => (
                             <div key={item.id} className="cart-item glass-card">
                                 <div className="cart-item-product">
-                                    <Link to={`/product/${item.id}`} className="cart-item-image">
+                                    <Link to={`/product/${item.slug}`} className="cart-item-image">
                                         <img src={item.image} alt={item.name} />
                                     </Link>
                                     <div className="cart-item-details">
-                                        <Link to={`/product/${item.id}`} className="cart-item-name">
+                                        <Link to={`/product/${item.slug}`} className="cart-item-name">
                                             {item.name}
                                         </Link>
                                         <span className="cart-item-category">{item.category}</span>

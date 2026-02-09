@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useToast } from './ToastContext'
+import { cartAPI } from '../utils/api'
 
 const CartContext = createContext(null)
 
@@ -14,75 +15,167 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(false)
+    const [initialized, setInitialized] = useState(false)
     const { showToast } = useToast()
 
-    // Load cart from localStorage on mount
-    useEffect(() => {
-        const savedCart = localStorage.getItem('cart')
-        if (savedCart) {
-            setItems(JSON.parse(savedCart))
+    // Check if user is authenticated
+    const isAuthenticated = () => {
+        return !!localStorage.getItem('token')
+    }
+
+    // Fetch cart from API
+    const fetchCart = useCallback(async () => {
+        if (!isAuthenticated()) {
+            setItems([])
+            setInitialized(true)
+            return
+        }
+
+        try {
+            setLoading(true)
+            const response = await cartAPI.get()
+            const cartData = response.data
+
+            // Map API response to frontend format
+            const mappedItems = cartData.items.map(item => ({
+                id: item.product.id,
+                cartItemId: item.id,
+                name: item.product.name,
+                slug: item.product.slug,
+                price: item.product.price,
+                originalPrice: item.product.original_price,
+                image: item.product.image || '/images/placeholder.png',
+                stock: item.product.stock,
+                quantity: item.quantity,
+                discount: item.product.discount || 0
+            }))
+
+            setItems(mappedItems)
+        } catch (error) {
+            console.error('Error fetching cart:', error)
+            // If unauthorized, clear items
+            if (error.response?.status === 401) {
+                setItems([])
+            }
+        } finally {
+            setLoading(false)
+            setInitialized(true)
         }
     }, [])
 
-    // Save cart to localStorage whenever it changes
+    // Fetch cart on mount and when token changes
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(items))
-    }, [items])
+        fetchCart()
+    }, [fetchCart])
 
-    const addToCart = (product, quantity = 1) => {
-        setItems((prevItems) => {
-            const existingItem = prevItems.find((item) => item.id === product.id)
-
-            if (existingItem) {
-                const newQuantity = existingItem.quantity + quantity
-                if (newQuantity > product.stock) {
-                    showToast('Not enough stock available', 'error')
-                    return prevItems
-                }
-                showToast('Cart updated!', 'success')
-                return prevItems.map((item) =>
-                    item.id === product.id
-                        ? { ...item, quantity: newQuantity }
-                        : item
-                )
+    // Listen for storage changes (login/logout)
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (e.key === 'token') {
+                fetchCart()
             }
+        }
 
-            if (quantity > product.stock) {
-                showToast('Not enough stock available', 'error')
-                return prevItems
-            }
+        window.addEventListener('storage', handleStorageChange)
 
+        // Also listen for custom login event
+        const handleLogin = () => {
+            fetchCart()
+        }
+        window.addEventListener('userLogin', handleLogin)
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange)
+            window.removeEventListener('userLogin', handleLogin)
+        }
+    }, [fetchCart])
+
+    const addToCart = async (product, quantity = 1) => {
+        if (!isAuthenticated()) {
+            showToast('Please login to add items to cart', 'error')
+            return
+        }
+
+        try {
+            setLoading(true)
+            await cartAPI.add(product.id, quantity)
+            await fetchCart()
             showToast('Added to cart!', 'success')
-            return [...prevItems, { ...product, quantity }]
-        })
+        } catch (error) {
+            console.error('Error adding to cart:', error)
+            const message = error.response?.data?.detail || 'Failed to add to cart'
+            showToast(message, 'error')
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const removeFromCart = (productId) => {
-        setItems((prevItems) => prevItems.filter((item) => item.id !== productId))
-        showToast('Removed from cart', 'success')
+    const removeFromCart = async (productId) => {
+        if (!isAuthenticated()) {
+            return
+        }
+
+        // Find the cart item ID
+        const item = items.find(item => item.id === productId)
+        if (!item) return
+
+        try {
+            setLoading(true)
+            await cartAPI.remove(item.cartItemId)
+            await fetchCart()
+            showToast('Removed from cart', 'success')
+        } catch (error) {
+            console.error('Error removing from cart:', error)
+            showToast('Failed to remove item', 'error')
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const updateQuantity = (productId, quantity) => {
+    const updateQuantity = async (productId, quantity) => {
+        if (!isAuthenticated()) {
+            return
+        }
+
         if (quantity < 1) {
             removeFromCart(productId)
             return
         }
 
-        setItems((prevItems) => {
-            const item = prevItems.find((item) => item.id === productId)
-            if (item && quantity > item.stock) {
-                showToast('Not enough stock available', 'error')
-                return prevItems
-            }
-            return prevItems.map((item) =>
-                item.id === productId ? { ...item, quantity } : item
-            )
-        })
+        // Find the cart item ID
+        const item = items.find(item => item.id === productId)
+        if (!item) return
+
+        try {
+            setLoading(true)
+            await cartAPI.update(item.cartItemId, quantity)
+            await fetchCart()
+        } catch (error) {
+            console.error('Error updating cart:', error)
+            const message = error.response?.data?.detail || 'Failed to update quantity'
+            showToast(message, 'error')
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const clearCart = () => {
-        setItems([])
-        showToast('Cart cleared', 'success')
+    const clearCart = async () => {
+        if (!isAuthenticated()) {
+            setItems([])
+            return
+        }
+
+        try {
+            setLoading(true)
+            await cartAPI.clear()
+            setItems([])
+            showToast('Cart cleared', 'success')
+        } catch (error) {
+            console.error('Error clearing cart:', error)
+            showToast('Failed to clear cart', 'error')
+        } finally {
+            setLoading(false)
+        }
     }
 
     const getItemCount = () => {
@@ -107,6 +200,7 @@ export const CartProvider = ({ children }) => {
     const value = {
         items,
         loading,
+        initialized,
         addToCart,
         removeFromCart,
         updateQuantity,
@@ -115,6 +209,7 @@ export const CartProvider = ({ children }) => {
         getSubtotal,
         getTotal,
         getShipping,
+        refreshCart: fetchCart,
     }
 
     return (

@@ -5,12 +5,25 @@ import { useCart } from '../context/CartContext'
 import './WishlistPage.css'
 
 const WishlistPage = () => {
-    const { items, removeFromWishlist, clearWishlist } = useWishlist()
+    const { items, loading, initialized, removeFromWishlist, clearWishlist } = useWishlist()
     const { addToCart } = useCart()
 
     const handleAddToCart = (product) => {
         addToCart(product, 1)
         removeFromWishlist(product.id)
+    }
+
+    if (!initialized || loading) {
+        return (
+            <div className="wishlist-page">
+                <div className="container">
+                    <div className="empty-wishlist">
+                        <div className="spinner"></div>
+                        <p>Loading wishlist...</p>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     if (items.length === 0) {
@@ -47,7 +60,7 @@ const WishlistPage = () => {
                 <div className="wishlist-grid">
                     {items.map((item) => (
                         <div key={item.id} className="wishlist-item glass-card">
-                            <Link to={`/product/${item.id}`} className="wishlist-image">
+                            <Link to={`/product/${item.slug}`} className="wishlist-image">
                                 <img src={item.image} alt={item.name} />
                                 {item.discount > 0 && (
                                     <span className="badge badge-primary">-{item.discount}%</span>
@@ -56,7 +69,7 @@ const WishlistPage = () => {
 
                             <div className="wishlist-content">
                                 <span className="wishlist-category">{item.category}</span>
-                                <Link to={`/product/${item.id}`} className="wishlist-name">
+                                <Link to={`/product/${item.slug}`} className="wishlist-name">
                                     {item.name}
                                 </Link>
                                 <div className="wishlist-price">

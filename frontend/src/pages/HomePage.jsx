@@ -9,144 +9,35 @@ import {
     Gift
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
-import allProducts from '../data/products'
+import { productsAPI, categoriesAPI } from '../utils/api'
 import './HomePage.css'
 
-const sampleProducts = allProducts.slice(0, 8)
-
-const categories = [
-    {
-        id: 1,
-        name: "Lip Products",
-        slug: "lip-products",
-        image: "/images/category-lip-products.jpg",
-        count: 5,
-        icon: "💄"
-    },
-    {
-        id: 2,
-        name: "Eye Products",
-        slug: "eye-products",
-        image: "/images/category-eye-products.jpg",
-        count: 5,
-        icon: "👁️"
-    },
-    {
-        id: 3,
-        name: "Face Products",
-        slug: "face-products",
-        image: "/images/category-face-products.jpg",
-        count: 5,
-        icon: "✨"
-    },
-    {
-        id: 4,
-        name: "Skincare",
-        slug: "skincare",
-        image: "/images/category-skincare.jpg",
-        count: 8,
-        icon: "🧴"
-    },
-    {
-        id: 5,
-        name: "Men's Grooming",
-        slug: "mens-grooming",
-        image: "/images/category-mens-grooming.jpg",
-        count: 5,
-        icon: "🧔"
-    },
-    {
-        id: 6,
-        name: "Tech Accessories",
-        slug: "tech-accessories",
-        image: "/images/category-tech-accessories.jpg",
-        count: 8,
-        icon: "🎧"
-    },
-    {
-        id: 7,
-        name: "Home Appliances",
-        slug: "home-appliances",
-        image: "/images/category-home-appliances.jpg",
-        count: 4,
-        icon: "🏠"
-    },
-    {
-        id: 8,
-        name: "Home Decor",
-        slug: "home-decor",
-        image: "/images/category-home-decor.jpg",
-        count: 4,
-        icon: "🪴"
-    },
-    {
-        id: 9,
-        name: "Gaming Gear",
-        slug: "gaming",
-        image: "/images/category-gaming.jpg",
-        count: 3,
-        icon: "🎮"
-    },
-    {
-        id: 10,
-        name: "Beauty Tools",
-        slug: "beauty-tools",
-        image: "/images/category-beauty-tools.jpg",
-        count: 3,
-        icon: "🖌️"
-    },
-    {
-        id: 11,
-        name: "Ladies Fashion",
-        slug: "ladies-fashion",
-        image: "/images/category-ladies-fashion.jpg",
-        count: 5,
-        icon: "👜"
-    },
-    {
-        id: 12,
-        name: "Baby & Kids",
-        slug: "baby-kids",
-        image: "/images/category-baby-kids.jpg",
-        count: 5,
-        icon: "👶"
-    },
-    {
-        id: 13,
-        name: "Travel & Luggage",
-        slug: "travel-luggage",
-        image: "/images/category-travel-luggage.jpg",
-        count: 5,
-        icon: "🧳"
-    },
-    {
-        id: 14,
-        name: "Toys & Collectibles",
-        slug: "toys-collectibles",
-        image: "/images/category-toys-collectibles.jpg",
-        count: 5,
-        icon: "🧸"
-    },
-    {
-        id: 15,
-        name: "Smart Home",
-        slug: "smart-home",
-        image: "/images/category-smart-home.jpg",
-        count: 5,
-        icon: "📷"
-    },
-    {
-        id: 16,
-        name: "Gift Bundles",
-        slug: "bundles",
-        image: "/images/category-bundles.jpg",
-        count: 12,
-        icon: "🎁"
-    }
-]
+// Category icons mapping (fallback when not from API)
+const categoryIcons = {
+    'lip-products': '💄',
+    'eye-products': '👁️',
+    'face-products': '✨',
+    'skincare': '🧴',
+    'mens-grooming': '🧔',
+    'tech-accessories': '🎧',
+    'home-appliances': '🏠',
+    'home-decor': '🪴',
+    'gaming': '🎮',
+    'beauty-tools': '🖌️',
+    'ladies-fashion': '👜',
+    'baby-kids': '👶',
+    'travel-luggage': '🧳',
+    'toys-collectibles': '🧸',
+    'smart-home': '📷',
+    'bundles': '🎁'
+}
 
 const HomePage = () => {
     const [currentSlide, setCurrentSlide] = useState(0)
+    const [categories, setCategories] = useState([])
+    const [newArrivals, setNewArrivals] = useState([])
+    const [bestSellers, setBestSellers] = useState([])
+    const [loading, setLoading] = useState(true)
 
     const heroSlides = [
         {
@@ -271,6 +162,61 @@ const HomePage = () => {
             secondaryAccent: "#4a0c08"
         }
     ]
+
+    // Fetch categories and products
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true)
+
+                // Fetch categories
+                const categoriesRes = await categoriesAPI.getAll()
+                const mappedCategories = (categoriesRes.data || []).map(cat => ({
+                    id: cat.id,
+                    name: cat.name,
+                    slug: cat.slug,
+                    image: cat.image || `/images/category-${cat.slug}.jpg`,
+                    count: cat.product_count || 0,
+                    icon: categoryIcons[cat.slug] || '📦'
+                }))
+                setCategories(mappedCategories)
+
+                // Fetch products for new arrivals and best sellers
+                const productsRes = await productsAPI.getAll({ page_size: 20 })
+                const allProducts = (productsRes.data.items || productsRes.data || []).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalPrice: p.original_price,
+                    image: p.image || (p.images && p.images[0]?.url) || '/images/placeholder.png',
+                    category: p.category || '',
+                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
+                    brand: p.brand || '',
+                    rating: p.rating || 0,
+                    reviewCount: p.review_count || 0,
+                    stock: p.stock || 0,
+                    isNew: p.is_new || false,
+                    discount: p.discount || 0,
+                    slug: p.slug
+                }))
+
+                // Filter new arrivals
+                const newProducts = allProducts.filter(p => p.isNew).slice(0, 4)
+                setNewArrivals(newProducts.length > 0 ? newProducts : allProducts.slice(0, 4))
+
+                // Best sellers (by rating or just first 4)
+                const bestProducts = [...allProducts].sort((a, b) => b.rating - a.rating).slice(0, 4)
+                setBestSellers(bestProducts)
+
+            } catch (error) {
+                console.error('Error fetching data:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchData()
+    }, [])
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -447,16 +393,22 @@ const HomePage = () => {
                             View All <ArrowRight size={18} />
                         </Link>
                     </div>
-                    <div className="products-grid">
-                        {sampleProducts.filter(p => p.isNew).map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="loading-state">
+                            <div className="spinner"></div>
+                        </div>
+                    ) : (
+                        <div className="products-grid">
+                            {newArrivals.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </section >
+            </section>
 
             {/* Best Sellers Section */}
-            < section className="section" >
+            <section className="section">
                 <div className="container">
                     <div className="section-header">
                         <div>
@@ -470,16 +422,22 @@ const HomePage = () => {
                             View All <ArrowRight size={18} />
                         </Link>
                     </div>
-                    <div className="products-grid">
-                        {sampleProducts.slice(0, 4).map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="loading-state">
+                            <div className="spinner"></div>
+                        </div>
+                    ) : (
+                        <div className="products-grid">
+                            {bestSellers.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </section >
+            </section>
 
             {/* Features Section */}
-            < section className="section features-section" >
+            <section className="section features-section">
                 <div className="container">
                     <div className="features-content">
                         <div className="features-text">

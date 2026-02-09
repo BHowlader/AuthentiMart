@@ -109,8 +109,8 @@ async def create_order(
     order = Order(
         order_number=generate_order_number(),
         user_id=current_user.id,
-        status=initial_status,
-        payment_status=PaymentStatus.PENDING,
+        status=initial_status.value,
+        payment_status=PaymentStatus.PENDING.value,
         payment_method=order_data.payment_method.value,
         subtotal=subtotal,
         shipping_cost=shipping_cost,

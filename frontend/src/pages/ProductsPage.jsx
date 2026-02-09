@@ -2,28 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Filter, Grid, List, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
-import allProducts from '../data/products'
+import { productsAPI, categoriesAPI } from '../utils/api'
 import './ProductsPage.css'
-
-const categories = [
-    { name: 'All', slug: '' },
-    { name: 'Lip Products', slug: 'lip-products' },
-    { name: 'Eye Products', slug: 'eye-products' },
-    { name: 'Face Products', slug: 'face-products' },
-    { name: 'Skincare', slug: 'skincare' },
-    { name: "Men's Grooming", slug: 'mens-grooming' },
-    { name: 'Tech Accessories', slug: 'tech-accessories' },
-    { name: 'Gaming', slug: 'gaming' },
-    { name: 'Home Appliances', slug: 'home-appliances' },
-    { name: 'Home Decor', slug: 'home-decor' },
-    { name: 'Beauty Tools', slug: 'beauty-tools' },
-    { name: 'Ladies Fashion', slug: 'ladies-fashion' },
-    { name: 'Baby & Kids', slug: 'baby-kids' },
-    { name: 'Travel & Luggage', slug: 'travel-luggage' },
-    { name: 'Toys & Collectibles', slug: 'toys-collectibles' },
-    { name: 'Smart Home', slug: 'smart-home' },
-    { name: 'Gift Bundles', slug: 'bundles' },
-]
 
 const sortOptions = [
     { label: 'Featured', value: 'featured' },
@@ -40,16 +20,110 @@ const ProductsPage = () => {
 
     const [products, setProducts] = useState([])
     const [filteredProducts, setFilteredProducts] = useState([])
+    const [categories, setCategories] = useState([{ name: 'All', slug: '' }])
     const [selectedCategory, setSelectedCategory] = useState(category || '')
     const [sortBy, setSortBy] = useState('featured')
     const [priceRange, setPriceRange] = useState([0, 100000])
     const [showFilters, setShowFilters] = useState(false)
     const [viewMode, setViewMode] = useState('grid')
+    const [loading, setLoading] = useState(true)
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [loadingMore, setLoadingMore] = useState(false)
 
+    // Fetch categories
     useEffect(() => {
-        // Simulate API fetch
-        setProducts(allProducts)
+        const fetchCategories = async () => {
+            try {
+                const response = await categoriesAPI.getAll()
+                const cats = response.data.map(cat => ({
+                    name: cat.name,
+                    slug: cat.slug
+                }))
+                setCategories([{ name: 'All', slug: '' }, ...cats])
+            } catch (error) {
+                console.error('Error fetching categories:', error)
+            }
+        }
+        fetchCategories()
     }, [])
+
+    // Map API products to frontend format
+    const mapProducts = (items) => {
+        return (items || []).map(p => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            originalPrice: p.original_price,
+            image: p.image || (p.images && p.images[0]?.url) || '/images/placeholder.png',
+            category: p.category || '',
+            categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
+            brand: p.brand || '',
+            rating: p.rating || 0,
+            reviewCount: p.review_count || 0,
+            stock: p.stock || 0,
+            isNew: p.is_new || false,
+            discount: p.discount || 0,
+            slug: p.slug,
+            description: p.description || ''
+        }))
+    }
+
+    // Fetch products
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true)
+                setPage(1)
+                const params = { page: 1, page_size: 24 }
+                if (selectedCategory) {
+                    params.category = selectedCategory
+                }
+                if (searchQuery) {
+                    params.search = searchQuery
+                }
+
+                const response = await productsAPI.getAll(params)
+                const data = response.data
+
+                setProducts(mapProducts(data.items || data || []))
+                setTotalPages(data.total_pages || 1)
+            } catch (error) {
+                console.error('Error fetching products:', error)
+                setProducts([])
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchProducts()
+    }, [selectedCategory, searchQuery])
+
+    // Load more products
+    const loadMoreProducts = async () => {
+        if (loadingMore || page >= totalPages) return
+
+        try {
+            setLoadingMore(true)
+            const nextPage = page + 1
+            const params = { page: nextPage, page_size: 24 }
+            if (selectedCategory) {
+                params.category = selectedCategory
+            }
+            if (searchQuery) {
+                params.search = searchQuery
+            }
+
+            const response = await productsAPI.getAll(params)
+            const data = response.data
+
+            setProducts(prev => [...prev, ...mapProducts(data.items || data || [])])
+            setPage(nextPage)
+        } catch (error) {
+            console.error('Error loading more products:', error)
+        } finally {
+            setLoadingMore(false)
+        }
+    }
 
     useEffect(() => {
         if (category) {
@@ -59,19 +133,6 @@ const ProductsPage = () => {
 
     useEffect(() => {
         let filtered = [...products]
-
-        // Filter by category
-        if (selectedCategory) {
-            filtered = filtered.filter(p => p.categorySlug === selectedCategory)
-        }
-
-        // Filter by search query
-        if (searchQuery) {
-            filtered = filtered.filter(p =>
-                p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.brand.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-        }
 
         // Filter by price
         filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
@@ -95,7 +156,7 @@ const ProductsPage = () => {
         }
 
         setFilteredProducts(filtered)
-    }, [products, selectedCategory, searchQuery, priceRange, sortBy])
+    }, [products, priceRange, sortBy])
 
     const getCategoryName = () => {
         if (searchQuery) return `Search: "${searchQuery}"`
@@ -238,12 +299,32 @@ const ProductsPage = () => {
                         )}
 
                         {/* Products Grid */}
-                        {filteredProducts.length > 0 ? (
-                            <div className={`products-grid ${viewMode}`}>
-                                {filteredProducts.map((product) => (
-                                    <ProductCard key={product.id} product={product} />
-                                ))}
+                        {loading ? (
+                            <div className="loading-state">
+                                <div className="spinner"></div>
+                                <p>Loading products...</p>
                             </div>
+                        ) : filteredProducts.length > 0 ? (
+                            <>
+                                <div className={`products-grid ${viewMode}`}>
+                                    {filteredProducts.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                </div>
+
+                                {/* Load More Button */}
+                                {page < totalPages && (
+                                    <div className="load-more-container">
+                                        <button
+                                            className="btn btn-primary load-more-btn"
+                                            onClick={loadMoreProducts}
+                                            disabled={loadingMore}
+                                        >
+                                            {loadingMore ? 'Loading...' : 'Load More'}
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <div className="no-products">
                                 <h3>No products found</h3>

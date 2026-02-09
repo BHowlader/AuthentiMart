@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
     CreditCard,
@@ -8,11 +8,14 @@ import {
     Phone,
     Mail,
     Check,
-    ChevronRight
+    ChevronRight,
+    Star,
+    Plus
 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
+import { addressAPI, ordersAPI } from '../utils/api'
 import './CheckoutPage.css'
 
 const CheckoutPage = () => {
@@ -25,10 +28,16 @@ const CheckoutPage = () => {
     const [paymentMethod, setPaymentMethod] = useState('bkash')
     const [loading, setLoading] = useState(false)
 
+    // Saved addresses
+    const [savedAddresses, setSavedAddresses] = useState([])
+    const [addressesLoading, setAddressesLoading] = useState(true)
+    const [selectedAddressId, setSelectedAddressId] = useState(null)
+    const [useNewAddress, setUseNewAddress] = useState(false)
+
     const [shippingInfo, setShippingInfo] = useState({
         name: user?.name || '',
         email: user?.email || '',
-        phone: '',
+        phone: user?.phone || '',
         address: '',
         city: '',
         area: '',
@@ -41,6 +50,89 @@ const CheckoutPage = () => {
         expiry: '',
         cvv: ''
     })
+
+    // Fetch saved addresses on mount
+    useEffect(() => {
+        fetchAddresses()
+    }, [])
+
+    // Update shipping info when user data changes
+    useEffect(() => {
+        if (user) {
+            setShippingInfo(prev => ({
+                ...prev,
+                name: user.name || prev.name,
+                email: user.email || prev.email,
+                phone: user.phone || prev.phone
+            }))
+        }
+    }, [user])
+
+    // Redirect to cart if empty
+    useEffect(() => {
+        if (items.length === 0) {
+            navigate('/cart')
+        }
+    }, [items, navigate])
+
+    const fetchAddresses = async () => {
+        try {
+            setAddressesLoading(true)
+            const response = await addressAPI.getAll()
+            const addresses = response.data
+            setSavedAddresses(addresses)
+
+            // Auto-select default address if available
+            const defaultAddress = addresses.find(addr => addr.is_default)
+            if (defaultAddress) {
+                setSelectedAddressId(defaultAddress.id)
+                applyAddress(defaultAddress)
+            } else if (addresses.length > 0) {
+                setSelectedAddressId(addresses[0].id)
+                applyAddress(addresses[0])
+            } else {
+                setUseNewAddress(true)
+            }
+        } catch (error) {
+            console.error('Error fetching addresses:', error)
+            setUseNewAddress(true)
+        } finally {
+            setAddressesLoading(false)
+        }
+    }
+
+    const applyAddress = (address) => {
+        setShippingInfo(prev => ({
+            ...prev,
+            // Keep name and phone from user profile, only update address fields
+            address: address.address,
+            city: address.city,
+            area: address.area || ''
+        }))
+    }
+
+    const handleAddressSelect = (addressId) => {
+        setSelectedAddressId(addressId)
+        setUseNewAddress(false)
+        const address = savedAddresses.find(a => a.id === addressId)
+        if (address) {
+            applyAddress(address)
+        }
+    }
+
+    const handleUseNewAddress = () => {
+        setSelectedAddressId(null)
+        setUseNewAddress(true)
+        setShippingInfo({
+            name: user?.name || '',
+            email: user?.email || '',
+            phone: user?.phone || '',
+            address: '',
+            city: '',
+            area: '',
+            notes: shippingInfo.notes
+        })
+    }
 
     const handleShippingChange = (e) => {
         const { name, value } = e.target
@@ -65,20 +157,54 @@ const CheckoutPage = () => {
             return
         }
 
-        // Process payment
+        // Process order
         setLoading(true)
 
-        // Simulate payment processing
-        setTimeout(() => {
-            clearCart()
-            showToast('Order placed successfully!', 'success')
-            navigate('/orders')
+        // Prepare order data
+        const orderData = {
+            items: items.map(item => ({
+                product_id: item.id,
+                quantity: item.quantity
+            })),
+            payment_method: paymentMethod,
+            shipping_name: shippingInfo.name,
+            shipping_phone: shippingInfo.phone,
+            shipping_email: shippingInfo.email || null,
+            shipping_address: shippingInfo.address,
+            shipping_area: shippingInfo.area || null,
+            shipping_city: shippingInfo.city,
+            notes: shippingInfo.notes || null
+        }
+
+        console.log('Submitting order:', orderData)
+        console.log('Cart items:', items)
+
+        try {
+            // Create order via API
+            const response = await ordersAPI.create(orderData)
+
+            if (response.data) {
+                clearCart()
+                showToast('Order placed successfully!', 'success')
+                navigate(`/orders/${response.data.order_number}`)
+            }
+        } catch (error) {
+            console.error('Error creating order:', error)
+            console.error('Order data sent:', orderData)
+            console.error('Error response:', error.response?.data)
+            let errorMessage = 'Failed to place order. Please try again.'
+            if (error.response?.data?.detail) {
+                errorMessage = typeof error.response.data.detail === 'string'
+                    ? error.response.data.detail
+                    : JSON.stringify(error.response.data.detail)
+            }
+            showToast(errorMessage, 'error')
+        } finally {
             setLoading(false)
-        }, 2000)
+        }
     }
 
     if (items.length === 0) {
-        navigate('/cart')
         return null
     }
 
@@ -115,101 +241,164 @@ const CheckoutPage = () => {
                                         Shipping Information
                                     </h2>
 
+                                    {/* Saved Addresses Section */}
+                                    {!addressesLoading && savedAddresses.length > 0 && (
+                                        <div className="saved-addresses-section">
+                                            <h3>Select a saved address</h3>
+                                            <div className="saved-addresses-list">
+                                                {savedAddresses.map(addr => (
+                                                    <label
+                                                        key={addr.id}
+                                                        className={`saved-address-option ${selectedAddressId === addr.id && !useNewAddress ? 'selected' : ''}`}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="savedAddress"
+                                                            checked={selectedAddressId === addr.id && !useNewAddress}
+                                                            onChange={() => handleAddressSelect(addr.id)}
+                                                        />
+                                                        <div className="address-option-content">
+                                                            <div className="address-option-header">
+                                                                <span className="address-option-name">{addr.address}</span>
+                                                                {addr.is_default && (
+                                                                    <span className="default-tag">
+                                                                        <Star size={12} /> Default
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="address-option-text">
+                                                                {addr.area && `${addr.area}, `}{addr.city}
+                                                            </p>
+                                                        </div>
+                                                        <div className="address-option-check">
+                                                            <Check size={18} />
+                                                        </div>
+                                                    </label>
+                                                ))}
+
+                                                {/* New Address Option */}
+                                                <label className={`saved-address-option new-address-option ${useNewAddress ? 'selected' : ''}`}>
+                                                    <input
+                                                        type="radio"
+                                                        name="savedAddress"
+                                                        checked={useNewAddress}
+                                                        onChange={handleUseNewAddress}
+                                                    />
+                                                    <div className="address-option-content">
+                                                        <div className="new-address-label">
+                                                            <Plus size={18} />
+                                                            <span>Use a different address</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="address-option-check">
+                                                        <Check size={18} />
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Address Form - show if using new address or no saved addresses */}
+                                    {(useNewAddress || savedAddresses.length === 0) && (
+                                        <div className="form-grid">
+                                            <div className="input-group">
+                                                <label className="input-label">Full Name *</label>
+                                                <div className="input-wrapper">
+                                                    <User size={18} />
+                                                    <input
+                                                        type="text"
+                                                        name="name"
+                                                        className="input-field"
+                                                        placeholder="Enter your full name"
+                                                        value={shippingInfo.name}
+                                                        onChange={handleShippingChange}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="input-group">
+                                                <label className="input-label">Phone Number *</label>
+                                                <div className="input-wrapper">
+                                                    <Phone size={18} />
+                                                    <input
+                                                        type="tel"
+                                                        name="phone"
+                                                        className="input-field"
+                                                        placeholder="01XXXXXXXXX"
+                                                        value={shippingInfo.phone}
+                                                        onChange={handleShippingChange}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="input-group full-width">
+                                                <label className="input-label">Email</label>
+                                                <div className="input-wrapper">
+                                                    <Mail size={18} />
+                                                    <input
+                                                        type="email"
+                                                        name="email"
+                                                        className="input-field"
+                                                        placeholder="Enter your email"
+                                                        value={shippingInfo.email}
+                                                        onChange={handleShippingChange}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="input-group full-width">
+                                                <label className="input-label">Address *</label>
+                                                <div className="input-wrapper">
+                                                    <MapPin size={18} />
+                                                    <input
+                                                        type="text"
+                                                        name="address"
+                                                        className="input-field"
+                                                        placeholder="House/Flat, Road, Block"
+                                                        value={shippingInfo.address}
+                                                        onChange={handleShippingChange}
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="input-group">
+                                                <label className="input-label">City *</label>
+                                                <select
+                                                    name="city"
+                                                    className="input-field select-field"
+                                                    value={shippingInfo.city}
+                                                    onChange={handleShippingChange}
+                                                    required
+                                                >
+                                                    <option value="">Select City</option>
+                                                    <option value="dhaka">Dhaka</option>
+                                                    <option value="chittagong">Chittagong</option>
+                                                    <option value="sylhet">Sylhet</option>
+                                                    <option value="rajshahi">Rajshahi</option>
+                                                    <option value="khulna">Khulna</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="input-group">
+                                                <label className="input-label">Area</label>
+                                                <input
+                                                    type="text"
+                                                    name="area"
+                                                    className="input-field"
+                                                    placeholder="Enter your area"
+                                                    value={shippingInfo.area}
+                                                    onChange={handleShippingChange}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Order Notes - always visible */}
                                     <div className="form-grid">
-                                        <div className="input-group">
-                                            <label className="input-label">Full Name *</label>
-                                            <div className="input-wrapper">
-                                                <User size={18} />
-                                                <input
-                                                    type="text"
-                                                    name="name"
-                                                    className="input-field"
-                                                    placeholder="Enter your full name"
-                                                    value={shippingInfo.name}
-                                                    onChange={handleShippingChange}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="input-group">
-                                            <label className="input-label">Phone Number *</label>
-                                            <div className="input-wrapper">
-                                                <Phone size={18} />
-                                                <input
-                                                    type="tel"
-                                                    name="phone"
-                                                    className="input-field"
-                                                    placeholder="01XXXXXXXXX"
-                                                    value={shippingInfo.phone}
-                                                    onChange={handleShippingChange}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="input-group full-width">
-                                            <label className="input-label">Email</label>
-                                            <div className="input-wrapper">
-                                                <Mail size={18} />
-                                                <input
-                                                    type="email"
-                                                    name="email"
-                                                    className="input-field"
-                                                    placeholder="Enter your email"
-                                                    value={shippingInfo.email}
-                                                    onChange={handleShippingChange}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="input-group full-width">
-                                            <label className="input-label">Address *</label>
-                                            <div className="input-wrapper">
-                                                <MapPin size={18} />
-                                                <input
-                                                    type="text"
-                                                    name="address"
-                                                    className="input-field"
-                                                    placeholder="House/Flat, Road, Block"
-                                                    value={shippingInfo.address}
-                                                    onChange={handleShippingChange}
-                                                    required
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="input-group">
-                                            <label className="input-label">City *</label>
-                                            <select
-                                                name="city"
-                                                className="input-field select-field"
-                                                value={shippingInfo.city}
-                                                onChange={handleShippingChange}
-                                                required
-                                            >
-                                                <option value="">Select City</option>
-                                                <option value="dhaka">Dhaka</option>
-                                                <option value="chittagong">Chittagong</option>
-                                                <option value="sylhet">Sylhet</option>
-                                                <option value="rajshahi">Rajshahi</option>
-                                                <option value="khulna">Khulna</option>
-                                                <option value="other">Other</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="input-group">
-                                            <label className="input-label">Area</label>
-                                            <input
-                                                type="text"
-                                                name="area"
-                                                className="input-field"
-                                                placeholder="Enter your area"
-                                                value={shippingInfo.area}
-                                                onChange={handleShippingChange}
-                                            />
-                                        </div>
-
                                         <div className="input-group full-width">
                                             <label className="input-label">Order Notes (Optional)</label>
                                             <textarea

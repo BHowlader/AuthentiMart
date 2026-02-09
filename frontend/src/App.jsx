@@ -25,6 +25,7 @@ import AdminProducts from './pages/admin/AdminProducts'
 import ProductForm from './pages/admin/ProductForm'
 import AdminInventory from './pages/admin/AdminInventory'
 import AdminOrders from './pages/admin/AdminOrders'
+import AdminCustomers from './pages/admin/AdminCustomers'
 import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminPredictions from './pages/admin/AdminPredictions'
 import AdminAuthWrapper from './components/AdminAuthWrapper'
@@ -52,7 +53,7 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/products" element={<ProductsPage />} />
                         <Route path="/products/:category" element={<ProductsPage />} />
-                        <Route path="/product/:id" element={<ProductDetailPage />} />
+                        <Route path="/product/:slug" element={<ProductDetailPage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/wishlist" element={<WishlistPage />} />
                         <Route path="/login" element={<LoginPage />} />
@@ -102,6 +103,7 @@ function App() {
                                 <Route path="products/:id/edit" element={<ProductForm />} />
                                 <Route path="inventory" element={<AdminInventory />} />
                                 <Route path="orders" element={<AdminOrders />} />
+                                <Route path="customers" element={<AdminCustomers />} />
                                 <Route path="analytics" element={<AdminAnalytics />} />
                                 <Route path="predictions" element={<AdminPredictions />} />
                             </Route>
