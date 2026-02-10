@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List
 from datetime import datetime, timezone
+import os
+import uuid
 from app.database import get_db
 from app.models import FlashSale, FlashSaleItem, Product
 from app.schemas import (
@@ -14,6 +16,10 @@ from app.schemas import (
     FlashSaleItemResponse,
 )
 from app.utils import get_current_admin
+
+# Configure upload directory
+UPLOAD_DIR = "uploads/flash-sales"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 router = APIRouter(prefix="/flash-sales", tags=["Flash Sales"])
 
@@ -376,3 +382,49 @@ async def remove_flash_sale_item(
     db.commit()
 
     return {"message": "Item removed from flash sale"}
+
+
+@router.post("/{flash_sale_id}/banner")
+async def upload_flash_sale_banner(
+    flash_sale_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+    """Upload a banner image for a flash sale (Admin only)"""
+    flash_sale = db.query(FlashSale).filter(
+        FlashSale.id == flash_sale_id
+    ).first()
+
+    if not flash_sale:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Flash sale not found"
+        )
+
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Allowed: JPEG, PNG, WebP, GIF"
+        )
+
+    # Generate unique filename
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+
+    # Save file
+    with open(filepath, "wb") as f:
+        content = await file.read()
+        f.write(content)
+
+    # Update flash sale with new banner path
+    flash_sale.banner_image = f"/uploads/flash-sales/{filename}"
+    db.commit()
+
+    return {
+        "message": "Banner uploaded successfully",
+        "banner_image": flash_sale.banner_image
+    }

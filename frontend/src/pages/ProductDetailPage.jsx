@@ -2,18 +2,15 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
     Star,
-    Heart,
     ShoppingCart,
     Minus,
     Plus,
     Truck,
     Shield,
     RotateCcw,
-    Share2,
     ChevronRight
 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
-import { useWishlist } from '../context/WishlistContext'
 import ProductCard from '../components/ProductCard'
 import AccessoriesSection from '../components/AccessoriesSection'
 import { productsAPI } from '../utils/api'
@@ -29,7 +26,6 @@ const ProductDetailPage = () => {
     const [activeTab, setActiveTab] = useState('description')
 
     const { addToCart } = useCart()
-    const { toggleWishlist, isInWishlist } = useWishlist()
 
     // Fetch product data
     useEffect(() => {
@@ -103,8 +99,6 @@ const ProductDetailPage = () => {
             console.error('Error fetching related products:', error)
         }
     }
-
-    const inWishlist = product ? isInWishlist(product.id) : false
 
     if (loading) {
         return (

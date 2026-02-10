@@ -39,6 +39,8 @@ const HomePage = () => {
     const [newArrivals, setNewArrivals] = useState([])
     const [bestSellers, setBestSellers] = useState([])
     const [loading, setLoading] = useState(true)
+    const [imagesLoaded, setImagesLoaded] = useState(false)
+    const [progressKey, setProgressKey] = useState(0)
 
     const heroSlides = [
         {
@@ -219,9 +221,33 @@ const HomePage = () => {
         fetchData()
     }, [])
 
+    // Preload hero images
+    useEffect(() => {
+        const imagePromises = heroSlides.map((slide) => {
+            return new Promise((resolve) => {
+                const img = new Image()
+                img.onload = resolve
+                img.onerror = resolve
+                img.src = slide.bgImage
+            })
+        })
+        Promise.all(imagePromises).then(() => setImagesLoaded(true))
+    }, [])
+
+    // Trigger initial animation on mount
+    useEffect(() => {
+        // Small delay to ensure DOM is ready, then trigger animation
+        const timeout = setTimeout(() => {
+            setProgressKey(1)
+        }, 50)
+        return () => clearTimeout(timeout)
+    }, [])
+
+    // Auto-advance slider with progress reset
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+            setProgressKey((prev) => prev + 1) // Reset progress bar animation
         }, 5000)
         return () => clearInterval(timer)
     }, [])
@@ -241,6 +267,11 @@ const HomePage = () => {
         <div className="home-page">
             {/* Hero Section */}
             <section className="hero">
+                {!imagesLoaded && (
+                    <div className="hero-loading">
+                        <div className="hero-loading-spinner"></div>
+                    </div>
+                )}
                 <div className="hero-slider">
                     {heroSlides.map((slide, index) => (
                         <div
@@ -310,22 +341,28 @@ const HomePage = () => {
                             <button
                                 key={index}
                                 className={`hero-dot ${index === currentSlide ? 'active' : ''}`}
-                                onClick={() => setCurrentSlide(index)}
+                                onClick={() => {
+                                    setCurrentSlide(index)
+                                    setProgressKey((prev) => prev + 1)
+                                }}
                                 style={index === currentSlide ? { backgroundColor: slide.accentColor } : {}}
                             />
                         ))}
                     </div>
                     <div className="hero-progress">
                         <div
+                            key={`progress-${currentSlide}-${progressKey}`}
                             className="hero-progress-bar"
                             style={{
-                                backgroundColor: heroSlides[currentSlide].accentColor,
-                                animation: 'progressFill 5s linear infinite'
+                                backgroundColor: heroSlides[currentSlide].accentColor
                             }}
                         ></div>
                     </div>
                 </div>
             </section>
+
+            {/* Flash Sale Section - Top Priority */}
+            <FlashSaleSection />
 
             {/* Categories Section */}
             <section className="section categories-section">
@@ -358,9 +395,6 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
-
-            {/* Flash Sale Section */}
-            <FlashSaleSection />
 
             {/* New Arrivals Section */}
             <section className="section">

@@ -1,0 +1,481 @@
+/* ============================================
+   FLASH SALE PAGE
+   ============================================ */
+
+.flash-sale-page {
+    min-height: 100vh;
+    background: var(--surface-primary);
+    padding-bottom: 80px;
+}
+
+/* Loading State */
+.flash-sale-page-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
+}
+
+.spinner-large {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 65, 54, 0.2);
+    border-top-color: #FF4136;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.flash-sale-page-loading p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Error State */
+.flash-sale-page-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    gap: 16px;
+}
+
+.flash-sale-page-error svg {
+    color: var(--text-tertiary);
+}
+
+.flash-sale-page-error h2 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.flash-sale-page-error p {
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+}
+
+/* Hero Banner */
+.flash-sale-hero {
+    background-color: #FF4136;
+    background-image: linear-gradient(135deg, #FF4136 0%, #FF851B 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 60px 0;
+    position: relative;
+}
+
+.flash-sale-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+.flash-sale-hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+.flash-sale-hero-content {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.flash-sale-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+}
+
+.flash-sale-hero-badge svg {
+    animation: flashIcon 1.5s ease-in-out infinite;
+}
+
+@keyframes flashIcon {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-8deg); }
+    75% { transform: rotate(8deg); }
+}
+
+.flash-sale-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 8px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.flash-sale-hero-desc {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 20px;
+}
+
+/* Countdown timer in hero inherits from FlashSale.css */
+.flash-sale-hero .countdown-timer {
+    background: rgba(0, 0, 0, 0.35);
+    border: none;
+}
+
+/* Stats Bar */
+.flash-sale-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 20px;
+    margin: 30px 0;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.stat-item {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.stat-item strong {
+    color: #FF4136;
+    font-weight: 700;
+}
+
+/* Products Grid */
+.flash-sale-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+/* Product Card */
+.flash-product-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.flash-product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(255, 65, 54, 0.15);
+    border-color: rgba(255, 65, 54, 0.3);
+}
+
+.flash-product-card.sold-out {
+    opacity: 0.7;
+}
+
+.flash-product-card.sold-out:hover {
+    transform: none;
+}
+
+/* Badges */
+.discount-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #FF4136;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    z-index: 5;
+}
+
+.flash-indicator {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #FF4136 0%, #FF851B 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    z-index: 5;
+    animation: flashPulse 2s ease-in-out infinite;
+}
+
+/* Product Image */
+.flash-product-image {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.flash-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.flash-product-card:hover .flash-product-image img {
+    transform: scale(1.08);
+}
+
+.sold-out-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sold-out-overlay span {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+/* Product Content */
+.flash-product-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.flash-product-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.flash-product-brand {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+}
+
+/* Pricing */
+.flash-product-pricing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.flash-current-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #FF4136;
+}
+
+.flash-original-price {
+    font-size: 0.95rem;
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+}
+
+/* Stock Progress */
+.flash-stock-progress {
+    margin-bottom: 16px;
+}
+
+.progress-track {
+    height: 8px;
+    background: rgba(255, 65, 54, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF4136 0%, #FF851B 100%);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.progress-info {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.progress-info .almost-gone {
+    color: #FF4136;
+    font-weight: 600;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.progress-info .sold-out-text {
+    color: var(--text-tertiary);
+}
+
+/* Add to Cart Button */
+.flash-add-to-cart {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FF4136 0%, #FF851B 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: auto;
+}
+
+.flash-add-to-cart:hover:not(.disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(255, 65, 54, 0.4);
+}
+
+.flash-add-to-cart.disabled {
+    background: var(--surface-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.spinner-small {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Empty State */
+.flash-sale-empty {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.flash-sale-empty svg {
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+}
+
+.flash-sale-empty h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+}
+
+.flash-sale-empty p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .flash-sale-hero h1 {
+        font-size: 2rem;
+    }
+
+    .flash-sale-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .flash-sale-hero {
+        padding: 40px 0;
+    }
+
+    .flash-sale-hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .flash-sale-hero-desc {
+        font-size: 1rem;
+    }
+
+    .flash-sale-hero-badge {
+        font-size: 0.85rem;
+        padding: 8px 16px;
+    }
+
+    .flash-sale-stats {
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        margin: 20px 0;
+    }
+
+    .flash-sale-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .flash-product-content {
+        padding: 14px;
+    }
+
+    .flash-product-title {
+        font-size: 0.9rem;
+    }
+
+    .flash-current-price {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .flash-sale-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .flash-product-image {
+        aspect-ratio: 4/3;
+    }
+}

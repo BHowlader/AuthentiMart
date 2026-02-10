@@ -39,6 +39,10 @@
     --gradient-secondary: linear-gradient(135deg, #06B6D4 0%, #8B5CF6 100%);
     --gradient-glow: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
     --gradient-dark: linear-gradient(180deg, #0F0F1A 0%, #1A1A2E 100%);
+    --gradient-flash: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 50%, #FFC107 100%);
+    --gradient-flash-urgent: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
+    --gradient-voucher: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --gradient-compare: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
     /* Shadows */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -46,6 +50,8 @@
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
     --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.3);
     --shadow-glow-pink: 0 0 30px rgba(236, 72, 153, 0.3);
+    --shadow-flash: 0 0 40px rgba(255, 107, 107, 0.4);
+    --shadow-voucher: 0 0 30px rgba(56, 239, 125, 0.3);
 
     /* Border Radius */
     --radius-sm: 8px;
@@ -498,6 +504,7 @@ h4 {
     margin-bottom: var(--spacing-sm);
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -1240,6 +1247,194 @@ h4 {
 
 .glow-pink {
     box-shadow: var(--shadow-glow-pink);
+}
+
+.glow-flash {
+    box-shadow: var(--shadow-flash);
+}
+
+.glow-voucher {
+    box-shadow: var(--shadow-voucher);
+}
+
+/* ========================================
+   FLASH SALE & URGENCY ANIMATIONS
+   ======================================== */
+
+/* Urgent Pulse Animation */
+@keyframes urgentPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.4);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 0 0 10px rgba(255, 75, 43, 0);
+    }
+}
+
+.pulse-urgent {
+    animation: urgentPulse 1.5s ease-in-out infinite;
+}
+
+/* Flash Shake Animation */
+@keyframes flashShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.shake-flash {
+    animation: flashShake 0.5s ease-in-out;
+}
+
+/* Countdown Tick Animation */
+@keyframes countdownTick {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.tick-countdown {
+    animation: countdownTick 0.3s ease-out;
+}
+
+/* Gradient Text Flash */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.text-flash-gradient {
+    background: var(--gradient-flash);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 3s ease infinite;
+}
+
+/* Bounce In Animation */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.bounce-in {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Fade Slide Up Animation */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-slide-up {
+    animation: fadeSlideUp 0.5s ease-out forwards;
+}
+
+/* Staggered Animation Delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Progress Bar Animation */
+@keyframes progressFill {
+    from { width: 0%; }
+}
+
+.progress-animate {
+    animation: progressFill 1s ease-out forwards;
+}
+
+/* Shine Effect for Cards */
+@keyframes shine {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+.shine-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.shine-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: shine 2s ease-in-out infinite;
+}
+
+/* Voucher Badge Style */
+.badge-voucher {
+    background: var(--gradient-voucher);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+/* Flash Sale Badge Style */
+.badge-flash {
+    background: var(--gradient-flash);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    animation: urgentPulse 2s ease-in-out infinite;
+}
+
+/* Compare Badge Style */
+.badge-compare {
+    background: var(--gradient-compare);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 /* ========================================

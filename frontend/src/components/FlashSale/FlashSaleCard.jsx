@@ -3,6 +3,17 @@ import { ShoppingCart, Zap } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import './FlashSale.css'
 
+// Get the base URL for uploads
+const API_BASE = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://127.0.0.1:8000'
+
+// Helper to get full image URL
+const getImageUrl = (path) => {
+    if (!path) return '/images/placeholder.png'
+    if (path.startsWith('http')) return path
+    if (path.startsWith('/uploads')) return `${API_BASE}${path}`
+    return path
+}
+
 const FlashSaleCard = ({ item }) => {
     const { addToCart } = useCart()
     const { product, flash_price, flash_stock, sold_count } = item
@@ -38,7 +49,7 @@ const FlashSaleCard = ({ item }) => {
 
             {/* Product Image */}
             <div className="flash-sale-card-image">
-                <img src={product.image || '/images/placeholder.png'} alt={product.name} />
+                <img src={getImageUrl(product.image)} alt={product.name} />
                 {isSoldOut && (
                     <div className="sold-out-overlay">
                         <span>SOLD OUT</span>

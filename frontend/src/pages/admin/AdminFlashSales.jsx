@@ -27,6 +27,9 @@ const AdminFlashSales = () => {
         flash_price: '',
         flash_stock: ''
     })
+    const [bannerFile, setBannerFile] = useState(null)
+    const [bannerPreview, setBannerPreview] = useState(null)
+    const [uploading, setUploading] = useState(false)
 
     useEffect(() => {
         fetchFlashSales()
@@ -66,6 +69,7 @@ const AdminFlashSales = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setUploading(true)
         try {
             const url = editingFlashSale
                 ? `${API_URL}/flash-sales/${editingFlashSale.id}`
@@ -82,6 +86,21 @@ const AdminFlashSales = () => {
             })
 
             if (response.ok) {
+                const result = await response.json()
+                const flashSaleId = editingFlashSale ? editingFlashSale.id : result.id
+
+                // Upload banner if file is selected
+                if (bannerFile && flashSaleId) {
+                    const bannerFormData = new FormData()
+                    bannerFormData.append('file', bannerFile)
+
+                    await fetch(`${API_URL}/flash-sales/${flashSaleId}/banner`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${adminToken}` },
+                        body: bannerFormData
+                    })
+                }
+
                 setShowModal(false)
                 setEditingFlashSale(null)
                 resetForm()
@@ -89,6 +108,8 @@ const AdminFlashSales = () => {
             }
         } catch (error) {
             console.error('Error saving flash sale:', error)
+        } finally {
+            setUploading(false)
         }
     }
 
@@ -177,6 +198,16 @@ const AdminFlashSales = () => {
             banner_image: flashSale.banner_image || '',
             is_active: flashSale.is_active
         })
+        setBannerFile(null)
+        // Set preview from existing banner
+        if (flashSale.banner_image) {
+            const baseUrl = API_URL.replace('/api/v1', '')
+            setBannerPreview(flashSale.banner_image.startsWith('http')
+                ? flashSale.banner_image
+                : `${baseUrl}${flashSale.banner_image}`)
+        } else {
+            setBannerPreview(null)
+        }
         setShowModal(true)
     }
 
@@ -189,6 +220,27 @@ const AdminFlashSales = () => {
             banner_image: '',
             is_active: true
         })
+        setBannerFile(null)
+        setBannerPreview(null)
+    }
+
+    const handleBannerChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setBannerFile(file)
+            // Create preview URL
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setBannerPreview(reader.result)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const removeBanner = () => {
+        setBannerFile(null)
+        setBannerPreview(null)
+        setFormData({ ...formData, banner_image: '' })
     }
 
     const formatDateTimeLocal = (dateString) => {
@@ -333,36 +385,40 @@ const AdminFlashSales = () => {
             {/* Create/Edit Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div className="modal-content wide" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{editingFlashSale ? 'Edit Flash Sale' : 'Create Flash Sale'}</h3>
-                            <button className="close-btn" onClick={() => setShowModal(false)}>x</button>
+                            <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="modal-body">
-                                <div className="form-group">
-                                    <label>Name</label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => {
-                                            setFormData({
-                                                ...formData,
-                                                name: e.target.value,
-                                                slug: !editingFlashSale ? generateSlug(e.target.value) : formData.slug
-                                            })
-                                        }}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Slug</label>
-                                    <input
-                                        type="text"
-                                        value={formData.slug}
-                                        onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                        required
-                                    />
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Name</label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => {
+                                                setFormData({
+                                                    ...formData,
+                                                    name: e.target.value,
+                                                    slug: !editingFlashSale ? generateSlug(e.target.value) : formData.slug
+                                                })
+                                            }}
+                                            placeholder="Summer Flash Sale"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Slug</label>
+                                        <input
+                                            type="text"
+                                            value={formData.slug}
+                                            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                            placeholder="summer-flash-sale"
+                                            required
+                                        />
+                                    </div>
                                 </div>
                                 <div className="form-row">
                                     <div className="form-group">
@@ -385,11 +441,50 @@ const AdminFlashSales = () => {
                                     </div>
                                 </div>
                                 <div className="form-group">
-                                    <label>Banner Image URL</label>
+                                    <label>Banner Image</label>
+                                    <div className="banner-upload-container">
+                                        {bannerPreview ? (
+                                            <div className="banner-preview">
+                                                <img src={bannerPreview} alt="Banner preview" />
+                                                <button
+                                                    type="button"
+                                                    className="remove-banner-btn"
+                                                    onClick={removeBanner}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <label className="banner-upload-zone">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleBannerChange}
+                                                    style={{ display: 'none' }}
+                                                />
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                                    <circle cx="8.5" cy="8.5" r="1.5" />
+                                                    <polyline points="21 15 16 10 5 21" />
+                                                </svg>
+                                                <span>Click to upload banner image</span>
+                                                <span className="upload-hint">Recommended: 1200x400 pixels</span>
+                                            </label>
+                                        )}
+                                    </div>
+                                    <p className="form-helper">Or enter a URL:</p>
                                     <input
                                         type="url"
                                         value={formData.banner_image}
-                                        onChange={(e) => setFormData({ ...formData, banner_image: e.target.value })}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, banner_image: e.target.value })
+                                            if (e.target.value && !bannerFile) {
+                                                setBannerPreview(e.target.value)
+                                            }
+                                        }}
                                         placeholder="https://example.com/banner.jpg"
                                     />
                                 </div>
@@ -408,8 +503,8 @@ const AdminFlashSales = () => {
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn btn-primary">
-                                    {editingFlashSale ? 'Update' : 'Create'}
+                                <button type="submit" className="btn btn-primary" disabled={uploading}>
+                                    {uploading ? 'Saving...' : (editingFlashSale ? 'Update' : 'Create')}
                                 </button>
                             </div>
                         </form>
@@ -423,7 +518,7 @@ const AdminFlashSales = () => {
                     <div className="modal-content wide" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Flash Sale Products - {showItemsModal.name}</h3>
-                            <button className="close-btn" onClick={() => setShowItemsModal(null)}>x</button>
+                            <button className="close-btn" onClick={() => setShowItemsModal(null)}>&times;</button>
                         </div>
                         <div className="modal-body">
                             {/* Add Product Form */}
@@ -520,7 +615,7 @@ const AdminFlashSales = () => {
                     <div className="modal-content delete-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Delete Flash Sale</h3>
-                            <button className="close-btn" onClick={() => setShowDeleteModal(null)}>x</button>
+                            <button className="close-btn" onClick={() => setShowDeleteModal(null)}>&times;</button>
                         </div>
                         <div className="modal-body">
                             <p>Are you sure you want to delete <strong>{showDeleteModal.name}</strong>?</p>

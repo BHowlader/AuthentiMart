@@ -1,11 +1,21 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { authAPI } from '../utils/api'
+import axios from 'axios'
 
 const AdminAuthContext = createContext(null)
 
 // Use separate localStorage keys for admin authentication
 const ADMIN_TOKEN_KEY = 'adminToken'
 const ADMIN_USER_KEY = 'adminUser'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
+
+// Create a dedicated admin API instance that doesn't share state with user API
+const adminApi = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
 
 export const useAdminAuth = () => {
     const context = useContext(AdminAuthContext)
@@ -26,18 +36,13 @@ export const AdminAuthProvider = ({ children }) => {
             if (storedToken) {
                 setAdminToken(storedToken)
                 try {
-                    // Temporarily set the token for this request
-                    const originalToken = localStorage.getItem('token')
-                    localStorage.setItem('token', storedToken)
-
-                    const response = await authAPI.getProfile()
-
-                    // Restore original token
-                    if (originalToken) {
-                        localStorage.setItem('token', originalToken)
-                    } else {
-                        localStorage.removeItem('token')
-                    }
+                    // Use dedicated admin API with explicit token header
+                    // This prevents contamination of the regular user auth
+                    const response = await adminApi.get('/auth/me', {
+                        headers: {
+                            Authorization: `Bearer ${storedToken}`
+                        }
+                    })
 
                     // Verify user is actually an admin
                     if (response.data.role === 'admin') {
@@ -61,7 +66,16 @@ export const AdminAuthProvider = ({ children }) => {
 
     const adminLogin = async (email, password) => {
         try {
-            const response = await authAPI.login({ email, password })
+            // Use dedicated admin API to prevent token contamination with user auth
+            const formData = new URLSearchParams()
+            formData.append('username', email)
+            formData.append('password', password)
+
+            const response = await adminApi.post('/auth/login', formData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            })
             const { token: newToken, user: newUser } = response.data
 
             // Verify user is an admin
@@ -69,7 +83,7 @@ export const AdminAuthProvider = ({ children }) => {
                 return { success: false, error: 'Access denied. Admin credentials required.' }
             }
 
-            // Store in admin-specific keys only
+            // Store in admin-specific keys only - never touch 'token' key
             localStorage.setItem(ADMIN_TOKEN_KEY, newToken)
             localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(newUser))
             setAdminToken(newToken)

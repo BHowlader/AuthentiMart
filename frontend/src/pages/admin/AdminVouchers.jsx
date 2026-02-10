@@ -314,7 +314,7 @@ const AdminVouchers = () => {
                     <div className="modal-content wide" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{editingVoucher ? 'Edit Voucher' : 'Create Voucher'}</h3>
-                            <button className="close-btn" onClick={() => setShowModal(false)}>x</button>
+                            <button className="close-btn" onClick={() => setShowModal(false)}>&times;</button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="modal-body">
@@ -483,7 +483,7 @@ const AdminVouchers = () => {
                     <div className="modal-content delete-modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>Delete Voucher</h3>
-                            <button className="close-btn" onClick={() => setShowDeleteModal(null)}>x</button>
+                            <button className="close-btn" onClick={() => setShowDeleteModal(null)}>&times;</button>
                         </div>
                         <div className="modal-body">
                             <p>Are you sure you want to delete voucher <strong>{showDeleteModal.code}</strong>?</p>

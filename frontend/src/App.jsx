@@ -16,6 +16,7 @@ import OrderDetailPage from './pages/OrderDetailPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ComparePage from './pages/ComparePage'
+import FlashSalePage from './pages/FlashSalePage'
 import ProtectedRoute from './components/ProtectedRoute'
 import CompareBar from './components/CompareBar'
 
@@ -61,6 +62,7 @@ function App() {
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/wishlist" element={<WishlistPage />} />
                         <Route path="/compare" element={<ComparePage />} />
+                        <Route path="/flash-sale/:slug" element={<FlashSalePage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -107,6 +109,8 @@ function App() {
                                 <Route path="products/new" element={<ProductForm />} />
                                 <Route path="products/:id/edit" element={<ProductForm />} />
                                 <Route path="inventory" element={<AdminInventory />} />
+                                <Route path="flash-sales" element={<AdminFlashSales />} />
+                                <Route path="vouchers" element={<AdminVouchers />} />
                                 <Route path="orders" element={<AdminOrders />} />
                                 <Route path="customers" element={<AdminCustomers />} />
                                 <Route path="analytics" element={<AdminAnalytics />} />

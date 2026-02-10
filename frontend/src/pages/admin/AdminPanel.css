@@ -2729,3 +2729,506 @@
         text-align: left;
     }
 }
+
+/* ========================================
+   FLASH SALES & VOUCHERS ADMIN MODALS
+   ======================================== */
+
+.admin-flash-sales,
+.admin-vouchers {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Wide Modal Styling */
+.modal-content.wide {
+    max-width: 800px;
+    width: calc(100% - 2rem);
+}
+
+/* Improved Modal Layout */
+.modal-overlay {
+    padding: 1rem;
+    overflow-y: auto;
+    align-items: flex-start;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+.modal-content {
+    margin: auto;
+    overflow: visible;
+}
+
+.modal-body {
+    max-height: calc(80vh - 140px);
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+/* Custom scrollbar for modal body */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.4);
+    border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.6);
+}
+
+/* Form Row Improvements */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.form-row .btn {
+    height: fit-content;
+    white-space: nowrap;
+}
+
+/* Add Item Form in Flash Sales */
+.add-item-form {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.add-item-form .form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.add-item-form .form-group {
+    margin-bottom: 0;
+}
+
+.add-item-form .btn {
+    padding: 0.75rem 1.5rem;
+}
+
+/* Input with Button */
+.input-with-button {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+.input-with-button .btn {
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Checkbox Group Improvements */
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* Textarea Styling */
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Flash Sale Cell */
+.flash-sale-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.flash-sale-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.flash-sale-slug {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+/* Duration Cell */
+.duration-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.duration-separator {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Items Count Button */
+.items-count-btn {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: var(--primary);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.items-count-btn:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: var(--primary);
+}
+
+/* Voucher Cell */
+.voucher-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.voucher-code {
+    font-weight: 700;
+    font-family: monospace;
+    font-size: 1rem;
+    color: var(--primary);
+    letter-spacing: 0.5px;
+}
+
+.voucher-name {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Discount Cell */
+.discount-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.discount-value {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--accent-green);
+}
+
+.min-order {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Usage Cell */
+.usage-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.usage-count {
+    font-weight: 500;
+}
+
+.per-user {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Period Cell */
+.period-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.period-separator {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* Status Badge Extensions */
+.status-badge.upcoming {
+    background: rgba(6, 182, 212, 0.2);
+    color: #06B6D4;
+}
+
+.status-badge.expired {
+    background: rgba(107, 114, 128, 0.2);
+    color: #6B7280;
+}
+
+/* Flash Price in Table */
+.flash-price {
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+/* Empty State Small */
+.empty-state.small {
+    padding: 2rem;
+}
+
+.empty-state.small p {
+    margin-bottom: 0;
+}
+
+/* Delete Modal */
+.delete-modal {
+    max-width: 400px;
+}
+
+.delete-modal .warning-text {
+    color: var(--accent-orange);
+    font-size: 0.9rem;
+}
+
+/* Responsive Modal Styles */
+@media (max-width: 900px) {
+    .modal-content.wide {
+        max-width: calc(100% - 1rem);
+    }
+
+    .add-item-form .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .add-item-form .form-row .form-group:first-child {
+        grid-column: span 2;
+    }
+
+    .add-item-form .form-row .btn {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 640px) {
+    .modal-overlay {
+        padding: 0.5rem;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+    }
+
+    .modal-content.wide {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .modal-header {
+        padding: 1rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+        max-height: calc(85vh - 120px);
+    }
+
+    .modal-footer {
+        padding: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .add-item-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .add-item-form .form-row .form-group:first-child,
+    .add-item-form .form-row .btn {
+        grid-column: span 1;
+    }
+
+    .input-with-button {
+        flex-direction: column;
+    }
+
+    .input-with-button .btn {
+        width: 100%;
+    }
+
+    /* Table responsive adjustments */
+    .admin-table th,
+    .admin-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .voucher-code {
+        font-size: 0.9rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .action-buttons .action-btn.edit,
+    .action-buttons .action-btn.delete {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Improved Table Scrolling */
+.table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.table-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.5);
+}
+
+/* Admin Table in Container */
+.table-container .admin-table {
+    border-radius: 0;
+    border: none;
+    min-width: 700px;
+}
+
+/* Form Section Divider */
+.form-divider {
+    border: 0;
+    border-top: 1px solid var(--glass-border);
+    margin: 1.5rem 0;
+}
+
+/* Form Helper Text */
+.form-helper {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+}
+
+/* Required Field Indicator */
+.form-group label .required {
+    color: var(--accent-red);
+    margin-left: 0.25rem;
+}
+
+/* Banner Upload Styles */
+.banner-upload-container {
+    margin-bottom: 0.75rem;
+}
+
+.banner-upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    border: 2px dashed var(--glass-border);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.banner-upload-zone:hover {
+    border-color: var(--primary);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.banner-upload-zone svg {
+    color: var(--text-muted);
+}
+
+.banner-upload-zone span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.banner-upload-zone .upload-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.banner-preview {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.banner-preview img {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.remove-banner-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.9);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.remove-banner-btn:hover {
+    background: var(--accent-red);
+    transform: scale(1.1);
+}
