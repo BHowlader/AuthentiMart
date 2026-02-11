@@ -57,7 +57,9 @@
 }
 
 @keyframes heroSpin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .hero-slide {
@@ -388,6 +390,7 @@
     0% {
         transform: scaleX(0);
     }
+
     100% {
         transform: scaleX(1);
     }
