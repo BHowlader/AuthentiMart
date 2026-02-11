@@ -1456,6 +1456,23 @@
     grid-column: span 2;
 }
 
+.payment-status-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.payment-status-control select {
+    flex: 1;
+}
+
+.payment-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+}
+
 /* Analytics */
 .analytics-grid {
     display: grid;

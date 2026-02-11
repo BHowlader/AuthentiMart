@@ -67,6 +67,32 @@ const AdminFlashSales = () => {
         }
     }
 
+    const fetchFlashSaleDetails = async (flashSaleId) => {
+        try {
+            // Fetch the detailed flash sale with items by ID
+            const response = await fetch(`${API_URL}/flash-sales/by-id/${flashSaleId}`, {
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setShowItemsModal(data)
+            } else {
+                // Fallback to basic info from list
+                const flashSale = flashSales.find(fs => fs.id === flashSaleId)
+                if (flashSale) {
+                    setShowItemsModal({ ...flashSale, items: [] })
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching flash sale details:', error)
+            // Fallback to basic info
+            const flashSale = flashSales.find(fs => fs.id === flashSaleId)
+            if (flashSale) {
+                setShowItemsModal({ ...flashSale, items: [] })
+            }
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         setUploading(true)
@@ -148,14 +174,12 @@ const AdminFlashSales = () => {
                 setItemFormData({ product_id: '', flash_price: '', flash_stock: '' })
                 fetchFlashSales()
                 // Refresh the items modal data
-                const updatedSales = await fetch(`${API_URL}/flash-sales`, {
+                const updatedSale = await fetch(`${API_URL}/flash-sales/by-id/${showItemsModal.id}`, {
                     headers: { 'Authorization': `Bearer ${adminToken}` }
                 })
-                if (updatedSales.ok) {
-                    const data = await updatedSales.json()
-                    const items = data.items || data
-                    const updated = items.find(s => s.id === showItemsModal.id)
-                    if (updated) setShowItemsModal(updated)
+                if (updatedSale.ok) {
+                    const data = await updatedSale.json()
+                    setShowItemsModal(data)
                 }
             }
         } catch (error) {
@@ -173,14 +197,12 @@ const AdminFlashSales = () => {
             if (response.ok) {
                 fetchFlashSales()
                 // Refresh the items modal data
-                const updatedSales = await fetch(`${API_URL}/flash-sales`, {
+                const updatedSale = await fetch(`${API_URL}/flash-sales/by-id/${showItemsModal.id}`, {
                     headers: { 'Authorization': `Bearer ${adminToken}` }
                 })
-                if (updatedSales.ok) {
-                    const data = await updatedSales.json()
-                    const items = data.items || data
-                    const updated = items.find(s => s.id === showItemsModal.id)
-                    if (updated) setShowItemsModal(updated)
+                if (updatedSale.ok) {
+                    const data = await updatedSale.json()
+                    setShowItemsModal(data)
                 }
             }
         } catch (error) {
@@ -340,9 +362,9 @@ const AdminFlashSales = () => {
                                         <td>
                                             <button
                                                 className="items-count-btn"
-                                                onClick={() => setShowItemsModal(flashSale)}
+                                                onClick={() => fetchFlashSaleDetails(flashSale.id)}
                                             >
-                                                {flashSale.items?.length || 0} products
+                                                {flashSale.item_count || 0} products
                                             </button>
                                         </td>
                                         <td>

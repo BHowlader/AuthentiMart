@@ -3,9 +3,16 @@ import axios from 'axios'
 
 const AdminAuthContext = createContext(null)
 
-// Use separate localStorage keys for admin authentication
+// Use sessionStorage for admin authentication (doesn't persist after browser close)
 const ADMIN_TOKEN_KEY = 'adminToken'
 const ADMIN_USER_KEY = 'adminUser'
+
+// Helper to get/set admin storage (sessionStorage for security)
+const adminStorage = {
+    getItem: (key) => sessionStorage.getItem(key),
+    setItem: (key, value) => sessionStorage.setItem(key, value),
+    removeItem: (key) => sessionStorage.removeItem(key),
+}
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1'
 
@@ -27,12 +34,16 @@ export const useAdminAuth = () => {
 
 export const AdminAuthProvider = ({ children }) => {
     const [admin, setAdmin] = useState(null)
-    const [adminToken, setAdminToken] = useState(localStorage.getItem(ADMIN_TOKEN_KEY))
+    const [adminToken, setAdminToken] = useState(adminStorage.getItem(ADMIN_TOKEN_KEY))
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        // Clear any old localStorage admin tokens (migration to sessionStorage)
+        localStorage.removeItem(ADMIN_TOKEN_KEY)
+        localStorage.removeItem(ADMIN_USER_KEY)
+
         const initAdminAuth = async () => {
-            const storedToken = localStorage.getItem(ADMIN_TOKEN_KEY)
+            const storedToken = adminStorage.getItem(ADMIN_TOKEN_KEY)
             if (storedToken) {
                 setAdminToken(storedToken)
                 try {
@@ -49,13 +60,13 @@ export const AdminAuthProvider = ({ children }) => {
                         setAdmin(response.data)
                     } else {
                         // Not an admin, clear admin session
-                        localStorage.removeItem(ADMIN_TOKEN_KEY)
-                        localStorage.removeItem(ADMIN_USER_KEY)
+                        adminStorage.removeItem(ADMIN_TOKEN_KEY)
+                        adminStorage.removeItem(ADMIN_USER_KEY)
                         setAdminToken(null)
                     }
                 } catch (error) {
-                    localStorage.removeItem(ADMIN_TOKEN_KEY)
-                    localStorage.removeItem(ADMIN_USER_KEY)
+                    adminStorage.removeItem(ADMIN_TOKEN_KEY)
+                    adminStorage.removeItem(ADMIN_USER_KEY)
                     setAdminToken(null)
                 }
             }
@@ -83,9 +94,9 @@ export const AdminAuthProvider = ({ children }) => {
                 return { success: false, error: 'Access denied. Admin credentials required.' }
             }
 
-            // Store in admin-specific keys only - never touch 'token' key
-            localStorage.setItem(ADMIN_TOKEN_KEY, newToken)
-            localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(newUser))
+            // Store in admin-specific keys only (sessionStorage - doesn't persist)
+            adminStorage.setItem(ADMIN_TOKEN_KEY, newToken)
+            adminStorage.setItem(ADMIN_USER_KEY, JSON.stringify(newUser))
             setAdminToken(newToken)
             setAdmin(newUser)
 
@@ -97,8 +108,8 @@ export const AdminAuthProvider = ({ children }) => {
     }
 
     const adminLogout = () => {
-        localStorage.removeItem(ADMIN_TOKEN_KEY)
-        localStorage.removeItem(ADMIN_USER_KEY)
+        adminStorage.removeItem(ADMIN_TOKEN_KEY)
+        adminStorage.removeItem(ADMIN_USER_KEY)
         setAdminToken(null)
         setAdmin(null)
     }

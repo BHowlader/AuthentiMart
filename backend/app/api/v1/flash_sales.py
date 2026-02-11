@@ -120,6 +120,24 @@ async def get_flash_sales(
     return result
 
 
+@router.get("/by-id/{flash_sale_id}", response_model=FlashSaleResponse)
+async def get_flash_sale_by_id(flash_sale_id: int, db: Session = Depends(get_db)):
+    """Get flash sale by ID (for admin use - includes inactive)"""
+    flash_sale = db.query(FlashSale).options(
+        joinedload(FlashSale.items).joinedload(FlashSaleItem.product)
+    ).filter(
+        FlashSale.id == flash_sale_id
+    ).first()
+
+    if not flash_sale:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Flash sale not found"
+        )
+
+    return get_flash_sale_with_items(db, flash_sale)
+
+
 @router.get("/{slug}", response_model=FlashSaleResponse)
 async def get_flash_sale(slug: str, db: Session = Depends(get_db)):
     """Get flash sale by slug"""

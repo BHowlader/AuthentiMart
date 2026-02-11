@@ -1,17 +1,32 @@
 /* Home Page Styles */
 
+/* Full-width home page container */
+.home-page {
+    width: 100%;
+    overflow-x: hidden;
+}
+
 /* ========================================
    HERO SECTION - Modern Dark Theme Design
    ======================================== */
 .hero {
     position: relative;
     width: 100vw;
+    max-width: 100%;
     margin-left: calc(-50vw + 50%);
     height: 100vh;
-    min-height: 700px;
-    max-height: 900px;
+    min-height: 500px;
     overflow: hidden;
     background: #0a0a0a;
+}
+
+/* Fix for scrollbar and dynamic viewport issues */
+@supports (height: 100dvh) {
+    .hero {
+        height: 100dvh;
+        width: 100dvw;
+        margin-left: calc(-50dvw + 50%);
+    }
 }
 
 .hero-slider {
@@ -645,8 +660,7 @@
 
 @media (max-width: 992px) {
     .hero {
-        min-height: 600px;
-        max-height: 700px;
+        min-height: 500px;
     }
 
     .hero-title {
@@ -674,8 +688,9 @@
 
 @media (max-width: 768px) {
     .hero {
-        min-height: 550px;
-        max-height: 650px;
+        width: 100%;
+        margin-left: 0;
+        min-height: 450px;
     }
 
     .hero-slide>.container {
@@ -752,18 +767,33 @@
 }
 
 @media (max-width: 480px) {
+    .hero {
+        width: 100%;
+        margin-left: 0;
+        min-height: 400px;
+    }
+
+    .hero-slide>.container {
+        padding: 0 16px;
+    }
+
     .hero-title {
-        font-size: 2rem;
+        font-size: 1.75rem;
+    }
+
+    .hero-description {
+        font-size: 0.9rem;
     }
 
     .hero-badge {
-        font-size: 0.75rem;
-        padding: 8px 14px;
+        font-size: 0.7rem;
+        padding: 6px 12px;
     }
 
     .hero-actions {
         flex-direction: column;
         width: 100%;
+        gap: 12px;
     }
 
     .hero-actions .btn,
@@ -771,6 +801,22 @@
     .hero-btn-outline {
         width: 100%;
         justify-content: center;
+        padding: 12px 20px;
+        font-size: 0.85rem;
+    }
+
+    .hero-progress-container {
+        bottom: 20px;
+        padding: 0 16px;
+    }
+
+    .hero-dots {
+        gap: 8px;
+    }
+
+    .hero-dot {
+        width: 8px;
+        height: 8px;
     }
 
     .categories-grid {

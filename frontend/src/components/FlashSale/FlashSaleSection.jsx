@@ -71,28 +71,9 @@ const FlashSaleSection = () => {
         )
     }
 
+    // Don't render anything if no active flash sale
     if (!flashSale || error) {
-        // Fallback to static banner if no active flash sale
-        return (
-            <section className="flash-sale-banner">
-                <div className="container">
-                    <div className="flash-sale-content">
-                        <div className="flash-sale-info">
-                            <span className="flash-badge-large">
-                                <Zap size={20} />
-                                Flash Sale
-                            </span>
-                            <h2>Up to 50% Off!</h2>
-                            <p>Limited time offer on selected items. Hurry before it's gone!</p>
-                        </div>
-                        <Link to="/products?sale=true" className="btn btn-primary btn-lg">
-                            Shop Sale Items
-                            <ArrowRight size={20} />
-                        </Link>
-                    </div>
-                </div>
-            </section>
-        )
+        return null
     }
 
     return (

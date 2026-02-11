@@ -196,9 +196,19 @@ const CheckoutPage = () => {
             console.error('Error response:', error.response?.data)
             let errorMessage = 'Failed to place order. Please try again.'
             if (error.response?.data?.detail) {
-                errorMessage = typeof error.response.data.detail === 'string'
-                    ? error.response.data.detail
-                    : JSON.stringify(error.response.data.detail)
+                const detail = error.response.data.detail
+                if (typeof detail === 'string') {
+                    errorMessage = detail
+                } else if (Array.isArray(detail)) {
+                    // FastAPI validation errors are arrays
+                    errorMessage = detail.map(err => err.msg || err.message || JSON.stringify(err)).join(', ')
+                } else {
+                    errorMessage = JSON.stringify(detail)
+                }
+            } else if (error.response?.status === 401) {
+                errorMessage = 'Please login to place an order'
+            } else if (error.response?.status === 500) {
+                errorMessage = 'Server error. Please try again later.'
             }
             showToast(errorMessage, 'error')
         } finally {

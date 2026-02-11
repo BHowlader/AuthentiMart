@@ -115,7 +115,7 @@ export const ordersAPI = {
     create: (data) => api.post('/orders', data),
     getAll: () => api.get('/orders'),
     getById: (id) => api.get(`/orders/${id}`),
-    cancel: (id) => api.put(`/orders/${id}/cancel`),
+    cancel: (id) => api.post(`/orders/${id}/cancel`),
 }
 
 // Payment API

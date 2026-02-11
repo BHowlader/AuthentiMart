@@ -108,6 +108,31 @@ const AdminOrders = () => {
         { value: 'cancelled', label: 'Cancelled' }
     ]
 
+    const paymentStatusOptions = [
+        { value: 'pending', label: 'Pending' },
+        { value: 'completed', label: 'Completed' },
+        { value: 'failed', label: 'Failed' },
+        { value: 'refunded', label: 'Refunded' }
+    ]
+
+    const updatePaymentStatus = async (orderNumber, newStatus) => {
+        try {
+            const response = await fetch(`${API_URL}/orders/${orderNumber}/payment-status?payment_status=${newStatus}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${adminToken}` }
+            })
+            if (response.ok) {
+                fetchOrders()
+                // Update selected order if open
+                if (selectedOrder && selectedOrder.order_number === orderNumber) {
+                    setSelectedOrder(prev => ({ ...prev, payment_status: newStatus }))
+                }
+            }
+        } catch (error) {
+            console.error('Error updating payment status:', error)
+        }
+    }
+
     return (
         <div className="admin-orders">
             <div className="page-header">
@@ -282,12 +307,26 @@ const AdminOrders = () => {
 
                                 <div className="detail-section">
                                     <h4>Payment Information</h4>
-                                    <p><strong>Method:</strong> {selectedOrder.payment_method || 'N/A'}</p>
-                                    <p><strong>Status:</strong>
-                                        <span className={`badge-${getPaymentStatusColor(selectedOrder.payment_status)}`}>
-                                            {selectedOrder.payment_status}
-                                        </span>
-                                    </p>
+                                    <p><strong>Method:</strong> {selectedOrder.payment_method?.toUpperCase() || 'N/A'}</p>
+                                    <div className="payment-status-control">
+                                        <strong>Status:</strong>
+                                        <select
+                                            className={`status-select status-${getPaymentStatusColor(selectedOrder.payment_status)}`}
+                                            value={selectedOrder.payment_status}
+                                            onChange={(e) => updatePaymentStatus(selectedOrder.order_number, e.target.value)}
+                                        >
+                                            {paymentStatusOptions.map(opt => (
+                                                <option key={opt.value} value={opt.value}>
+                                                    {opt.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {selectedOrder.payment_method === 'cod' && (
+                                        <p className="payment-note">
+                                            <em>COD orders auto-complete payment when delivered</em>
+                                        </p>
+                                    )}
                                 </div>
 
                                 {selectedOrder.notes && (
