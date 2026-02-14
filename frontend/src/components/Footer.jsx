@@ -122,7 +122,7 @@ const Footer = () => {
                             <ul className="contact-list">
                                 <li>
                                     <Phone size={18} />
-                                    <span>+880 1700-000000</span>
+                                    <span>+8801319826059</span>
                                 </li>
                                 <li>
                                     <Mail size={18} />
