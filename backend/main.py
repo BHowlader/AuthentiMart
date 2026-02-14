@@ -8,7 +8,13 @@ from app.config import settings
 from app.database import engine, Base
 from app.api.v1 import api_router
 from app.models import *  # Import all models for table creation
-from app.services.background_tasks import start_scheduler, stop_scheduler
+
+# Check if running in serverless environment (Vercel)
+IS_SERVERLESS = os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+
+# Only import scheduler for non-serverless environments
+if not IS_SERVERLESS:
+    from app.services.background_tasks import start_scheduler, stop_scheduler
 
 # Create database tables
 @asynccontextmanager
@@ -19,13 +25,15 @@ async def lifespan(app: FastAPI):
     # Seed initial data if needed
     await seed_initial_data()
 
-    # Start background task scheduler for autonomous order management
-    start_scheduler()
+    # Start background task scheduler only in non-serverless environments
+    if not IS_SERVERLESS:
+        start_scheduler()
 
     yield
 
     # Shutdown: Stop background scheduler
-    stop_scheduler()
+    if not IS_SERVERLESS:
+        stop_scheduler()
 
 async def seed_initial_data():
     """Seed initial categories and sample products."""
@@ -273,24 +281,47 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware - Allow all origins for development/network access
+# CORS middleware - Configure origins based on environment
+allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+]
+
+# Add production origins
+if settings.app_url:
+    allowed_origins.append(settings.app_url)
+    # Also allow www subdomain
+    if settings.app_url.startswith("https://"):
+        allowed_origins.append(settings.app_url.replace("https://", "https://www."))
+
+# Check if running on Vercel (same origin, but add anyway for flexibility)
+vercel_url = os.environ.get("VERCEL_URL")
+if vercel_url:
+    allowed_origins.append(f"https://{vercel_url}")
+
+# In debug mode or serverless, allow all origins (same-origin requests don't need CORS)
+if settings.debug or IS_SERVERLESS:
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount static files for uploads
-os.makedirs("uploads/products", exist_ok=True)
-os.makedirs("uploads/avatars", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# Mount static files for uploads (only in non-serverless environments)
+if not IS_SERVERLESS:
+    os.makedirs("uploads/products", exist_ok=True)
+    os.makedirs("uploads/avatars", exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Mount frontend public images for product images
-frontend_images_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "public", "images")
-if os.path.exists(frontend_images_path):
-    app.mount("/images", StaticFiles(directory=frontend_images_path), name="images")
+    # Mount frontend public images for product images
+    frontend_images_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "public", "images")
+    if os.path.exists(frontend_images_path):
+        app.mount("/images", StaticFiles(directory=frontend_images_path), name="images")
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")

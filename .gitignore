@@ -33,6 +33,14 @@ pip-delete-this-directory.txt
 .coverage
 htmlcov/
 
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads (user-generated content)
+uploads/
+
 # Editor
 .vscode/
 .idea/
