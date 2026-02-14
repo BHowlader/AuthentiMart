@@ -150,7 +150,7 @@ const OrderDetailPage = () => {
                         <div className="order-section glass-card">
                             <h2>Tracking History</h2>
                             <div className="tracking-history">
-                                {order.tracking.map((track) => (
+                                {[...order.tracking].reverse().map((track) => (
                                     <div key={track.id} className="tracking-item">
                                         <div className="tracking-icon">
                                             <div className="dot"></div>

@@ -11,7 +11,7 @@ import math
 from app.database import get_db
 from app.models.models import (
     User, Product, Order, OrderItem, Category,
-    ProductImage, UserRole, OrderStatus, PaymentStatus, Address
+    ProductImage, UserRole, OrderStatus, PaymentStatus, Address, OrderTracking
 )
 from app.utils.auth import get_current_user, get_current_admin
 
@@ -999,19 +999,51 @@ async def update_order_status(
     current_user: User = Depends(get_current_admin)
 ):
     """Update order status"""
-    
+
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
+
     valid_statuses = [s.value for s in OrderStatus]
     if status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Valid: {valid_statuses}")
-    
+
+    old_payment_status = order.payment_status
     order.status = status
+
+    # Auto-complete payment based on payment method and order status
+    # bKash/Card: Payment completes when order is confirmed (payment verified before confirming)
+    # COD: Payment completes when order is delivered (payment collected on delivery)
+    if order.payment_status == PaymentStatus.PENDING.value:
+        if status == OrderStatus.CONFIRMED.value and order.payment_method in ["bkash", "card"]:
+            order.payment_status = PaymentStatus.COMPLETED.value
+        elif status == OrderStatus.DELIVERED.value and order.payment_method == "cod":
+            order.payment_status = PaymentStatus.COMPLETED.value
+
+    # Add tracking entry for order status change
+    tracking = OrderTracking(
+        order_id=order.id,
+        status=status.replace("_", " ").title(),
+        description=f"Order status updated to {status}"
+    )
+    db.add(tracking)
+
+    # Add tracking entry for payment status change if it changed
+    if order.payment_status != old_payment_status:
+        payment_tracking = OrderTracking(
+            order_id=order.id,
+            status=f"Payment {order.payment_status.title()}",
+            description=f"Payment auto-completed ({order.payment_method.upper()})"
+        )
+        db.add(payment_tracking)
+
     db.commit()
-    
-    return {"message": "Order status updated", "new_status": status}
+
+    return {
+        "message": "Order status updated",
+        "new_status": status,
+        "payment_status": order.payment_status
+    }
 
 # ============ Revenue Analytics ============
 
