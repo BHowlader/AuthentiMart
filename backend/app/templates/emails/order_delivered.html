@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Your Order Has Been Delivered{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Your Order Has Arrived!</h2>
+
+<p>Hi {{ user.name }},</p>
+
+<p>We're happy to let you know that your order <strong>#{{ order.order_number }}</strong> has been successfully delivered!</p>
+
+<div style="text-align: center;">
+    <span class="status-badge status-delivered">Delivered</span>
+</div>
+
+<div style="background-color: #f8f9fa; padding: 25px; border-radius: 8px; margin: 25px 0; text-align: center;">
+    <p style="font-size: 18px; margin: 0 0 15px 0;">How was your experience?</p>
+    <p style="color: #666; margin: 0;">We'd love to hear your feedback! Leave a review on your purchased items.</p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ app_url }}/orders/{{ order.order_number }}" class="btn">View Order & Leave Review</a>
+</div>
+
+<p style="color: #666; font-size: 14px; margin-top: 25px;">
+    If you received your order in perfect condition, great! If there's any issue, please don't hesitate to contact us within 7 days of delivery.
+</p>
+
+<p style="color: #666; font-size: 14px;">
+    Thank you for shopping with us. We hope to see you again soon!
+</p>
+{% endblock %}

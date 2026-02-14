@@ -369,6 +369,7 @@
     .add-to-cart-btn {
         width: 100%;
         flex: auto;
+        min-height: 48px;
     }
 
     .wishlist-btn,
@@ -387,5 +388,147 @@
 
     .specifications-content th {
         width: auto;
+    }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+    .product-detail-page {
+        padding-top: 80px;
+    }
+
+    .breadcrumb {
+        font-size: 0.8rem;
+        margin-bottom: 20px;
+    }
+
+    .product-content {
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .product-title {
+        font-size: 1.3rem;
+    }
+
+    .current-price {
+        font-size: 1.5rem;
+    }
+
+    .original-price {
+        font-size: 1rem;
+    }
+
+    .discount-text {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+    }
+
+    .product-rating {
+        margin-bottom: 16px;
+    }
+
+    .quantity-section {
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .product-actions {
+        margin-bottom: 24px;
+    }
+
+    .wishlist-btn,
+    .share-btn {
+        width: 48px;
+        height: 48px;
+    }
+
+    .product-features {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .product-features .feature-item {
+        gap: 12px;
+    }
+
+    .product-features .feature-item strong {
+        font-size: 0.9rem;
+    }
+
+    .product-features .feature-item span {
+        font-size: 0.8rem;
+    }
+
+    .tab-content {
+        padding: 20px;
+    }
+
+    .product-tabs .tabs {
+        gap: 4px;
+        margin-bottom: 16px;
+    }
+
+    .tab {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    .specifications-content th,
+    .specifications-content td {
+        padding: 12px 8px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+    .product-detail-page {
+        padding-top: 75px;
+    }
+
+    .breadcrumb {
+        font-size: 0.75rem;
+    }
+
+    .product-title {
+        font-size: 1.15rem;
+    }
+
+    .current-price {
+        font-size: 1.3rem;
+    }
+
+    .original-price {
+        font-size: 0.9rem;
+    }
+
+    .thumbnail {
+        width: 50px;
+        height: 50px;
+    }
+
+    .thumbnail-list {
+        gap: 8px;
+    }
+
+    .wishlist-btn,
+    .share-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .add-to-cart-btn {
+        font-size: 0.9rem;
+    }
+
+    .tab {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    .tab-content {
+        padding: 16px;
     }
 }

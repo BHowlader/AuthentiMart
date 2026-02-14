@@ -15,21 +15,84 @@ import './HomePage.css'
 
 // Category icons mapping (fallback when not from API)
 const categoryIcons = {
+    // Beauty & Cosmetics
     'lip-products': '👄',
     'eye-products': '👁️',
     'face-products': '✨',
     'skincare': '🧴',
+    'beauty-tools': '🖌️',
+    'cosmetics-skincare': '💄',
+    'korean-skincare': '🇰🇷',
+    'serums-essences': '💧',
+    'cleansers-toners': '🧼',
+    'moisturizers-masks': '🧖',
+    'sunscreen-spf': '☀️',
+    'lip-care': '💋',
+    'makeup': '💅',
+    // Men's
     'mens-grooming': '🧔',
+    'hair-styling': '💇',
+    'beard-shaving': '🪒',
+    'mens-fragrances': '🧴',
+    'wallets-belts': '👛',
+    'mens-accessories': '⌚',
+    'mens-skincare': '🧴',
+    // Tech & Electronics
     'tech-accessories': '🎧',
+    'earbuds-headphones': '🎧',
+    'speakers-audio': '🔊',
+    'phone-cases-protectors': '📱',
+    'phone-accessories': '📲',
+    'power-banks': '🔋',
+    'chargers-cables': '🔌',
+    'smartwatches-bands': '⌚',
+    'storage-memory': '💾',
+    // Gaming
+    'gaming': '🎮',
+    'gaming-peripherals': '🕹️',
+    // Home & Kitchen
     'home-appliances': '🏠',
     'home-decor': '🪴',
-    'gaming': '🎮',
-    'beauty-tools': '🖌️',
+    'kitchen-appliances': '🍳',
+    'cooking-appliances': '🍲',
+    'kitchenware': '🥄',
+    'kitchen-storage': '🫙',
+    'drinkware': '🥤',
+    'lighting-lamps': '💡',
+    'wall-art-decor': '🖼️',
+    'home-essentials': '🏡',
+    'candles-aromatherapy': '🕯️',
+    // Fashion
     'ladies-fashion': '👜',
+    'bags-purses': '👛',
+    'jewelry': '💍',
+    'womens-watches': '⌚',
+    'hair-accessories': '🎀',
+    // Baby & Kids
     'baby-kids': '👶',
+    'baby-care': '🍼',
+    'baby-feeding': '🥣',
+    'kids-fashion': '👕',
+    'kids-accessories': '🧢',
+    'kids-toys': '🧸',
+    'educational-toys': '🎓',
+    // Travel
     'travel-luggage': '🧳',
+    'travel': '✈️',
+    'luggage-bags': '💼',
+    'travel-accessories': '🎒',
+    'travel-organizers': '📦',
+    // Toys & Collectibles
     'toys-collectibles': '🧸',
+    'anime-figures': '🎭',
+    'collectibles': '🏆',
+    // Smart Home
     'smart-home': '📷',
+    'security-cameras': '📹',
+    'smart-locks': '🔐',
+    'smart-lighting': '💡',
+    'smart-devices': '📡',
+    // Other
     'bundles': '🎁'
 }
 
@@ -172,8 +235,14 @@ const HomePage = () => {
             try {
                 setLoading(true)
 
-                // Fetch categories
-                const categoriesRes = await categoriesAPI.getAll()
+                // Fetch all data in parallel for better performance
+                const [categoriesRes, newArrivalsRes, bestSellersRes] = await Promise.all([
+                    categoriesAPI.getHomepage(12),
+                    productsAPI.getNewArrivals(),
+                    productsAPI.getBestSellers()
+                ])
+
+                // Process categories
                 const mappedCategories = (categoriesRes.data || []).map(cat => ({
                     id: cat.id,
                     name: cat.name,
@@ -184,14 +253,13 @@ const HomePage = () => {
                 }))
                 setCategories(mappedCategories)
 
-                // Fetch products for new arrivals and best sellers
-                const productsRes = await productsAPI.getAll({ page_size: 20 })
-                const allProducts = (productsRes.data.items || productsRes.data || []).map(p => ({
+                // Process new arrivals
+                const newProducts = (newArrivalsRes.data.items || []).slice(0, 4).map(p => ({
                     id: p.id,
                     name: p.name,
                     price: p.price,
                     originalPrice: p.original_price,
-                    image: p.image || (p.images && p.images[0]?.url) || '/images/placeholder.png',
+                    image: p.image || '/images/placeholder.png',
                     category: p.category || '',
                     categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
                     brand: p.brand || '',
@@ -202,13 +270,25 @@ const HomePage = () => {
                     discount: p.discount || 0,
                     slug: p.slug
                 }))
+                setNewArrivals(newProducts)
 
-                // Filter new arrivals
-                const newProducts = allProducts.filter(p => p.isNew).slice(0, 4)
-                setNewArrivals(newProducts.length > 0 ? newProducts : allProducts.slice(0, 4))
-
-                // Best sellers (by rating or just first 4)
-                const bestProducts = [...allProducts].sort((a, b) => b.rating - a.rating).slice(0, 4)
+                // Process best sellers
+                const bestProducts = (bestSellersRes.data.items || []).slice(0, 4).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalPrice: p.original_price,
+                    image: p.image || '/images/placeholder.png',
+                    category: p.category || '',
+                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
+                    brand: p.brand || '',
+                    rating: p.rating || 0,
+                    reviewCount: p.review_count || 0,
+                    stock: p.stock || 0,
+                    isNew: p.is_new || false,
+                    discount: p.discount || 0,
+                    slug: p.slug
+                }))
                 setBestSellers(bestProducts)
 
             } catch (error) {
@@ -252,16 +332,6 @@ const HomePage = () => {
         return () => clearInterval(timer)
     }, [])
 
-    // Dynamic Navbar Theme Sync
-    useEffect(() => {
-        const currentThemeColor = heroSlides[currentSlide].accentColor;
-        document.documentElement.style.setProperty('--navbar-theme-color', currentThemeColor);
-
-        return () => {
-            // Cleanup: reset when component unmounts
-            document.documentElement.style.removeProperty('--navbar-theme-color');
-        }
-    }, [currentSlide]);
 
     return (
         <div className="home-page">
@@ -277,10 +347,6 @@ const HomePage = () => {
                         <div
                             key={index}
                             className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-                            style={{
-                                '--accent-color': slide.accentColor,
-                                '--secondary-accent': slide.secondaryAccent
-                            }}
                         >
                             {/* Full Background Image */}
                             <div className="hero-bg">
@@ -288,39 +354,17 @@ const HomePage = () => {
                                 <div className="hero-overlay"></div>
                             </div>
 
-                            {/* Decorative Elements */}
-                            <div className="hero-decoration">
-                                {/* Accent Lines */}
-                                <div className="accent-line accent-line-1"></div>
-                                <div className="accent-line accent-line-2"></div>
-                                <div className="accent-line accent-line-3"></div>
-
-                                {/* Floating Orbs */}
-                                <div className="floating-orb orb-1"></div>
-                                <div className="floating-orb orb-2"></div>
-                                <div className="floating-orb orb-3"></div>
-                            </div>
-
                             {/* Content */}
                             <div className="container">
                                 <div className="hero-content">
-                                    <span className="hero-badge" style={{ borderColor: slide.accentColor }}>
-                                        <Sparkles size={16} style={{ color: slide.accentColor }} />
+                                    <span className="hero-badge">
+                                        <Sparkles size={16} />
                                         {slide.subtitle}
                                     </span>
-                                    <h1 className="hero-title">
-                                        {slide.title}
-                                        <span className="title-accent" style={{ color: slide.accentColor }}>.</span>
-                                    </h1>
+                                    <h1 className="hero-title">{slide.title}</h1>
                                     <p className="hero-description">{slide.description}</p>
                                     <div className="hero-actions">
-                                        <Link
-                                            to={slide.link}
-                                            className="btn hero-btn-primary"
-                                            style={{
-                                                background: `linear-gradient(135deg, ${slide.accentColor} 0%, ${slide.secondaryAccent} 100%)`
-                                            }}
-                                        >
+                                        <Link to={slide.link} className="btn hero-btn-primary">
                                             {slide.cta}
                                             <ArrowRight size={20} />
                                         </Link>
@@ -345,7 +389,6 @@ const HomePage = () => {
                                     setCurrentSlide(index)
                                     setProgressKey((prev) => prev + 1)
                                 }}
-                                style={index === currentSlide ? { backgroundColor: slide.accentColor } : {}}
                             />
                         ))}
                     </div>
@@ -353,9 +396,6 @@ const HomePage = () => {
                         <div
                             key={`progress-${currentSlide}-${progressKey}`}
                             className="hero-progress-bar"
-                            style={{
-                                backgroundColor: heroSlides[currentSlide].accentColor
-                            }}
                         ></div>
                     </div>
                 </div>

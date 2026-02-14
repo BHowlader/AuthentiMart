@@ -47,6 +47,24 @@ class Settings(BaseSettings):
     api_url: str = "http://localhost:8000"
     debug: bool = True
 
+    # Email (SMTP)
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""  # Use App Password for Gmail
+    email_from: str = "noreply@authentimart.com"
+    email_from_name: str = "AuthentiMart"
+
+    # Push Notifications (Web Push VAPID)
+    vapid_private_key: str = ""
+    vapid_public_key: str = ""
+    vapid_email: str = "admin@authentimart.com"
+
+    # Loyalty Points
+    default_points_per_taka: float = 0.01  # 1 point per 100 BDT
+    default_taka_per_point: float = 1.0  # 1 point = 1 BDT
+    referral_reward_points: int = 100  # Points for successful referral
+
     class Config:
         env_file = ".env"
         case_sensitive = False

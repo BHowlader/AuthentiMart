@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmed - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Thank You for Your Order!</h2>
+
+<p>Hi {{ user.name }},</p>
+
+<p>Great news! Your order <strong>#{{ order.order_number }}</strong> has been confirmed and is being processed.</p>
+
+<div style="text-align: center;">
+    <span class="status-badge status-confirmed">Order Confirmed</span>
+</div>
+
+<h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Order Details</h3>
+
+{% for item in items %}
+<div class="product-item">
+    <div class="product-details">
+        <p class="product-name">{{ item.product.name }}</p>
+        <p style="margin: 0; color: #666;">Qty: {{ item.quantity }}</p>
+    </div>
+    <div class="product-price">৳{{ "%.2f"|format(item.total) }}</div>
+</div>
+{% endfor %}
+
+<div class="order-summary">
+    <div class="summary-row">
+        <span>Subtotal</span>
+        <span>৳{{ "%.2f"|format(order.subtotal) }}</span>
+    </div>
+    <div class="summary-row">
+        <span>Shipping</span>
+        <span>{% if order.shipping_cost > 0 %}৳{{ "%.2f"|format(order.shipping_cost) }}{% else %}Free{% endif %}</span>
+    </div>
+    {% if order.voucher_discount > 0 %}
+    <div class="summary-row" style="color: #28a745;">
+        <span>Voucher Discount</span>
+        <span>-৳{{ "%.2f"|format(order.voucher_discount) }}</span>
+    </div>
+    {% endif %}
+    {% if order.points_discount > 0 %}
+    <div class="summary-row" style="color: #28a745;">
+        <span>Points Discount</span>
+        <span>-৳{{ "%.2f"|format(order.points_discount) }}</span>
+    </div>
+    {% endif %}
+    {% if order.gift_card_amount > 0 %}
+    <div class="summary-row" style="color: #28a745;">
+        <span>Gift Card</span>
+        <span>-৳{{ "%.2f"|format(order.gift_card_amount) }}</span>
+    </div>
+    {% endif %}
+    <div class="summary-row summary-total">
+        <span>Total</span>
+        <span>৳{{ "%.2f"|format(order.total) }}</span>
+    </div>
+</div>
+
+<h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Shipping Address</h3>
+<p style="margin: 10px 0;">
+    <strong>{{ order.shipping_name }}</strong><br>
+    {{ order.shipping_address }}<br>
+    {{ order.shipping_area }}{% if order.shipping_area %}, {% endif %}{{ order.shipping_city }}<br>
+    Phone: {{ order.shipping_phone }}
+</p>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ app_url }}/orders/{{ order.order_number }}" class="btn">Track Your Order</a>
+</div>
+
+<p style="color: #666; font-size: 14px; margin-top: 20px;">
+    If you have any questions about your order, feel free to reply to this email or contact our support team.
+</p>
+{% endblock %}

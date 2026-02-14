@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Our Newsletter{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">You're In!</h2>
+
+<p>Hi {{ name }},</p>
+
+<p>Thank you for subscribing to the {{ app_name }} newsletter! You're now part of our community.</p>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; margin: 25px 0; text-align: center;">
+    <p style="font-size: 20px; margin: 0 0 10px 0; font-weight: 600;">What to Expect</p>
+    <p style="margin: 0; opacity: 0.9;">Exclusive deals, new arrivals, and insider tips - delivered to your inbox!</p>
+</div>
+
+<h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">You'll Get:</h3>
+
+<ul style="color: #555; padding-left: 20px;">
+    <li style="margin-bottom: 12px;"><strong>Early Access</strong> - Be the first to know about sales and new products</li>
+    <li style="margin-bottom: 12px;"><strong>Exclusive Discounts</strong> - Special offers just for subscribers</li>
+    <li style="margin-bottom: 12px;"><strong>Product Tips</strong> - How to get the most out of your purchases</li>
+    <li style="margin-bottom: 12px;"><strong>Flash Sale Alerts</strong> - Never miss a limited-time deal</li>
+</ul>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ app_url }}" class="btn">Start Shopping</a>
+</div>
+
+<p style="color: #999; font-size: 12px; margin-top: 25px; text-align: center;">
+    Don't want to receive these emails? <a href="{{ unsubscribe_url }}" style="color: #667eea;">Unsubscribe</a>
+</p>
+{% endblock %}

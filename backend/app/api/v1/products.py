@@ -20,6 +20,174 @@ from collections import defaultdict
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
+
+@router.get("/search/autocomplete")
+async def search_autocomplete(
+    q: str = Query(..., min_length=2, max_length=100),
+    limit: int = Query(8, ge=1, le=20),
+    db: Session = Depends(get_db)
+):
+    """Search autocomplete for products and categories"""
+    suggestions = []
+
+    # Search products
+    products = db.query(Product).filter(
+        Product.is_active == True,
+        Product.images.any(),
+        Product.name.ilike(f"%{q}%")
+    ).order_by(Product.rating.desc()).limit(limit).all()
+
+    for product in products:
+        primary_image = next((img for img in product.images if img.is_primary), None)
+        suggestions.append({
+            "type": "product",
+            "id": product.id,
+            "name": product.name,
+            "slug": product.slug,
+            "price": product.price,
+            "image": primary_image.url if primary_image else (product.images[0].url if product.images else None),
+            "url": f"/product/{product.slug}"
+        })
+
+    # Search categories (only if we have room)
+    if len(suggestions) < limit:
+        categories = db.query(Category).filter(
+            Category.is_active == True,
+            Category.name.ilike(f"%{q}%")
+        ).limit(limit - len(suggestions)).all()
+
+        for category in categories:
+            suggestions.append({
+                "type": "category",
+                "id": category.id,
+                "name": category.name,
+                "slug": category.slug,
+                "image": category.image,
+                "url": f"/products/{category.slug}"
+            })
+
+    return {
+        "query": q,
+        "suggestions": suggestions,
+        "total": len(suggestions)
+    }
+
+
+@router.get("/featured")
+async def get_featured_products(
+    limit: int = Query(8, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    """Get featured products"""
+    products = db.query(Product).filter(
+        Product.is_active == True,
+        Product.is_featured == True,
+        Product.images.any()
+    ).order_by(Product.created_at.desc()).limit(limit).all()
+
+    items = []
+    for product in products:
+        primary_image = next((img for img in product.images if img.is_primary), None)
+        items.append({
+            "id": product.id,
+            "name": product.name,
+            "slug": product.slug,
+            "price": product.price,
+            "original_price": product.original_price,
+            "discount": product.discount,
+            "stock": product.stock,
+            "category_id": product.category_id,
+            "brand": product.brand,
+            "is_featured": product.is_featured,
+            "is_new": product.is_new,
+            "rating": product.rating,
+            "review_count": product.review_count,
+            "image": primary_image.url if primary_image else (product.images[0].url if product.images else None),
+            "category": product.category.name if product.category else None
+        })
+
+    return {"items": items, "total": len(items)}
+
+
+@router.get("/new-arrivals")
+async def get_new_arrivals(
+    limit: int = Query(8, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    """Get new arrival products"""
+    # First try to get products marked as new
+    products = db.query(Product).filter(
+        Product.is_active == True,
+        Product.is_new == True,
+        Product.images.any()
+    ).order_by(Product.created_at.desc()).limit(limit).all()
+
+    # Fallback to latest products if none are marked as new
+    if not products:
+        products = db.query(Product).filter(
+            Product.is_active == True,
+            Product.images.any()
+        ).order_by(Product.created_at.desc()).limit(limit).all()
+
+    items = []
+    for product in products:
+        primary_image = next((img for img in product.images if img.is_primary), None)
+        items.append({
+            "id": product.id,
+            "name": product.name,
+            "slug": product.slug,
+            "price": product.price,
+            "original_price": product.original_price,
+            "discount": product.discount,
+            "stock": product.stock,
+            "category_id": product.category_id,
+            "brand": product.brand,
+            "is_featured": product.is_featured,
+            "is_new": product.is_new,
+            "rating": product.rating,
+            "review_count": product.review_count,
+            "image": primary_image.url if primary_image else (product.images[0].url if product.images else None),
+            "category": product.category.name if product.category else None
+        })
+
+    return {"items": items, "total": len(items)}
+
+
+@router.get("/best-sellers")
+async def get_best_sellers(
+    limit: int = Query(8, ge=1, le=50),
+    db: Session = Depends(get_db)
+):
+    """Get best selling products (by rating and review count)"""
+    products = db.query(Product).filter(
+        Product.is_active == True,
+        Product.images.any()
+    ).order_by(Product.rating.desc(), Product.review_count.desc()).limit(limit).all()
+
+    items = []
+    for product in products:
+        primary_image = next((img for img in product.images if img.is_primary), None)
+        items.append({
+            "id": product.id,
+            "name": product.name,
+            "slug": product.slug,
+            "price": product.price,
+            "original_price": product.original_price,
+            "discount": product.discount,
+            "stock": product.stock,
+            "category_id": product.category_id,
+            "brand": product.brand,
+            "is_featured": product.is_featured,
+            "is_new": product.is_new,
+            "rating": product.rating,
+            "review_count": product.review_count,
+            "image": primary_image.url if primary_image else (product.images[0].url if product.images else None),
+            "category": product.category.name if product.category else None
+        })
+
+    return {"items": items, "total": len(items)}
+
+
 @router.get("", response_model=dict)
 async def get_products(
     page: int = Query(1, ge=1),
@@ -33,13 +201,20 @@ async def get_products(
     is_new: Optional[bool] = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(Product).filter(Product.is_active == True)
+    # Only show products that are active AND have at least one image
+    query = db.query(Product).filter(
+        Product.is_active == True,
+        Product.images.any()  # Must have at least one image
+    )
     
-    # Filter by category
+    # Filter by category (including subcategories)
     if category:
         cat = db.query(Category).filter(Category.slug == category).first()
         if cat:
-            query = query.filter(Product.category_id == cat.id)
+            # Get this category and all its subcategories
+            subcategories = db.query(Category).filter(Category.parent_id == cat.id).all()
+            category_ids = [cat.id] + [sub.id for sub in subcategories]
+            query = query.filter(Product.category_id.in_(category_ids))
     
     # Search
     if search:
@@ -114,13 +289,20 @@ async def get_product(slug: str, db: Session = Depends(get_db)):
         Product.slug == slug,
         Product.is_active == True
     ).first()
-    
+
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    
+
+    # Hide products without images from public view
+    if not product.images:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
     return product
 
 @router.post("", response_model=ProductResponse)

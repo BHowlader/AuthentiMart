@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}You Left Something Behind{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Forgot Something?</h2>
+
+<p>Hi {{ user.name }},</p>
+
+<p>We noticed you left some items in your cart. Don't worry, we saved them for you!</p>
+
+<h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Your Cart</h3>
+
+{% for item in cart_items %}
+<div class="product-item">
+    {% if item.image %}
+    <img src="{{ app_url }}{{ item.image }}" alt="{{ item.name }}" class="product-image">
+    {% endif %}
+    <div class="product-details">
+        <p class="product-name">{{ item.name }}</p>
+        <p style="margin: 0; color: #666;">Qty: {{ item.quantity }}</p>
+    </div>
+    <div class="product-price">৳{{ "%.2f"|format(item.price * item.quantity) }}</div>
+</div>
+{% endfor %}
+
+<div class="order-summary">
+    <div class="summary-row summary-total">
+        <span>Cart Total</span>
+        <span>৳{{ "%.2f"|format(cart_total) }}</span>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ cart_url }}" class="btn">Complete Your Purchase</a>
+</div>
+
+<p style="color: #666; font-size: 14px; margin-top: 25px;">
+    Items in your cart are popular and may sell out soon. Complete your order now to avoid disappointment!
+</p>
+{% endblock %}

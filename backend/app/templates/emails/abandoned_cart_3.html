@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Last Chance - Special Offer Inside!{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Don't Miss Out!</h2>
+
+<p>Hi {{ user.name }},</p>
+
+<p>This is your last reminder about the items in your cart. To help you complete your purchase, we're offering you a <strong>special discount</strong>!</p>
+
+{% if discount_code %}
+<div class="highlight-box">
+    <p style="margin: 0; opacity: 0.9;">Use this code at checkout</p>
+    <div class="code">{{ discount_code }}</div>
+    <p style="margin: 10px 0 0 0; font-size: 18px;">for 10% OFF your order!</p>
+</div>
+{% endif %}
+
+<h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Your Cart Items</h3>
+
+{% for item in cart_items %}
+<div class="product-item">
+    {% if item.image %}
+    <img src="{{ app_url }}{{ item.image }}" alt="{{ item.name }}" class="product-image">
+    {% endif %}
+    <div class="product-details">
+        <p class="product-name">{{ item.name }}</p>
+        <p style="margin: 0; color: #666;">Qty: {{ item.quantity }}</p>
+    </div>
+    <div class="product-price">৳{{ "%.2f"|format(item.price * item.quantity) }}</div>
+</div>
+{% endfor %}
+
+<div class="order-summary">
+    <div class="summary-row">
+        <span>Cart Total</span>
+        <span>৳{{ "%.2f"|format(cart_total) }}</span>
+    </div>
+    {% if discount_code %}
+    <div class="summary-row" style="color: #28a745;">
+        <span>With 10% Discount</span>
+        <span>৳{{ "%.2f"|format(cart_total * 0.9) }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ cart_url }}" class="btn">Claim Your Discount Now</a>
+</div>
+
+<div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 25px; text-align: center;">
+    <p style="margin: 0; color: #856404;">
+        <strong>Hurry!</strong> This offer expires in 24 hours.
+    </p>
+</div>
+
+<p style="color: #999; font-size: 12px; margin-top: 25px;">
+    This is our final reminder. We won't email you again about this cart.
+</p>
+{% endblock %}

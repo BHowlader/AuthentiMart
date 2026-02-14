@@ -6,11 +6,11 @@ import { productsAPI, categoriesAPI } from '../utils/api'
 import './ProductsPage.css'
 
 const sortOptions = [
-    { label: 'Featured', value: 'featured' },
-    { label: 'Price: Low to High', value: 'price-asc' },
-    { label: 'Price: High to Low', value: 'price-desc' },
     { label: 'Newest', value: 'newest' },
+    { label: 'Price: Low to High', value: 'price_low' },
+    { label: 'Price: High to Low', value: 'price_high' },
     { label: 'Best Rating', value: 'rating' },
+    { label: 'Most Popular', value: 'popular' },
 ]
 
 const ProductsPage = () => {
@@ -22,7 +22,7 @@ const ProductsPage = () => {
     const [filteredProducts, setFilteredProducts] = useState([])
     const [categories, setCategories] = useState([{ name: 'All', slug: '' }])
     const [selectedCategory, setSelectedCategory] = useState(category || '')
-    const [sortBy, setSortBy] = useState('featured')
+    const [sortBy, setSortBy] = useState('newest')
     const [priceRange, setPriceRange] = useState([0, 100000])
     const [showFilters, setShowFilters] = useState(false)
     const [viewMode, setViewMode] = useState('grid')
@@ -75,12 +75,22 @@ const ProductsPage = () => {
             try {
                 setLoading(true)
                 setPage(1)
-                const params = { page: 1, page_size: 24 }
+                const params = {
+                    page: 1,
+                    page_size: 24,
+                    sort: sortBy
+                }
                 if (selectedCategory) {
                     params.category = selectedCategory
                 }
                 if (searchQuery) {
                     params.search = searchQuery
+                }
+                if (priceRange[0] > 0) {
+                    params.min_price = priceRange[0]
+                }
+                if (priceRange[1] < 100000) {
+                    params.max_price = priceRange[1]
                 }
 
                 const response = await productsAPI.getAll(params)
@@ -96,7 +106,7 @@ const ProductsPage = () => {
             }
         }
         fetchProducts()
-    }, [selectedCategory, searchQuery])
+    }, [selectedCategory, searchQuery, sortBy, priceRange])
 
     // Load more products
     const loadMoreProducts = async () => {
@@ -105,12 +115,22 @@ const ProductsPage = () => {
         try {
             setLoadingMore(true)
             const nextPage = page + 1
-            const params = { page: nextPage, page_size: 24 }
+            const params = {
+                page: nextPage,
+                page_size: 24,
+                sort: sortBy
+            }
             if (selectedCategory) {
                 params.category = selectedCategory
             }
             if (searchQuery) {
                 params.search = searchQuery
+            }
+            if (priceRange[0] > 0) {
+                params.min_price = priceRange[0]
+            }
+            if (priceRange[1] < 100000) {
+                params.max_price = priceRange[1]
             }
 
             const response = await productsAPI.getAll(params)
@@ -131,32 +151,10 @@ const ProductsPage = () => {
         }
     }, [category])
 
+    // Update filtered products when products change (sorting/filtering done by backend)
     useEffect(() => {
-        let filtered = [...products]
-
-        // Filter by price
-        filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
-
-        // Sort
-        switch (sortBy) {
-            case 'price-asc':
-                filtered.sort((a, b) => a.price - b.price)
-                break
-            case 'price-desc':
-                filtered.sort((a, b) => b.price - a.price)
-                break
-            case 'newest':
-                filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0))
-                break
-            case 'rating':
-                filtered.sort((a, b) => b.rating - a.rating)
-                break
-            default:
-                break
-        }
-
-        setFilteredProducts(filtered)
-    }, [products, priceRange, sortBy])
+        setFilteredProducts(products)
+    }, [products])
 
     const getCategoryName = () => {
         if (searchQuery) return `Search: "${searchQuery}"`

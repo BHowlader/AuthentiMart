@@ -3,11 +3,66 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 from app.database import get_db
-from app.models import Category, Product
+from app.models import Category, Product, ProductImage
 from app.schemas import CategoryResponse, CategoryCreate
 from app.utils import get_current_admin
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
+
+
+@router.get("/homepage")
+async def get_homepage_categories(
+    limit: int = 12,
+    db: Session = Depends(get_db)
+):
+    """Get parent categories optimized for homepage display - with aggregated product counts from subcategories"""
+    # Get all active categories
+    all_categories = db.query(Category).filter(Category.is_active == True).all()
+
+    # Build parent-child mapping
+    parent_categories = [cat for cat in all_categories if cat.parent_id is None]
+    children_map = {}
+    for cat in all_categories:
+        if cat.parent_id:
+            if cat.parent_id not in children_map:
+                children_map[cat.parent_id] = []
+            children_map[cat.parent_id].append(cat.id)
+
+    # Get product counts for each category (only active products WITH images)
+    product_counts = db.query(
+        Product.category_id,
+        func.count(func.distinct(Product.id)).label('count')
+    ).join(ProductImage, Product.id == ProductImage.product_id).filter(
+        Product.is_active == True
+    ).group_by(Product.category_id).all()
+
+    direct_count_map = {pc.category_id: pc.count for pc in product_counts}
+
+    # Calculate total counts for parent categories (including subcategories)
+    result = []
+    for cat in parent_categories:
+        # Direct products in this category
+        total_count = direct_count_map.get(cat.id, 0)
+
+        # Add products from all subcategories
+        child_ids = children_map.get(cat.id, [])
+        for child_id in child_ids:
+            total_count += direct_count_map.get(child_id, 0)
+
+        if total_count > 0:
+            result.append({
+                'id': cat.id,
+                'name': cat.name,
+                'slug': cat.slug,
+                'description': cat.description,
+                'image': cat.image,
+                'product_count': total_count
+            })
+
+    # Sort by product count (descending) and limit
+    result.sort(key=lambda x: x['product_count'], reverse=True)
+    return result[:limit]
+
 
 @router.get("", response_model=List[CategoryResponse])
 async def get_categories(
@@ -21,11 +76,13 @@ async def get_categories(
 
     categories = query.all()
 
-    # Get product counts for each category
+    # Get product counts for each category (only products with images)
     product_counts = db.query(
         Product.category_id,
-        func.count(Product.id).label('count')
-    ).filter(Product.is_active == True).group_by(Product.category_id).all()
+        func.count(func.distinct(Product.id)).label('count')
+    ).join(ProductImage, Product.id == ProductImage.product_id).filter(
+        Product.is_active == True
+    ).group_by(Product.category_id).all()
 
     # Create a mapping of category_id to product count
     count_map = {pc.category_id: pc.count for pc in product_counts}

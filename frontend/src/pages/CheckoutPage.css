@@ -35,7 +35,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--glass-bg);
+    background: var(--bg-secondary);
     border: 2px solid currentColor;
     border-radius: 50%;
     font-weight: 600;
@@ -170,7 +170,7 @@
 
 .payment-option.selected {
     border-color: var(--primary);
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(241, 126, 35, 0.05);
 }
 
 .payment-option input {
@@ -400,7 +400,7 @@
 
 .saved-address-option.selected {
     border-color: var(--primary);
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(241, 126, 35, 0.05);
 }
 
 .saved-address-option input[type="radio"] {
@@ -467,7 +467,7 @@
     border-color: var(--primary);
     border-style: solid;
     color: var(--primary);
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(241, 126, 35, 0.05);
 }
 
 .use-different-address input[type="radio"] {
@@ -606,5 +606,117 @@
 
     .use-different-address {
         padding: 12px 14px;
+    }
+
+    .input-wrapper {
+        padding: 0 12px;
+    }
+
+    .input-wrapper .input-field {
+        padding: 12px 0;
+        min-height: 48px;
+    }
+
+    .checkout-actions .btn-primary,
+    .continue-btn {
+        min-height: 48px;
+    }
+
+    .select-field {
+        min-height: 48px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    .checkout-page {
+        padding-top: 75px;
+        padding-bottom: 40px;
+    }
+
+    .checkout-steps {
+        gap: 4px;
+        padding: 0;
+    }
+
+    .step-line {
+        width: 20px;
+    }
+
+    .step-number {
+        width: 26px;
+        height: 26px;
+        font-size: 0.75rem;
+    }
+
+    .form-section {
+        padding: 16px;
+    }
+
+    .form-section h2 {
+        font-size: 1rem;
+        gap: 8px;
+    }
+
+    .form-section h2 svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .order-summary {
+        padding: 16px;
+    }
+
+    .order-summary h3 {
+        font-size: 1rem;
+    }
+
+    .summary-items {
+        max-height: 200px;
+    }
+
+    .item-image {
+        width: 45px;
+        height: 45px;
+    }
+
+    .item-name {
+        font-size: 0.8rem;
+    }
+
+    .item-price,
+    .item-total {
+        font-size: 0.8rem;
+    }
+
+    .summary-row {
+        font-size: 0.9rem;
+    }
+
+    .summary-row.total {
+        font-size: 1rem;
+    }
+
+    .payment-option {
+        padding: 10px 12px;
+    }
+
+    .payment-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    .payment-name {
+        font-size: 0.9rem;
+    }
+
+    .payment-desc {
+        font-size: 0.75rem;
+    }
+
+    .payment-check {
+        width: 24px;
+        height: 24px;
     }
 }

@@ -21,6 +21,15 @@ const AdminLoginPage = () => {
         }
     }, [admin, authLoading, navigate])
 
+    useEffect(() => {
+        // Disable scroll on mount
+        document.body.style.overflow = 'hidden'
+        return () => {
+            // Enable scroll on unmount
+            document.body.style.overflow = 'unset'
+        }
+    }, [])
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
@@ -39,181 +48,137 @@ const AdminLoginPage = () => {
     // Show loading while checking auth
     if (authLoading) {
         return (
-            <div className="admin-login-page">
-                <div className="admin-login-bg">
-                    <div className="bg-grid"></div>
-                    <div className="bg-glow bg-glow-1"></div>
-                    <div className="bg-glow bg-glow-2"></div>
-                    <div className="bg-glow bg-glow-3"></div>
+            <div className="auth-page admin-auth-page">
+                <div className="auth-container">
+                    <div className="loading-state">
+                        <div className="spinner"></div>
+                    </div>
                 </div>
-                <div className="loading-spinner" style={{ width: 40, height: 40 }}></div>
             </div>
         )
     }
 
     return (
-        <div className="admin-login-page">
-            {/* Background Effects */}
-            <div className="admin-login-bg">
-                <div className="bg-grid"></div>
-                <div className="bg-glow bg-glow-1"></div>
-                <div className="bg-glow bg-glow-2"></div>
-                <div className="bg-glow bg-glow-3"></div>
-            </div>
-
-            <div className="admin-login-container">
-                {/* Left Panel - Branding */}
-                <div className="admin-login-branding">
-                    <div className="branding-content">
-                        <div className="admin-shield-icon">
-                            <Shield size={48} strokeWidth={1.5} />
+        <div className="auth-page admin-auth-page">
+            <div className="auth-container">
+                <div className="auth-content">
+                    {/* Left Side - Form */}
+                    <div className="auth-form-section">
+                        <div className="auth-header">
+                            <div className="auth-logo">
+                                <div className="logo-icon">🛡️</div>
+                                <span>AuthentiMart Admin</span>
+                            </div>
+                            <h1>Welcome Back, Admin</h1>
+                            <p>Enter your credentials to access the dashboard</p>
                         </div>
-                        <h1>Admin Portal</h1>
-                        <p>Secure access to your AuthentiMart management dashboard</p>
 
-                        <div className="admin-features">
-                            <div className="admin-feature">
-                                <div className="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <rect x="3" y="3" width="7" height="9" />
-                                        <rect x="14" y="3" width="7" height="5" />
-                                        <rect x="14" y="12" width="7" height="9" />
-                                        <rect x="3" y="16" width="7" height="5" />
-                                    </svg>
-                                </div>
-                                <span>Dashboard Analytics</span>
+                        {error && (
+                            <div className="auth-error-message">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                {error}
                             </div>
-                            <div className="admin-feature">
-                                <div className="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="m7.5 4.27 9 5.15" />
-                                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-                                        <path d="m3.3 7 8.7 5 8.7-5" />
-                                        <path d="M12 22V12" />
-                                    </svg>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="auth-form">
+                            <div className="input-group">
+                                <label className="input-label">Email Address</label>
+                                <div className="input-wrapper">
+                                    <Mail size={20} />
+                                    <input
+                                        type="email"
+                                        className="input-field"
+                                        placeholder="admin@authenticart.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
                                 </div>
-                                <span>Product Management</span>
                             </div>
-                            <div className="admin-feature">
-                                <div className="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 3v18h18" />
-                                        <path d="m19 9-5 5-4-4-3 3" />
-                                    </svg>
+
+                            <div className="input-group">
+                                <label className="input-label">Password</label>
+                                <div className="input-wrapper">
+                                    <Lock size={20} />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        className="input-field"
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
                                 </div>
-                                <span>Sales Analytics</span>
                             </div>
-                            <div className="admin-feature">
-                                <div className="feature-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <path d="M12 6v6l4 2" />
-                                    </svg>
-                                </div>
-                                <span>Real-time Updates</span>
+
+                            <div className="auth-options">
+                                <label className="checkbox-label">
+                                    <input type="checkbox" />
+                                    <span className="checkmark"></span>
+                                    Remember this device
+                                </label>
                             </div>
+
+                            <button
+                                type="submit"
+                                className="btn btn-primary btn-lg auth-submit"
+                                disabled={loading}
+                            >
+                                {loading ? 'Authenticating...' : 'Access Dashboard'}
+                                <ArrowRight size={20} />
+                            </button>
+                        </form>
+
+                        <div className="admin-security-notice">
+                            <Shield size={16} />
+                            <span>Protected by 256-bit SSL encryption</span>
                         </div>
+
+                        <p className="auth-footer">
+                            <Link to="/">← Back to Store</Link>
+                        </p>
                     </div>
 
-                    <div className="branding-footer">
-                        <Link to="/" className="back-to-store">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="m15 18-6-6 6-6" />
-                            </svg>
-                            Back to Store
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Right Panel - Login Form */}
-                <div className="admin-login-form-section">
-                    <div className="form-header">
-                        <div className="logo-badge">
-                            <span className="logo-a">A</span>
-                        </div>
-                        <h2>Welcome Back, Admin</h2>
-                        <p>Enter your credentials to access the dashboard</p>
-                    </div>
-
-                    {error && (
-                        <div className="admin-error-message">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="8" x2="12" y2="12" />
-                                <line x1="12" y1="16" x2="12.01" y2="16" />
-                            </svg>
-                            {error}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="admin-login-form">
-                        <div className="admin-input-group">
-                            <label className="admin-input-label">Email Address</label>
-                            <div className="admin-input-wrapper">
-                                <Mail size={20} />
-                                <input
-                                    type="email"
-                                    className="admin-input-field"
-                                    placeholder="admin@authenticart.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
+                    {/* Right Side - Visual */}
+                    <div className="auth-visual admin-visual">
+                        <div className="visual-content">
+                            <h2>Admin Dashboard</h2>
+                            <p>Manage your AuthentiMart store with powerful tools and real-time analytics.</p>
+                            <div className="visual-features">
+                                <div className="visual-feature">
+                                    <span className="feature-check">✓</span>
+                                    Dashboard Analytics
+                                </div>
+                                <div className="visual-feature">
+                                    <span className="feature-check">✓</span>
+                                    Product Management
+                                </div>
+                                <div className="visual-feature">
+                                    <span className="feature-check">✓</span>
+                                    Order Processing
+                                </div>
+                                <div className="visual-feature">
+                                    <span className="feature-check">✓</span>
+                                    Real-time Updates
+                                </div>
                             </div>
                         </div>
-
-                        <div className="admin-input-group">
-                            <label className="admin-input-label">Password</label>
-                            <div className="admin-input-wrapper">
-                                <Lock size={20} />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    className="admin-input-field"
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    className="admin-password-toggle"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
+                        <div className="visual-decoration">
+                            <div className="float-card card-1">📊 Analytics</div>
+                            <div className="float-card card-2">📦 Orders</div>
+                            <div className="float-card card-3">👥 Customers</div>
                         </div>
-
-                        <div className="admin-form-options">
-                            <label className="admin-checkbox-label">
-                                <input type="checkbox" />
-                                <span className="admin-checkmark"></span>
-                                Remember this device
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="admin-submit-btn"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <>
-                                    <span className="loading-spinner"></span>
-                                    Authenticating...
-                                </>
-                            ) : (
-                                <>
-                                    Access Dashboard
-                                    <ArrowRight size={20} />
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    <div className="admin-security-notice">
-                        <Shield size={16} />
-                        <span>Protected by 256-bit SSL encryption</span>
                     </div>
                 </div>
             </div>

@@ -25,7 +25,7 @@
     position: sticky;
     top: 100px;
     height: fit-content;
-    background: var(--glass-bg);
+    background: #FFFFFF;
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     padding: 24px;
@@ -182,7 +182,7 @@
 .sort-dropdown select {
     appearance: none;
     padding: 10px 40px 10px 16px;
-    background: var(--glass-bg);
+    background: #FFFFFF;
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
     color: var(--text-primary);
@@ -204,7 +204,7 @@
 
 .view-toggle {
     display: flex;
-    background: var(--glass-bg);
+    background: #FFFFFF;
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -241,8 +241,8 @@
     align-items: center;
     gap: 8px;
     padding: 6px 12px;
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(241, 126, 35, 0.1);
+    border: 1px solid rgba(241, 126, 35, 0.2);
     border-radius: var(--radius-full);
     font-size: 0.85rem;
     color: var(--primary);
@@ -282,7 +282,8 @@
 .no-products {
     text-align: center;
     padding: 60px 20px;
-    background: var(--glass-bg);
+    background: #FFFFFF;
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
 }
 
@@ -354,7 +355,7 @@
         display: block;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 1000;
     }
 }
@@ -434,7 +435,54 @@
 }
 
 @media (max-width: 360px) {
+    .products-page {
+        padding-top: 75px;
+    }
+
     .products-grid {
         grid-template-columns: 1fr;
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .sort-dropdown select {
+        font-size: 0.85rem;
+        padding: 10px 35px 10px 12px;
+    }
+
+    .view-toggle button {
+        padding: 8px 10px;
+    }
+
+    .filter-tag {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+    }
+
+    .filters-sidebar {
+        width: 280px;
+        padding: 20px;
+    }
+
+    .filter-group h4 {
+        font-size: 0.9rem;
+    }
+
+    .filter-option {
+        font-size: 0.9rem;
+    }
+
+    .no-products {
+        padding: 40px 16px;
+    }
+
+    .no-products h3 {
+        font-size: 1.1rem;
+    }
+
+    .no-products p {
+        font-size: 0.9rem;
     }
 }

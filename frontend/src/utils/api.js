@@ -91,6 +91,7 @@ export const productsAPI = {
 // Categories API
 export const categoriesAPI = {
     getAll: () => api.get('/categories'),
+    getHomepage: (limit = 12) => api.get('/categories/homepage', { params: { limit } }),
     getById: (id) => api.get(`/categories/${id}`),
 }
 
@@ -180,4 +181,166 @@ export const adminVouchersAPI = {
     create: (data) => api.post('/vouchers', data),
     update: (id, data) => api.put(`/vouchers/${id}`, data),
     delete: (id) => api.delete(`/vouchers/${id}`),
+}
+
+// ============================================
+// NEW FEATURE APIS
+// ============================================
+
+// Search Autocomplete API
+export const searchAPI = {
+    autocomplete: (query, limit = 8) => api.get('/products/search/autocomplete', { params: { q: query, limit } }),
+}
+
+// Newsletter API
+export const newsletterAPI = {
+    subscribe: (data) => api.post('/newsletter/subscribe', data),
+    unsubscribe: (email) => api.post('/newsletter/unsubscribe', null, { params: { email } }),
+}
+
+// Recently Viewed API
+export const recentlyViewedAPI = {
+    get: (limit = 20, sessionId = null) => api.get('/recently-viewed', { params: { limit, session_id: sessionId } }),
+    track: (productId, sessionId = null) => api.post('/recently-viewed', { product_id: productId, session_id: sessionId }),
+    clear: (sessionId = null) => api.delete('/recently-viewed', { params: { session_id: sessionId } }),
+}
+
+// Stock Notifications API
+export const stockNotificationsAPI = {
+    subscribe: (productId, email = null) => api.post('/stock-notifications', { product_id: productId, email }),
+    getMyNotifications: () => api.get('/stock-notifications'),
+    unsubscribe: (id) => api.delete(`/stock-notifications/${id}`),
+}
+
+// Loyalty Points API
+export const pointsAPI = {
+    getBalance: () => api.get('/points/balance'),
+    getHistory: (page = 1, limit = 20) => api.get('/points/history', { params: { page, limit } }),
+    calculate: (subtotal) => api.post('/points/calculate', null, { params: { subtotal } }),
+    validateRedemption: (points, orderSubtotal) => api.post('/points/validate-redemption', { points, order_subtotal: orderSubtotal }),
+}
+
+// Referral API
+export const referralAPI = {
+    getMyCode: () => api.get('/referrals/my-code'),
+    getStats: () => api.get('/referrals/stats'),
+    getHistory: () => api.get('/referrals/history'),
+    sendInvite: (email) => api.post('/referrals/invite', { email }),
+    validateCode: (code) => api.get(`/referrals/validate/${code}`),
+}
+
+// Product Bundles API
+export const bundlesAPI = {
+    getAll: (page = 1, limit = 20) => api.get('/bundles', { params: { page, limit } }),
+    getBySlug: (slug) => api.get(`/bundles/${slug}`),
+}
+
+// Gift Cards API
+export const giftCardsAPI = {
+    purchase: (data) => api.post('/gift-cards/purchase', data),
+    checkBalance: (code) => api.get(`/gift-cards/check/${code}`),
+    validate: (code, amount = null) => api.post('/gift-cards/validate', null, { params: { code, amount } }),
+    getMyCards: () => api.get('/gift-cards/my-cards'),
+    getTransactions: (cardId) => api.get(`/gift-cards/my-cards/${cardId}/transactions`),
+}
+
+// Product Q&A API
+export const questionsAPI = {
+    getByProduct: (productId, page = 1, limit = 10) => api.get(`/questions/product/${productId}`, { params: { page, limit } }),
+    askQuestion: (productId, question) => api.post(`/questions/product/${productId}`, { question }),
+    answerQuestion: (questionId, answer) => api.post(`/questions/${questionId}/answer`, { answer }),
+    markHelpful: (answerId) => api.post(`/questions/answers/${answerId}/helpful`),
+}
+
+// Push Notifications API
+export const pushAPI = {
+    getVapidKey: () => api.get('/push/vapid-key'),
+    subscribe: (subscription) => api.post('/push/subscribe', {
+        endpoint: subscription.endpoint,
+        p256dh_key: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))),
+        auth_key: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')))),
+    }),
+    unsubscribe: (endpoint) => api.delete('/push/unsubscribe', { params: { endpoint } }),
+    getStatus: () => api.get('/push/status'),
+}
+
+// Product Variants API
+export const variantsAPI = {
+    getTypes: () => api.get('/variants/types'),
+    getProductVariants: (productId) => api.get(`/variants/product/${productId}`),
+    getAvailableOptions: (productId) => api.get(`/variants/product/${productId}/available-options`),
+}
+
+// ============================================
+// ADMIN NEW FEATURE APIS
+// ============================================
+
+// Admin Newsletter
+export const adminNewsletterAPI = {
+    getSubscribers: (params) => api.get('/newsletter/admin/subscribers', { params }),
+    exportSubscribers: (isActive = true) => api.get('/newsletter/admin/subscribers/export', { params: { is_active: isActive } }),
+}
+
+// Admin Points
+export const adminPointsAPI = {
+    getSettings: () => api.get('/points/admin/settings'),
+    updateSettings: (data) => api.put('/points/admin/settings', data),
+    getStats: () => api.get('/points/admin/stats'),
+}
+
+// Admin Referrals
+export const adminReferralsAPI = {
+    getStats: () => api.get('/referrals/admin/stats'),
+}
+
+// Admin Bundles
+export const adminBundlesAPI = {
+    create: (data) => api.post('/bundles/admin', data),
+    update: (id, data) => api.put(`/bundles/admin/${id}`, data),
+    uploadImage: (id, formData) => api.post(`/bundles/admin/${id}/upload-image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+    addItem: (bundleId, data) => api.post(`/bundles/admin/${bundleId}/items`, data),
+    removeItem: (bundleId, itemId) => api.delete(`/bundles/admin/${bundleId}/items/${itemId}`),
+    delete: (id) => api.delete(`/bundles/admin/${id}`),
+}
+
+// Admin Gift Cards
+export const adminGiftCardsAPI = {
+    getAll: (params) => api.get('/gift-cards/admin', { params }),
+    deactivate: (id) => api.put(`/gift-cards/admin/${id}/deactivate`),
+    getStats: () => api.get('/gift-cards/admin/stats'),
+}
+
+// Admin Questions
+export const adminQuestionsAPI = {
+    getPendingQuestions: (params) => api.get('/questions/admin/pending', { params }),
+    approveQuestion: (id) => api.put(`/questions/admin/${id}/approve`),
+    deleteQuestion: (id) => api.delete(`/questions/admin/${id}`),
+    getPendingAnswers: (params) => api.get('/questions/admin/pending-answers', { params }),
+    approveAnswer: (id) => api.put(`/questions/admin/answers/${id}/approve`),
+}
+
+// Admin Push Notifications
+export const adminPushAPI = {
+    getSubscriptions: (params) => api.get('/push/admin/subscriptions', { params }),
+    send: (data) => api.post('/push/admin/send', null, { params: data }),
+}
+
+// Admin Variants
+export const adminVariantsAPI = {
+    createType: (data) => api.post('/variants/types', data),
+    deleteType: (id) => api.delete(`/variants/types/${id}`),
+    createVariant: (productId, data) => api.post(`/variants/product/${productId}`, data),
+    updateVariant: (productId, variantId, data) => api.put(`/variants/product/${productId}/${variantId}`, null, { params: data }),
+    deleteVariant: (productId, variantId) => api.delete(`/variants/product/${productId}/${variantId}`),
+}
+
+// Admin Exports
+export const adminExportsAPI = {
+    exportOrders: (params) => api.get('/admin/exports/orders', { params, responseType: 'blob' }),
+    exportProducts: (params) => api.get('/admin/exports/products', { params, responseType: 'blob' }),
+    exportCustomers: (params) => api.get('/admin/exports/customers', { params, responseType: 'blob' }),
+    exportInventory: (params) => api.get('/admin/exports/inventory', { params, responseType: 'blob' }),
+    exportSalesReport: (params) => api.get('/admin/exports/sales-report', { params, responseType: 'blob' }),
 }

@@ -179,7 +179,7 @@ const Footer = () => {
                         <p>
                             &copy; {currentYear} AuthentiMart. All rights reserved.
                             <span className="footer-divider">|</span>
-                            Built by <a href="https://www.bibekhowlader.com" target="_blank" rel="noopener noreferrer" className="footer-branding-link">Bibek Howlader</a>
+                            A concern of <a href="https://www.mindrona.com" target="_blank" rel="noopener noreferrer" className="footer-branding-link">Mindrona</a>
                         </p>
                         <div className="footer-links">
                             <Link to="/privacy">Privacy Policy</Link>

@@ -29,31 +29,33 @@ def get_flash_sale_with_items(db: Session, flash_sale: FlashSale) -> dict:
     items = []
     for item in flash_sale.items:
         product = item.product
-        items.append({
-            "id": item.id,
-            "product_id": item.product_id,
-            "flash_price": item.flash_price,
-            "flash_stock": item.flash_stock,
-            "sold_count": item.sold_count,
-            "sort_order": item.sort_order,
-            "product": {
-                "id": product.id,
-                "name": product.name,
-                "slug": product.slug,
-                "price": product.price,
-                "original_price": product.original_price,
-                "discount": product.discount,
-                "stock": product.stock,
-                "category_id": product.category_id,
-                "brand": product.brand,
-                "is_featured": product.is_featured,
-                "is_new": product.is_new,
-                "rating": product.rating,
-                "review_count": product.review_count,
-                "image": product.image,
-                "category": product.category_name,
-            } if product else None
-        })
+        # Only include products that have images
+        if product and product.images:
+            items.append({
+                "id": item.id,
+                "product_id": item.product_id,
+                "flash_price": item.flash_price,
+                "flash_stock": item.flash_stock,
+                "sold_count": item.sold_count,
+                "sort_order": item.sort_order,
+                "product": {
+                    "id": product.id,
+                    "name": product.name,
+                    "slug": product.slug,
+                    "price": product.price,
+                    "original_price": product.original_price,
+                    "discount": product.discount,
+                    "stock": product.stock,
+                    "category_id": product.category_id,
+                    "brand": product.brand,
+                    "is_featured": product.is_featured,
+                    "is_new": product.is_new,
+                    "rating": product.rating,
+                    "review_count": product.review_count,
+                    "image": product.image,
+                    "category": product.category_name,
+                }
+            })
 
     return {
         "id": flash_sale.id,

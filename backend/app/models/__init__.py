@@ -25,6 +25,26 @@ from app.models.models import (
     # Product enhancement models
     ProductAccessory,
     ProductSpecification,
+    # New feature models
+    EmailLog,
+    NewsletterSubscriber,
+    RecentlyViewed,
+    ProductRelation,
+    StockNotification,
+    PointsSettings,
+    PointsTransaction,
+    Referral,
+    ProductBundle,
+    ProductBundleItem,
+    GiftCard,
+    GiftCardTransaction,
+    AbandonedCartEmail,
+    PushSubscription,
+    ProductQuestion,
+    ProductAnswer,
+    ProductVariantType,
+    ProductVariant,
+    ProductVariantAttribute,
 )
 
 __all__ = [
@@ -54,5 +74,24 @@ __all__ = [
     # Product enhancement models
     "ProductAccessory",
     "ProductSpecification",
+    # New feature models
+    "EmailLog",
+    "NewsletterSubscriber",
+    "RecentlyViewed",
+    "ProductRelation",
+    "StockNotification",
+    "PointsSettings",
+    "PointsTransaction",
+    "Referral",
+    "ProductBundle",
+    "ProductBundleItem",
+    "GiftCard",
+    "GiftCardTransaction",
+    "AbandonedCartEmail",
+    "PushSubscription",
+    "ProductQuestion",
+    "ProductAnswer",
+    "ProductVariantType",
+    "ProductVariant",
+    "ProductVariantAttribute",
 ]
-

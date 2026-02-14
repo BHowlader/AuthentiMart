@@ -51,7 +51,14 @@ class User(Base):
     facebook_id = Column(String(100), nullable=True, unique=True)
     picture = Column(String(255), nullable=True)
     is_custom_picture = Column(Boolean, default=False)
-    
+
+    # Loyalty Points
+    points_balance = Column(Integer, default=0)
+
+    # Referral Program
+    referral_code = Column(String(20), unique=True, nullable=True)
+    referred_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+
     addresses = relationship("Address", back_populates="user")
     orders = relationship("Order", back_populates="user", foreign_keys="Order.user_id")
     # orders_to_deliver = relationship("Order", back_populates="delivery_man", foreign_keys="Order.delivery_man_id")
@@ -170,7 +177,15 @@ class Order(Base):
     voucher_id = Column(Integer, ForeignKey("vouchers.id"), nullable=True)
     voucher_code = Column(String(50), nullable=True)
     voucher_discount = Column(Float, default=0)
-    
+
+    # Gift Card fields
+    gift_card_id = Column(Integer, ForeignKey("gift_cards.id"), nullable=True)
+    gift_card_amount = Column(Float, default=0)
+
+    # Points redemption
+    points_redeemed = Column(Integer, default=0)
+    points_discount = Column(Float, default=0)
+
     # Shipping info
     shipping_name = Column(String(100), nullable=False)
     shipping_phone = Column(String(20), nullable=False)
@@ -382,3 +397,324 @@ class ProductSpecification(Base):
     sort_order = Column(Integer, default=0)
 
     product = relationship("Product", backref="specifications")
+
+
+# ============================================
+# EMAIL & NEWSLETTER MODELS
+# ============================================
+
+class EmailLog(Base):
+    __tablename__ = "email_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    recipient_email = Column(String(100), nullable=False)
+    email_type = Column(String(50), nullable=False)  # order_confirmation, password_reset, etc.
+    subject = Column(String(255), nullable=False)
+    status = Column(String(20), default="pending")  # pending, sent, failed
+    error_message = Column(Text, nullable=True)
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class NewsletterSubscriber(Base):
+    __tablename__ = "newsletter_subscribers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    name = Column(String(100), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    subscribed_at = Column(DateTime(timezone=True), server_default=func.now())
+    unsubscribed_at = Column(DateTime(timezone=True), nullable=True)
+    source = Column(String(50), default="footer")  # footer, popup, checkout
+
+    user = relationship("User")
+
+
+# ============================================
+# RECENTLY VIEWED & RECOMMENDATIONS
+# ============================================
+
+class RecentlyViewed(Base):
+    __tablename__ = "recently_viewed"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    session_id = Column(String(100), nullable=True, index=True)  # For anonymous users
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    viewed_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    product = relationship("Product")
+
+
+class ProductRelation(Base):
+    __tablename__ = "product_relations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    related_product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    relation_type = Column(String(50), nullable=False)  # similar, frequently_bought, viewed_together
+    score = Column(Float, default=1.0)  # Relevance score
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    product = relationship("Product", foreign_keys=[product_id])
+    related_product = relationship("Product", foreign_keys=[related_product_id])
+
+
+class StockNotification(Base):
+    __tablename__ = "stock_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    email = Column(String(100), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    is_notified = Column(Boolean, default=False)
+    notified_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    product = relationship("Product")
+
+
+# ============================================
+# LOYALTY POINTS SYSTEM
+# ============================================
+
+class PointsSettings(Base):
+    __tablename__ = "points_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    points_per_taka = Column(Float, default=0.01)  # 1 point per 100 BDT
+    taka_per_point = Column(Float, default=1.0)    # 1 point = 1 BDT discount
+    min_redeem_points = Column(Integer, default=100)
+    max_redeem_percentage = Column(Float, default=0.5)  # Max 50% of order
+    points_expiry_days = Column(Integer, default=365)
+    is_active = Column(Boolean, default=True)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class PointsTransaction(Base):
+    __tablename__ = "points_transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    points = Column(Integer, nullable=False)  # Positive = earned, Negative = redeemed
+    transaction_type = Column(String(50), nullable=False)  # order_earned, order_redeemed, referral, bonus, expired
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    description = Column(String(255), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    order = relationship("Order")
+
+
+# ============================================
+# REFERRAL PROGRAM
+# ============================================
+
+class Referral(Base):
+    __tablename__ = "referrals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    referrer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    referred_email = Column(String(100), nullable=False)
+    referred_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    referral_code = Column(String(20), unique=True, index=True, nullable=False)
+    status = Column(String(20), default="pending")  # pending, registered, completed, rewarded
+    referrer_reward_points = Column(Integer, default=0)
+    referred_reward_points = Column(Integer, default=0)
+    first_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    referrer = relationship("User", foreign_keys=[referrer_id])
+    referred_user = relationship("User", foreign_keys=[referred_user_id])
+    first_order = relationship("Order")
+
+
+# ============================================
+# PRODUCT BUNDLES
+# ============================================
+
+class ProductBundle(Base):
+    __tablename__ = "product_bundles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)
+    slug = Column(String(200), unique=True, index=True, nullable=False)
+    description = Column(Text, nullable=True)
+    bundle_price = Column(Float, nullable=False)  # Special bundle price
+    savings_text = Column(String(100), nullable=True)  # "Save 20%"
+    image = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True)
+    start_date = Column(DateTime(timezone=True), nullable=True)
+    end_date = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    items = relationship("ProductBundleItem", back_populates="bundle", cascade="all, delete-orphan")
+
+
+class ProductBundleItem(Base):
+    __tablename__ = "product_bundle_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bundle_id = Column(Integer, ForeignKey("product_bundles.id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    quantity = Column(Integer, default=1)
+
+    bundle = relationship("ProductBundle", back_populates="items")
+    product = relationship("Product")
+
+
+# ============================================
+# GIFT CARDS
+# ============================================
+
+class GiftCard(Base):
+    __tablename__ = "gift_cards"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(20), unique=True, index=True, nullable=False)
+    initial_balance = Column(Float, nullable=False)
+    current_balance = Column(Float, nullable=False)
+    purchaser_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    recipient_email = Column(String(100), nullable=True)
+    recipient_name = Column(String(100), nullable=True)
+    personal_message = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    purchaser = relationship("User")
+    transactions = relationship("GiftCardTransaction", back_populates="gift_card")
+
+
+class GiftCardTransaction(Base):
+    __tablename__ = "gift_card_transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gift_card_id = Column(Integer, ForeignKey("gift_cards.id"), nullable=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    amount = Column(Float, nullable=False)  # Positive = purchase/refund, Negative = redemption
+    transaction_type = Column(String(20), nullable=False)  # purchase, redeem, refund
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    gift_card = relationship("GiftCard", back_populates="transactions")
+    order = relationship("Order")
+
+
+# ============================================
+# ABANDONED CART RECOVERY
+# ============================================
+
+class AbandonedCartEmail(Base):
+    __tablename__ = "abandoned_cart_emails"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    cart_snapshot = Column(Text, nullable=False)  # JSON of cart items
+    cart_total = Column(Float, nullable=False)
+    email_sequence = Column(Integer, default=1)  # 1st, 2nd, 3rd reminder
+    sent_at = Column(DateTime(timezone=True), nullable=True)
+    opened_at = Column(DateTime(timezone=True), nullable=True)
+    clicked_at = Column(DateTime(timezone=True), nullable=True)
+    converted = Column(Boolean, default=False)
+    conversion_order_id = Column(Integer, ForeignKey("orders.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    conversion_order = relationship("Order")
+
+
+# ============================================
+# PUSH NOTIFICATIONS
+# ============================================
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    endpoint = Column(Text, nullable=False)
+    p256dh_key = Column(Text, nullable=False)
+    auth_key = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+
+
+# ============================================
+# PRODUCT Q&A
+# ============================================
+
+class ProductQuestion(Base):
+    __tablename__ = "product_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    question = Column(Text, nullable=False)
+    is_approved = Column(Boolean, default=False)
+    is_answered = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    product = relationship("Product")
+    user = relationship("User")
+    answers = relationship("ProductAnswer", back_populates="question", cascade="all, delete-orphan")
+
+
+class ProductAnswer(Base):
+    __tablename__ = "product_answers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    question_id = Column(Integer, ForeignKey("product_questions.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Null for admin answers
+    answer = Column(Text, nullable=False)
+    is_admin_answer = Column(Boolean, default=False)
+    is_approved = Column(Boolean, default=False)
+    helpful_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    question = relationship("ProductQuestion", back_populates="answers")
+    user = relationship("User")
+
+
+# ============================================
+# PRODUCT VARIANTS
+# ============================================
+
+class ProductVariantType(Base):
+    __tablename__ = "product_variant_types"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), nullable=False)  # Size, Color
+    display_type = Column(String(20), default="dropdown")  # dropdown, color_swatch, button
+
+
+class ProductVariant(Base):
+    __tablename__ = "product_variants"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    sku = Column(String(50), unique=True, nullable=False)
+    price = Column(Float, nullable=True)  # Override base price if different
+    stock = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+
+    product = relationship("Product", backref="variants")
+    attribute_values = relationship("ProductVariantAttribute", back_populates="variant", cascade="all, delete-orphan")
+
+
+class ProductVariantAttribute(Base):
+    __tablename__ = "product_variant_attributes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    variant_id = Column(Integer, ForeignKey("product_variants.id"), nullable=False)
+    variant_type_id = Column(Integer, ForeignKey("product_variant_types.id"), nullable=False)
+    value = Column(String(100), nullable=False)  # XL, Red, #FF0000
+
+    variant = relationship("ProductVariant", back_populates="attribute_values")
+    variant_type = relationship("ProductVariantType")

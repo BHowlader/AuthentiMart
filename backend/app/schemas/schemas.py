@@ -507,3 +507,383 @@ class PaginatedResponse(BaseModel):
 
 class OrderListResponse(PaginatedResponse):
     items: List[OrderResponse]
+
+
+# ============================================
+# NEWSLETTER SCHEMAS
+# ============================================
+
+class NewsletterSubscribe(BaseModel):
+    email: EmailStr
+    name: Optional[str] = None
+    source: str = "footer"
+
+
+class NewsletterUnsubscribe(BaseModel):
+    email: EmailStr
+
+
+class NewsletterSubscriberResponse(BaseModel):
+    id: int
+    email: str
+    name: Optional[str] = None
+    is_active: bool
+    subscribed_at: datetime
+    source: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# RECENTLY VIEWED SCHEMAS
+# ============================================
+
+class RecentlyViewedCreate(BaseModel):
+    product_id: int
+    session_id: Optional[str] = None
+
+
+class RecentlyViewedResponse(BaseModel):
+    id: int
+    product_id: int
+    viewed_at: datetime
+    product: Optional[ProductListResponse] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# STOCK NOTIFICATION SCHEMAS
+# ============================================
+
+class StockNotificationCreate(BaseModel):
+    product_id: int
+    email: Optional[EmailStr] = None  # Optional if user is logged in
+
+
+class StockNotificationResponse(BaseModel):
+    id: int
+    email: str
+    product_id: int
+    is_notified: bool
+    created_at: datetime
+    product: Optional[ProductListResponse] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# LOYALTY POINTS SCHEMAS
+# ============================================
+
+class PointsSettingsResponse(BaseModel):
+    id: int
+    points_per_taka: float
+    taka_per_point: float
+    min_redeem_points: int
+    max_redeem_percentage: float
+    points_expiry_days: int
+    is_active: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PointsSettingsUpdate(BaseModel):
+    points_per_taka: Optional[float] = None
+    taka_per_point: Optional[float] = None
+    min_redeem_points: Optional[int] = None
+    max_redeem_percentage: Optional[float] = None
+    points_expiry_days: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
+class PointsTransactionResponse(BaseModel):
+    id: int
+    points: int
+    transaction_type: str
+    description: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PointsBalanceResponse(BaseModel):
+    balance: int
+    pending_expiry: int  # Points expiring within 30 days
+    next_expiry_date: Optional[datetime] = None
+
+
+class PointsRedeemRequest(BaseModel):
+    points: int = Field(..., gt=0)
+    order_subtotal: float = Field(..., gt=0)
+
+
+class PointsRedeemResponse(BaseModel):
+    points_used: int
+    discount_amount: float
+    remaining_balance: int
+
+
+# ============================================
+# REFERRAL SCHEMAS
+# ============================================
+
+class ReferralInvite(BaseModel):
+    email: EmailStr
+
+
+class ReferralCodeResponse(BaseModel):
+    referral_code: str
+    referral_url: str
+
+
+class ReferralStatsResponse(BaseModel):
+    total_referrals: int
+    successful_referrals: int
+    pending_referrals: int
+    total_points_earned: int
+
+
+class ReferralResponse(BaseModel):
+    id: int
+    referred_email: str
+    status: str
+    referrer_reward_points: int
+    referred_reward_points: int
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# PRODUCT BUNDLE SCHEMAS
+# ============================================
+
+class ProductBundleItemCreate(BaseModel):
+    product_id: int
+    quantity: int = 1
+
+
+class ProductBundleItemResponse(BaseModel):
+    id: int
+    product_id: int
+    quantity: int
+    product: Optional[ProductListResponse] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductBundleCreate(BaseModel):
+    name: str
+    slug: str
+    description: Optional[str] = None
+    bundle_price: float = Field(..., gt=0)
+    savings_text: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    items: List[ProductBundleItemCreate] = []
+
+
+class ProductBundleUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    bundle_price: Optional[float] = None
+    savings_text: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    is_active: Optional[bool] = None
+
+
+class ProductBundleResponse(BaseModel):
+    id: int
+    name: str
+    slug: str
+    description: Optional[str] = None
+    bundle_price: float
+    savings_text: Optional[str] = None
+    image: Optional[str] = None
+    is_active: bool
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    created_at: datetime
+    items: List[ProductBundleItemResponse] = []
+    original_total: float = 0  # Sum of individual product prices
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# GIFT CARD SCHEMAS
+# ============================================
+
+class GiftCardPurchase(BaseModel):
+    amount: float = Field(..., ge=100, le=50000)  # 100-50000 BDT
+    recipient_email: Optional[EmailStr] = None
+    recipient_name: Optional[str] = None
+    personal_message: Optional[str] = None
+
+
+class GiftCardCheck(BaseModel):
+    code: str
+
+
+class GiftCardRedeem(BaseModel):
+    code: str
+    amount: Optional[float] = None  # If not provided, use full balance
+
+
+class GiftCardResponse(BaseModel):
+    id: int
+    code: str
+    initial_balance: float
+    current_balance: float
+    recipient_email: Optional[str] = None
+    recipient_name: Optional[str] = None
+    is_active: bool
+    expires_at: Optional[datetime] = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GiftCardTransactionResponse(BaseModel):
+    id: int
+    amount: float
+    transaction_type: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# PUSH NOTIFICATION SCHEMAS
+# ============================================
+
+class PushSubscriptionCreate(BaseModel):
+    endpoint: str
+    p256dh_key: str
+    auth_key: str
+
+
+class PushSubscriptionResponse(BaseModel):
+    id: int
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# PRODUCT Q&A SCHEMAS
+# ============================================
+
+class ProductQuestionCreate(BaseModel):
+    question: str = Field(..., min_length=10, max_length=500)
+
+
+class ProductAnswerCreate(BaseModel):
+    answer: str = Field(..., min_length=5, max_length=1000)
+
+
+class ProductAnswerResponse(BaseModel):
+    id: int
+    answer: str
+    is_admin_answer: bool
+    helpful_count: int
+    created_at: datetime
+    user_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductQuestionResponse(BaseModel):
+    id: int
+    product_id: int
+    question: str
+    is_answered: bool
+    created_at: datetime
+    user_name: Optional[str] = None
+    answers: List[ProductAnswerResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# PRODUCT VARIANT SCHEMAS
+# ============================================
+
+class ProductVariantTypeCreate(BaseModel):
+    name: str
+    display_type: str = "dropdown"  # dropdown, color_swatch, button
+
+
+class ProductVariantTypeResponse(BaseModel):
+    id: int
+    name: str
+    display_type: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductVariantAttributeCreate(BaseModel):
+    variant_type_id: int
+    value: str
+
+
+class ProductVariantAttributeResponse(BaseModel):
+    id: int
+    variant_type_id: int
+    value: str
+    variant_type: Optional[ProductVariantTypeResponse] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductVariantCreate(BaseModel):
+    sku: str
+    price: Optional[float] = None
+    stock: int = 0
+    attributes: List[ProductVariantAttributeCreate] = []
+
+
+class ProductVariantResponse(BaseModel):
+    id: int
+    product_id: int
+    sku: str
+    price: Optional[float] = None
+    stock: int
+    is_active: bool
+    attribute_values: List[ProductVariantAttributeResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================
+# EXPORT SCHEMAS
+# ============================================
+
+class ExportRequest(BaseModel):
+    format: str = "csv"  # csv or xlsx
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+
+
+# ============================================
+# CUSTOMER INSIGHTS SCHEMAS
+# ============================================
+
+class CustomerSegment(BaseModel):
+    name: str
+    count: int
+    percentage: float
+
+
+class CustomerInsightsResponse(BaseModel):
+    total_customers: int
+    new_customers_30d: int
+    repeat_purchase_rate: float
+    average_order_value: float
+    customer_lifetime_value: float
+    segments: List[CustomerSegment]

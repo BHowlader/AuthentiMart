@@ -464,10 +464,16 @@
     .flash-sale-header {
         flex-direction: column;
         text-align: center;
+        gap: 16px;
     }
 
     .flash-sale-title-area {
         flex-direction: column;
+        gap: 12px;
+    }
+
+    .flash-sale-timer-area {
+        justify-content: center;
     }
 
     .flash-sale-carousel {
@@ -478,24 +484,79 @@
     .flash-sale-nav {
         display: none;
     }
+
+    .flash-sale-products {
+        padding: 10px;
+        gap: 16px;
+    }
 }
 
 @media (max-width: 768px) {
     .flash-sale-section {
-        padding: 40px 0;
+        padding: 30px 0;
+    }
+
+    .flash-sale-header {
+        margin-bottom: 20px;
+    }
+
+    .flash-sale-badge {
+        font-size: 0.95rem;
+        padding: 6px 14px;
+    }
+
+    .flash-sale-name {
+        font-size: 1.25rem;
     }
 
     .flash-sale-card {
-        flex: 0 0 180px;
+        flex: 0 0 160px;
+    }
+
+    .flash-sale-card-content {
+        padding: 12px;
+    }
+
+    .flash-sale-card-title {
+        font-size: 0.85rem;
+        height: auto;
+        -webkit-line-clamp: 2;
+    }
+
+    .flash-price {
+        font-size: 1.1rem;
+    }
+
+    .original-price {
+        font-size: 0.8rem;
     }
 
     .countdown-timer {
-        flex-direction: column;
-        padding: 12px 16px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px 16px;
+        gap: 8px;
+    }
+
+    .countdown-units {
+        gap: 2px;
+    }
+
+    .countdown-unit {
+        min-width: 40px;
     }
 
     .countdown-value {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+    }
+
+    .countdown-text {
+        font-size: 0.6rem;
+    }
+
+    .countdown-separator {
+        font-size: 1.1rem;
     }
 
     .flash-sale-content {
@@ -504,6 +565,114 @@
     }
 
     .flash-sale-info h2 {
-        font-size: 1.75rem;
+        font-size: 1.5rem;
+    }
+
+    .flash-sale-info p {
+        font-size: 0.95rem;
+    }
+
+    .flash-sale-cart-btn {
+        padding: 8px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .flash-sale-section {
+        padding: 24px 0;
+    }
+
+    .flash-sale-badge {
+        font-size: 0.85rem;
+        padding: 5px 12px;
+    }
+
+    .flash-sale-name {
+        font-size: 1.1rem;
+    }
+
+    .flash-sale-card {
+        flex: 0 0 140px;
+    }
+
+    .flash-sale-card-content {
+        padding: 10px;
+    }
+
+    .flash-sale-card-title {
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+    }
+
+    .flash-sale-price {
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .flash-price {
+        font-size: 1rem;
+    }
+
+    .original-price {
+        font-size: 0.7rem;
+    }
+
+    .flash-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+
+    .progress-bar {
+        height: 6px;
+    }
+
+    .progress-text {
+        font-size: 0.65rem;
+    }
+
+    .flash-sale-cart-btn {
+        padding: 6px;
+        font-size: 0.75rem;
+        gap: 4px;
+    }
+
+    .flash-sale-view-all {
+        font-size: 0.85rem;
+    }
+
+    .countdown-timer {
+        padding: 8px 12px;
+    }
+
+    .countdown-unit {
+        min-width: 35px;
+    }
+
+    .countdown-value {
+        font-size: 1rem;
+    }
+
+    .countdown-label {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .flash-sale-card {
+        flex: 0 0 130px;
+    }
+
+    .flash-sale-card-content {
+        padding: 8px;
+    }
+
+    .flash-sale-badge {
+        font-size: 0.75rem;
+    }
+
+    .countdown-timer {
+        padding: 6px 10px;
     }
 }

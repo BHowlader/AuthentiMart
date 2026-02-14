@@ -58,22 +58,45 @@ const Navbar = () => {
         navigate('/')
     }
 
-    const categories = [
-        { name: 'Lip Products', path: '/products/lip-products', icon: '💄' },
-        { name: 'Eye Products', path: '/products/eye-products', icon: '👁️' },
-        { name: 'Face Products', path: '/products/face-products', icon: '✨' },
-        { name: 'Skincare', path: '/products/skincare', icon: '🧴' },
-        { name: "Men's Grooming", path: '/products/mens-grooming', icon: '🧔' },
-        { name: 'Tech Accessories', path: '/products/tech-accessories', icon: '🎧' },
-        { name: 'Home Appliances', path: '/products/home-appliances', icon: '🏠' },
-        { name: 'Home Decor', path: '/products/home-decor', icon: '🪴' },
-        { name: 'Ladies Fashion', path: '/products/ladies-fashion', icon: '👜' },
-        { name: 'Baby & Kids', path: '/products/baby-kids', icon: '👶' },
-        { name: 'Travel', path: '/products/travel-luggage', icon: '🧳' },
-        { name: 'Toys & Gifts', path: '/products/toys-collectibles', icon: '🧸' },
-        { name: 'Smart Home', path: '/products/smart-home', icon: '📷' },
-        { name: 'Gift Bundles', path: '/products/bundles', icon: '🎁' },
+    const categoryGroups = [
+        {
+            title: 'Beauty',
+            categories: [
+                { name: 'Lip Products', path: '/products/lip-products', icon: '💄' },
+                { name: 'Eye Products', path: '/products/eye-products', icon: '👁️' },
+                { name: 'Face Products', path: '/products/face-products', icon: '✨' },
+                { name: 'Skincare', path: '/products/skincare', icon: '🧴' },
+            ]
+        },
+        {
+            title: 'Lifestyle',
+            categories: [
+                { name: "Men's Grooming", path: '/products/mens-grooming', icon: '🧔' },
+                { name: 'Ladies Fashion', path: '/products/ladies-fashion', icon: '👜' },
+                { name: 'Baby & Kids', path: '/products/baby-kids', icon: '👶' },
+                { name: 'Travel', path: '/products/travel-luggage', icon: '🧳' },
+            ]
+        },
+        {
+            title: 'Tech & Home',
+            categories: [
+                { name: 'Tech Accessories', path: '/products/tech-accessories', icon: '🎧' },
+                { name: 'Home Appliances', path: '/products/home-appliances', icon: '🏠' },
+                { name: 'Home Decor', path: '/products/home-decor', icon: '🪴' },
+                { name: 'Smart Home', path: '/products/smart-home', icon: '📷' },
+            ]
+        },
+        {
+            title: 'Gifts & More',
+            categories: [
+                { name: 'Toys & Gifts', path: '/products/toys-collectibles', icon: '🧸' },
+                { name: 'Gift Bundles', path: '/products/bundles', icon: '🎁' },
+            ]
+        }
     ]
+
+    // Flat list for mobile menu
+    const allCategories = categoryGroups.flatMap(group => group.categories)
 
     return (
         <header className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
@@ -93,13 +116,28 @@ const Navbar = () => {
                         <button className="nav-link dropdown-trigger">
                             Categories <ChevronDown size={16} />
                         </button>
-                        <div className="dropdown-menu">
-                            {categories.map((cat) => (
-                                <Link key={cat.path} to={cat.path} className="dropdown-item">
-                                    <span>{cat.icon}</span>
-                                    {cat.name}
+                        <div className="dropdown-menu mega-menu">
+                            <div className="mega-menu-grid">
+                                {categoryGroups.map((group) => (
+                                    <div key={group.title} className="mega-menu-column">
+                                        <h4 className="mega-menu-title">{group.title}</h4>
+                                        <div className="mega-menu-items">
+                                            {group.categories.map((cat) => (
+                                                <Link key={cat.path} to={cat.path} className="mega-menu-item">
+                                                    <span className="mega-menu-icon">{cat.icon}</span>
+                                                    <span className="mega-menu-name">{cat.name}</span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mega-menu-footer">
+                                <Link to="/products" className="mega-menu-view-all">
+                                    View All Products
+                                    <ChevronDown size={14} style={{ transform: 'rotate(-90deg)' }} />
                                 </Link>
-                            ))}
+                            </div>
                         </div>
                     </div>
                     <Link to="/products" className={`nav-link ${location.pathname === '/products' ? 'active' : ''}`}>
@@ -249,7 +287,7 @@ const Navbar = () => {
                         </Link>
                         <div className="mobile-nav-section">
                             <p className="mobile-nav-title">Categories</p>
-                            {categories.map((cat) => (
+                            {allCategories.map((cat) => (
                                 <Link key={cat.path} to={cat.path} className="mobile-nav-link">
                                     <span>{cat.icon}</span>
                                     {cat.name}

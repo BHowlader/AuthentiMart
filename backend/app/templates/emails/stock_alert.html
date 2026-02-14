@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Back in Stock: {{ product.name }}{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Great News!</h2>
+
+<p>Hi {{ user_name }},</p>
+
+<p>The product you've been waiting for is now back in stock!</p>
+
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; display: flex; align-items: center;">
+    {% if product.image %}
+    <img src="{{ app_url }}{{ product.image }}" alt="{{ product.name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; margin-right: 20px;">
+    {% endif %}
+    <div>
+        <h3 style="margin: 0 0 10px 0; color: #333;">{{ product.name }}</h3>
+        {% if product.original_price and product.original_price > product.price %}
+        <p style="margin: 0; text-decoration: line-through; color: #999;">৳{{ "%.2f"|format(product.original_price) }}</p>
+        {% endif %}
+        <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: 700; color: #667eea;">৳{{ "%.2f"|format(product.price) }}</p>
+    </div>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ product_url }}" class="btn">Buy Now Before It's Gone!</a>
+</div>
+
+<p style="color: #666; font-size: 14px; margin-top: 25px;">
+    <strong>Hurry!</strong> This popular item tends to sell out quickly. Don't miss your chance to get it.
+</p>
+
+<p style="color: #999; font-size: 12px; margin-top: 20px;">
+    You're receiving this email because you requested to be notified when this product becomes available.
+</p>
+{% endblock %}

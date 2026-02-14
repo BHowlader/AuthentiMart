@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Your Order Has Been Shipped{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Your Order is On Its Way!</h2>
+
+<p>Hi {{ user.name }},</p>
+
+<p>Great news! Your order <strong>#{{ order.order_number }}</strong> has been shipped and is on its way to you.</p>
+
+<div style="text-align: center;">
+    <span class="status-badge status-shipped">Shipped</span>
+</div>
+
+{% if tracking_info %}
+<div class="highlight-box">
+    <p style="margin: 0; opacity: 0.9;">Tracking Number</p>
+    <div class="code">{{ order.courier_tracking_id or tracking_info.tracking_id }}</div>
+    <p style="margin: 0; opacity: 0.9;">via {{ order.courier_name|title or tracking_info.courier }}</p>
+</div>
+{% endif %}
+
+<h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">Delivery Address</h3>
+<p style="margin: 10px 0;">
+    <strong>{{ order.shipping_name }}</strong><br>
+    {{ order.shipping_address }}<br>
+    {{ order.shipping_area }}{% if order.shipping_area %}, {% endif %}{{ order.shipping_city }}<br>
+    Phone: {{ order.shipping_phone }}
+</p>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{{ app_url }}/orders/{{ order.order_number }}" class="btn">Track Your Order</a>
+</div>
+
+<p style="color: #666; font-size: 14px; margin-top: 20px;">
+    <strong>Estimated Delivery:</strong> 2-5 business days depending on your location.
+</p>
+
+<p style="color: #666; font-size: 14px;">
+    If you have any questions about your delivery, feel free to contact us.
+</p>
+{% endblock %}

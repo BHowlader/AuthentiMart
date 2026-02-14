@@ -730,18 +730,28 @@ async def get_all_products(
     limit: int = 20,
     search: Optional[str] = None,
     category_id: Optional[int] = None,
+    has_image: Optional[bool] = None,  # Filter: True=with images, False=without images
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_admin)
 ):
     """Get all products for admin management"""
-    
+
     query = db.query(Product)
-    
+
     if search:
         query = query.filter(Product.name.ilike(f"%{search}%"))
-    
+
     if category_id:
         query = query.filter(Product.category_id == category_id)
+
+    # Filter by image status
+    if has_image is not None:
+        if has_image:
+            # Products WITH images
+            query = query.filter(Product.images.any())
+        else:
+            # Products WITHOUT images (not visible on website)
+            query = query.filter(~Product.images.any())
     
     total = query.count()
     products = query.offset((page - 1) * limit).limit(limit).all()
@@ -754,6 +764,9 @@ async def get_all_products(
         
         category = db.query(Category).filter(Category.id == product.category_id).first()
         
+        # Check if product has any images
+        has_image = db.query(ProductImage).filter(ProductImage.product_id == product.id).first() is not None
+
         result.append({
             "id": product.id,
             "name": product.name,
@@ -770,6 +783,7 @@ async def get_all_products(
             "is_new": product.is_new,
             "is_active": product.is_active,
             "image": image.url if image else None,
+            "has_image": has_image,  # Indicates if product is visible on website
             "created_at": product.created_at
         })
     
