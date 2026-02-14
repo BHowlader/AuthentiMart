@@ -607,11 +607,15 @@
 
     .hero-slide>.container {
         padding: 0 20px;
+        justify-content: center;
     }
 
     .hero-content {
         text-align: center;
         max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     .hero-title {
@@ -720,6 +724,7 @@
 
     .hero-slide>.container {
         padding: 0 16px;
+        justify-content: center;
     }
 
     .hero-title {
@@ -820,6 +825,10 @@
     .hero {
         height: 250px;
         margin: 8px;
+    }
+
+    .hero-slide>.container {
+        justify-content: center;
     }
 
     .hero-badge {
