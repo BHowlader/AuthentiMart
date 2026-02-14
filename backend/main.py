@@ -39,50 +39,60 @@ async def seed_initial_data():
     """Seed initial categories and sample products."""
     from app.database import SessionLocal
     from app.models import Category, Product, ProductImage
-    
+
     db = SessionLocal()
-    
+
     try:
-        # Check if already seeded
-        existing = db.query(Category).first()
-        if existing:
-            return
-        
-        # Create categories
+        # All categories matching hero slider links
         categories = [
-            {
-                "name": "Men's Cosmetics",
-                "slug": "mens-cosmetics",
-                "description": "Premium skincare and grooming products for men",
-                "image": "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400"
-            },
-            {
-                "name": "Women's Cosmetics",
-                "slug": "womens-cosmetics",
-                "description": "Luxurious beauty and skincare products for women",
-                "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400"
-            },
-            {
-                "name": "Home Appliances",
-                "slug": "home-appliances",
-                "description": "Modern appliances for your home",
-                "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400"
-            },
-            {
-                "name": "Electronic Essentials",
-                "slug": "electronics",
-                "description": "Latest gadgets and electronic accessories",
-                "image": "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400"
-            }
+            # Beauty Categories
+            {"name": "Lip Products", "slug": "lip-products", "description": "Lipsticks, lip glosses, and lip care products.", "image": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600"},
+            {"name": "Eye Products", "slug": "eye-products", "description": "Eyeshadows, mascaras, and eye makeup essentials.", "image": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=600"},
+            {"name": "Face Products", "slug": "face-products", "description": "Foundations, concealers, and face makeup.", "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600"},
+            {"name": "Skincare", "slug": "skincare", "description": "Scientific formulations for all skin types.", "image": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600"},
+            {"name": "Hair Care", "slug": "hair-care", "description": "Treatments for healthy, fortified hair.", "image": "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600"},
+            {"name": "Fragrance", "slug": "fragrance", "description": "Subtle and bold scents for everyone.", "image": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600"},
+            # Lifestyle Categories
+            {"name": "Men's Grooming", "slug": "mens-grooming", "description": "Essentials designed specifically for men.", "image": "https://images.unsplash.com/photo-1621607512214-68297480165e?w=600"},
+            {"name": "Ladies Fashion", "slug": "ladies-fashion", "description": "Trendy bags, jewelry, and accessories for women.", "image": "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600"},
+            {"name": "Baby & Kids", "slug": "baby-kids", "description": "Safe, high-quality essentials for your little ones.", "image": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600"},
+            {"name": "Travel & Luggage", "slug": "travel-luggage", "description": "Durable luggage and travel accessories.", "image": "https://images.unsplash.com/photo-1553531384-411a247ccd73?w=600"},
+            # Tech & Home Categories
+            {"name": "Tech Accessories", "slug": "tech-accessories", "description": "Earbuds, power banks, chargers & gaming gear.", "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600"},
+            {"name": "Home Appliances", "slug": "home-appliances", "description": "Air fryers, kettles & smart kitchen devices.", "image": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600"},
+            {"name": "Home Decor", "slug": "home-decor", "description": "Chic vases, candles & aesthetic pieces.", "image": "https://images.unsplash.com/photo-1513519245088-0e12902e35a6?w=600"},
+            {"name": "Smart Home", "slug": "smart-home", "description": "Security cameras, smart devices & automation.", "image": "https://images.unsplash.com/photo-1558002038-1055907df827?w=600"},
+            # Gifts & More
+            {"name": "Toys & Collectibles", "slug": "toys-collectibles", "description": "STEM toys, anime figures & premium collectibles.", "image": "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600"},
+            {"name": "Gift Bundles", "slug": "bundles", "description": "Curated gift sets with exclusive discounts.", "image": "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600"},
+            # Legacy categories for existing products
+            {"name": "Men's Cosmetics", "slug": "mens-cosmetics", "description": "Premium skincare and grooming products for men", "image": "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400"},
+            {"name": "Women's Cosmetics", "slug": "womens-cosmetics", "description": "Luxurious beauty and skincare products for women", "image": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400"},
+            {"name": "Electronic Essentials", "slug": "electronics", "description": "Latest gadgets and electronic accessories", "image": "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400"},
         ]
-        
+
+        # Add missing categories (check by slug)
         category_ids = {}
+        added_count = 0
         for cat_data in categories:
-            category = Category(**cat_data)
-            db.add(category)
-            db.commit()
-            db.refresh(category)
-            category_ids[cat_data["slug"]] = category.id
+            existing = db.query(Category).filter(Category.slug == cat_data["slug"]).first()
+            if existing:
+                category_ids[cat_data["slug"]] = existing.id
+            else:
+                category = Category(**cat_data)
+                db.add(category)
+                db.commit()
+                db.refresh(category)
+                category_ids[cat_data["slug"]] = category.id
+                added_count += 1
+
+        if added_count > 0:
+            print(f"Added {added_count} new categories")
+
+        # Check if products already exist
+        existing_products = db.query(Product).first()
+        if existing_products:
+            return
         
         # Create sample products
         products = [
