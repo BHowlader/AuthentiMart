@@ -597,12 +597,26 @@
 @media (max-width: 768px) {
     .home-page {
         padding-top: 65px;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
     }
 
     .hero {
         height: 320px;
         margin: 12px;
         border-radius: var(--radius-md);
+        width: calc(100% - 24px);
+        max-width: calc(100vw - 24px);
+    }
+
+    .hero-slider {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .hero-slide {
+        width: 100%;
     }
 
     .hero-overlay {
@@ -615,6 +629,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 0 !important;
+        margin: 0 !important;
         width: calc(100% - 32px);
         max-width: calc(100% - 32px);
         display: flex;
