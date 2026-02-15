@@ -229,20 +229,12 @@ const HomePage = () => {
         }
     ]
 
-    // Fetch categories and products
+    // Fetch categories first (visible first), then products progressively
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setLoading(true)
-
-                // Fetch all data in parallel for better performance
-                const [categoriesRes, newArrivalsRes, bestSellersRes] = await Promise.all([
-                    categoriesAPI.getHomepage(12),
-                    productsAPI.getNewArrivals(),
-                    productsAPI.getBestSellers()
-                ])
-
-                // Process categories
+                // Priority 1: Fetch categories first (visible immediately after hero)
+                const categoriesRes = await categoriesAPI.getHomepage(12)
                 const mappedCategories = (categoriesRes.data || []).map(cat => ({
                     id: cat.id,
                     name: cat.name,
@@ -252,6 +244,13 @@ const HomePage = () => {
                     icon: categoryIcons[cat.slug] || '📦'
                 }))
                 setCategories(mappedCategories)
+                setLoading(false) // Show content as soon as categories are ready
+
+                // Priority 2: Fetch products in parallel (below the fold)
+                const [newArrivalsRes, bestSellersRes] = await Promise.all([
+                    productsAPI.getNewArrivals(),
+                    productsAPI.getBestSellers()
+                ])
 
                 // Process new arrivals
                 const newProducts = (newArrivalsRes.data.items || []).slice(0, 4).map(p => ({
@@ -293,7 +292,6 @@ const HomePage = () => {
 
             } catch (error) {
                 console.error('Error fetching data:', error)
-            } finally {
                 setLoading(false)
             }
         }
@@ -301,9 +299,10 @@ const HomePage = () => {
         fetchData()
     }, [])
 
-    // Preload hero images
+    // Preload hero images progressively - first 2 immediately, rest deferred
     useEffect(() => {
-        const imagePromises = heroSlides.map((slide) => {
+        // Load first 2 slides immediately for fast initial render
+        const priorityImages = heroSlides.slice(0, 2).map((slide) => {
             return new Promise((resolve) => {
                 const img = new Image()
                 img.onload = resolve
@@ -311,7 +310,18 @@ const HomePage = () => {
                 img.src = slide.bgImage
             })
         })
-        Promise.all(imagePromises).then(() => setImagesLoaded(true))
+
+        Promise.all(priorityImages).then(() => {
+            setImagesLoaded(true)
+
+            // Defer loading remaining images after initial render
+            setTimeout(() => {
+                heroSlides.slice(2).forEach((slide) => {
+                    const img = new Image()
+                    img.src = slide.bgImage
+                })
+            }, 1000)
+        })
     }, [])
 
     // Trigger initial animation on mount
