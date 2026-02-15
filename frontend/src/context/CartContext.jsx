@@ -65,9 +65,13 @@ export const CartProvider = ({ children }) => {
         }
     }, [])
 
-    // Fetch cart on mount and when token changes
+    // Fetch cart after initial render (deferred for performance)
     useEffect(() => {
-        fetchCart()
+        // Defer cart fetch to avoid blocking initial render
+        const timeoutId = setTimeout(() => {
+            fetchCart()
+        }, 100)
+        return () => clearTimeout(timeoutId)
     }, [fetchCart])
 
     // Listen for storage changes (login/logout)
