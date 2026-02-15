@@ -107,6 +107,32 @@ export const AdminAuthProvider = ({ children }) => {
         }
     }
 
+    const adminGoogleLogin = async (accessToken) => {
+        try {
+            const response = await adminApi.post('/auth/social-login', {
+                provider: 'google',
+                token: accessToken,
+            })
+            const { token: newToken, user: newUser } = response.data
+
+            // Verify user is an admin
+            if (newUser.role !== 'admin') {
+                return { success: false, error: 'Access denied. Admin credentials required.' }
+            }
+
+            // Store in admin-specific keys only (sessionStorage - doesn't persist)
+            adminStorage.setItem(ADMIN_TOKEN_KEY, newToken)
+            adminStorage.setItem(ADMIN_USER_KEY, JSON.stringify(newUser))
+            setAdminToken(newToken)
+            setAdmin(newUser)
+
+            return { success: true }
+        } catch (error) {
+            const message = error.response?.data?.detail || error.message || 'Google login failed'
+            return { success: false, error: message }
+        }
+    }
+
     const adminLogout = () => {
         adminStorage.removeItem(ADMIN_TOKEN_KEY)
         adminStorage.removeItem(ADMIN_USER_KEY)
@@ -120,6 +146,7 @@ export const AdminAuthProvider = ({ children }) => {
         loading,
         isAuthenticated: !!admin,
         adminLogin,
+        adminGoogleLogin,
         adminLogout,
     }
 

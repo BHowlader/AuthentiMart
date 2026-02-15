@@ -8,6 +8,13 @@
     background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%);
 }
 
+/* Single social button for admin (Google only) */
+.admin-auth-page .social-login {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
 /* Error message styling */
 .auth-error-message {
     display: flex;
