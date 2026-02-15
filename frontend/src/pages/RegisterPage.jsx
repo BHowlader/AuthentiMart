@@ -109,11 +109,11 @@ const RegisterPage = () => {
             password: formData.password
         })
 
+        setLoading(false)
+
         if (result.success) {
             navigate('/')
         }
-
-        setLoading(false)
     }
 
     return (

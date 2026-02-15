@@ -39,7 +39,8 @@ api.interceptors.response.use(
     (error) => {
         // Don't redirect on 401 for login endpoints - let the login form handle it
         const isLoginRequest = error.config?.url?.includes('/auth/login')
-        if (error.response?.status === 401 && !isLoginRequest) {
+        const isAlreadyOnLogin = window.location.pathname === '/login' || window.location.pathname === '/register'
+        if (error.response?.status === 401 && !isLoginRequest && !isAlreadyOnLogin) {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             window.location.href = '/login'

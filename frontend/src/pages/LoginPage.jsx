@@ -12,10 +12,17 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
 
-    const { login, socialLogin } = useAuth()
+    const { login, socialLogin, isAuthenticated, loading: authLoading } = useAuth()
     const navigate = useNavigate()
     const [searchParams] = useSearchParams()
     const redirect = searchParams.get('redirect') || '/'
+
+    // Redirect already-authenticated users
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            navigate(redirect, { replace: true })
+        }
+    }, [isAuthenticated, authLoading, navigate, redirect])
 
     // Google Login
     const handleGoogleLogin = useGoogleLogin({
@@ -53,11 +60,11 @@ const LoginPage = () => {
 
         const result = await login(email, password)
 
+        setLoading(false)
+
         if (result.success) {
             navigate(redirect)
         }
-
-        setLoading(false)
     }
 
     return (

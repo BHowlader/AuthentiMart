@@ -310,10 +310,6 @@ vercel_url = os.environ.get("VERCEL_URL")
 if vercel_url:
     allowed_origins.append(f"https://{vercel_url}")
 
-# In debug mode or serverless, allow all origins (same-origin requests don't need CORS)
-if settings.debug or IS_SERVERLESS:
-    allowed_origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
