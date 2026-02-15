@@ -1482,3 +1482,82 @@ async def update_customer_status(
         "message": f"Customer {'activated' if is_active else 'deactivated'} successfully",
         "is_active": is_active
     }
+
+
+# ============ Admin User Management ============
+
+@router.get("/users")
+async def get_all_users(
+    page: int = 1,
+    limit: int = 20,
+    search: Optional[str] = None,
+    role: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Get all users (for admin management)"""
+
+    query = db.query(User)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.filter(
+            (User.name.ilike(search_pattern)) |
+            (User.email.ilike(search_pattern))
+        )
+
+    if role:
+        query = query.filter(User.role == role)
+
+    total = query.count()
+    users = query.order_by(desc(User.created_at)).offset((page - 1) * limit).limit(limit).all()
+
+    return {
+        "users": [
+            {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "phone": user.phone,
+                "picture": user.picture,
+                "role": user.role,
+                "is_active": user.is_active,
+                "created_at": user.created_at
+            }
+            for user in users
+        ],
+        "total": total,
+        "page": page,
+        "pages": math.ceil(total / limit)
+    }
+
+
+@router.put("/users/{user_id}/role")
+async def update_user_role(
+    user_id: int,
+    role: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Update user role (promote/demote admin)"""
+
+    if role not in [UserRole.USER.value, UserRole.ADMIN.value]:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be 'user' or 'admin'")
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Prevent self-demotion
+    if user.id == current_user.id and role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=400, detail="Cannot demote yourself")
+
+    user.role = role
+    db.commit()
+
+    return {
+        "message": f"User role updated to {role}",
+        "user_id": user_id,
+        "new_role": role
+    }

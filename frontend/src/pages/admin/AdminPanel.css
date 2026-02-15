@@ -3249,3 +3249,41 @@
     background: var(--accent-red);
     transform: scale(1.1);
 }
+
+/* ============================================
+   Admin Users Page Styles
+   ============================================ */
+
+.status-badge.admin-role {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.2));
+    color: #A78BFA;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-badge.user-role {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9CA3AF;
+}
+
+.you-badge {
+    font-size: 0.7rem;
+    color: var(--primary);
+    margin-left: 4px;
+    font-weight: 500;
+}
+
+.current-user-row {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.users-table .action-buttons .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.users-table .action-buttons .btn svg {
+    flex-shrink: 0;
+}

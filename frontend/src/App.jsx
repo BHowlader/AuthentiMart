@@ -33,6 +33,7 @@ import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminPredictions from './pages/admin/AdminPredictions'
 import AdminFlashSales from './pages/admin/AdminFlashSales'
 import AdminVouchers from './pages/admin/AdminVouchers'
+import AdminUsers from './pages/admin/AdminUsers'
 import AdminAuthWrapper from './components/AdminAuthWrapper'
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -115,6 +116,7 @@ function App() {
                                 <Route path="customers" element={<AdminCustomers />} />
                                 <Route path="analytics" element={<AdminAnalytics />} />
                                 <Route path="predictions" element={<AdminPredictions />} />
+                                <Route path="users" element={<AdminUsers />} />
                             </Route>
                         </Route>
                     </Routes>
