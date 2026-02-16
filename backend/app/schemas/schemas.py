@@ -887,3 +887,93 @@ class CustomerInsightsResponse(BaseModel):
     average_order_value: float
     customer_lifetime_value: float
     segments: List[CustomerSegment]
+
+
+# ============================================
+# VISITOR ANALYTICS SCHEMAS
+# ============================================
+
+class PageViewCreate(BaseModel):
+    """Schema for tracking a page view from the client"""
+    page_path: str
+    page_title: Optional[str] = None
+    referrer: Optional[str] = None
+    screen_width: Optional[int] = None
+    screen_height: Optional[int] = None
+
+    # UTM parameters
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+
+
+class TrafficSourceBreakdown(BaseModel):
+    source: str
+    count: int
+    percentage: float
+
+
+class GeographicBreakdown(BaseModel):
+    country_code: str
+    country_name: str
+    count: int
+    percentage: float
+
+
+class DeviceBreakdown(BaseModel):
+    device_type: str
+    count: int
+    percentage: float
+
+
+class BrowserBreakdown(BaseModel):
+    browser: str
+    count: int
+    percentage: float
+
+
+class PageBreakdown(BaseModel):
+    page_path: str
+    page_title: Optional[str] = None
+    views: int
+    unique_visitors: int
+
+
+class VisitorTrendPoint(BaseModel):
+    date: str
+    page_views: int
+    unique_visitors: int
+    sessions: int
+
+
+class VisitorAnalyticsSummary(BaseModel):
+    """Summary stats for the analytics dashboard"""
+    total_page_views: int
+    unique_visitors: int
+    total_sessions: int
+    avg_session_duration: float
+    avg_pages_per_session: float
+    bounce_rate: float
+
+    # Change percentages vs previous period
+    page_views_change: float
+    visitors_change: float
+    sessions_change: float
+
+
+class VisitorAnalyticsResponse(BaseModel):
+    """Full analytics response for admin dashboard"""
+    summary: VisitorAnalyticsSummary
+    traffic_sources: List[TrafficSourceBreakdown]
+    geographic: List[GeographicBreakdown]
+    devices: List[DeviceBreakdown]
+    browsers: List[BrowserBreakdown]
+    top_pages: List[PageBreakdown]
+    trends: List[VisitorTrendPoint]
+
+
+class RealTimeVisitors(BaseModel):
+    """Real-time active visitors count"""
+    active_visitors: int
+    active_sessions: int
+    top_pages: List[dict]

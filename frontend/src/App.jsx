@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import CompareBar from './components/CompareBar'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import usePageTracking from './hooks/usePageTracking'
 
 // Critical pages - loaded eagerly for fast initial render
 import HomePage from './pages/HomePage'
@@ -40,6 +41,7 @@ const AdminPredictions = lazy(() => import('./pages/admin/AdminPredictions'))
 const AdminFlashSales = lazy(() => import('./pages/admin/AdminFlashSales'))
 const AdminVouchers = lazy(() => import('./pages/admin/AdminVouchers'))
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'))
+const AdminVisitorAnalytics = lazy(() => import('./pages/admin/AdminVisitorAnalytics'))
 
 // Loading fallback component
 const PageLoader = () => (
@@ -55,6 +57,9 @@ function App() {
     const showNavbar = !isAdminRoute && !hideNavFooterPaths.includes(location.pathname)
     const showFooter = !isAdminRoute && !hideNavFooterPaths.includes(location.pathname)
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"
+
+    // Track page views for analytics
+    usePageTracking()
 
     useEffect(() => {
         window.scrollTo(0, 0)
@@ -129,6 +134,7 @@ function App() {
                                     <Route path="orders" element={<AdminOrders />} />
                                     <Route path="customers" element={<AdminCustomers />} />
                                     <Route path="analytics" element={<AdminAnalytics />} />
+                                    <Route path="visitor-analytics" element={<AdminVisitorAnalytics />} />
                                     <Route path="predictions" element={<AdminPredictions />} />
                                     <Route path="users" element={<AdminUsers />} />
                                 </Route>

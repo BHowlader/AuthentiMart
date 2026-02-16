@@ -405,6 +405,12 @@
     }
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .period-selector {
     display: flex;
     gap: 0.5rem;
@@ -3286,4 +3292,345 @@
 
 .users-table .action-buttons .btn svg {
     flex-shrink: 0;
+}
+
+/* ============================================
+   VISITOR ANALYTICS STYLES
+   ============================================ */
+
+/* Real-time banner */
+.real-time-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.real-time-dot {
+    width: 10px;
+    height: 10px;
+    background: #10B981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.stat-secondary {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Analytics grid layout */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.analytics-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.analytics-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.analytics-card.chart-card {
+    grid-column: span 2;
+}
+
+/* Chart container */
+.chart-container {
+    position: relative;
+}
+
+.trend-chart {
+    width: 100%;
+    height: 200px;
+}
+
+.chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Source list */
+.source-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.source-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.source-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.source-icon {
+    font-size: 1.25rem;
+}
+
+.source-name {
+    font-weight: 500;
+    text-transform: capitalize;
+    font-size: 0.9rem;
+}
+
+.source-bar-container {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.source-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.source-percent {
+    min-width: 45px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Geographic list */
+.geo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.geo-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+.geo-flag {
+    font-size: 1.5rem;
+}
+
+.geo-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.geo-count {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.geo-percent {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Device grid */
+.device-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.device-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.device-card .device-icon {
+    color: var(--primary);
+}
+
+.device-type {
+    font-weight: 500;
+    text-transform: capitalize;
+    font-size: 0.9rem;
+}
+
+.device-percent {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.device-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Browser list */
+.browser-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.browser-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 45px;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.browser-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.browser-bar-container {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.browser-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.browser-percent {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Pages list */
+.pages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.page-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+.page-rank {
+    width: 28px;
+    height: 28px;
+    background: var(--glass-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.page-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.page-path {
+    display: block;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.page-stats {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.page-views {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.page-visitors {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-card.chart-card {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .device-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .browser-item {
+        grid-template-columns: 60px 1fr 40px;
+    }
+
+    .source-info {
+        min-width: 100px;
+    }
 }

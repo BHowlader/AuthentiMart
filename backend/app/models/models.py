@@ -718,3 +718,86 @@ class ProductVariantAttribute(Base):
 
     variant = relationship("ProductVariant", back_populates="attribute_values")
     variant_type = relationship("ProductVariantType")
+
+
+# ============================================
+# VISITOR ANALYTICS
+# ============================================
+
+class PageView(Base):
+    """Tracks individual page views with anonymized visitor data"""
+    __tablename__ = "page_views"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # Anonymized visitor identifier (hashed IP + user agent, rotated daily)
+    visitor_hash = Column(String(64), index=True, nullable=False)
+
+    # Session tracking (anonymous session ID)
+    session_id = Column(String(64), index=True, nullable=False)
+
+    # Page information
+    page_path = Column(String(500), nullable=False)
+    page_title = Column(String(255), nullable=True)
+
+    # Traffic source (parsed from referrer)
+    traffic_source = Column(String(50), default="direct")
+    referrer_url = Column(String(500), nullable=True)
+    referrer_domain = Column(String(255), nullable=True)
+
+    # UTM parameters (for campaign tracking)
+    utm_source = Column(String(100), nullable=True)
+    utm_medium = Column(String(100), nullable=True)
+    utm_campaign = Column(String(100), nullable=True)
+
+    # Geographic (from IP geolocation - country/city level only)
+    country_code = Column(String(2), nullable=True)
+    country_name = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=True)
+
+    # Device & browser (parsed from user agent)
+    device_type = Column(String(20), nullable=True)  # desktop, mobile, tablet
+    browser = Column(String(50), nullable=True)
+    os = Column(String(50), nullable=True)
+
+    # Screen resolution (if provided by client)
+    screen_width = Column(Integer, nullable=True)
+    screen_height = Column(Integer, nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class VisitorSession(Base):
+    """Aggregated session data for unique visitors"""
+    __tablename__ = "visitor_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    session_id = Column(String(64), unique=True, index=True, nullable=False)
+    visitor_hash = Column(String(64), index=True, nullable=False)
+
+    # Session metrics
+    page_count = Column(Integer, default=1)
+    entry_page = Column(String(500), nullable=True)
+    exit_page = Column(String(500), nullable=True)
+
+    # Traffic source for the session
+    traffic_source = Column(String(50), default="direct")
+    referrer_domain = Column(String(255), nullable=True)
+
+    # Geographic
+    country_code = Column(String(2), nullable=True)
+    city = Column(String(100), nullable=True)
+
+    # Device info
+    device_type = Column(String(20), nullable=True)
+    browser = Column(String(50), nullable=True)
+    os = Column(String(50), nullable=True)
+
+    # Timestamps
+    started_at = Column(DateTime(timezone=True), server_default=func.now())
+    last_activity = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Duration in seconds (calculated on session end)
+    duration_seconds = Column(Integer, nullable=True)

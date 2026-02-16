@@ -25,6 +25,7 @@ from app.api.v1 import (
     questions,
     push_notifications,
     variants,
+    visitor_analytics,
 )
 
 api_router = APIRouter()
@@ -56,3 +57,4 @@ api_router.include_router(exports.router)
 api_router.include_router(questions.router)
 api_router.include_router(push_notifications.router)
 api_router.include_router(variants.router)
+api_router.include_router(visitor_analytics.router)
