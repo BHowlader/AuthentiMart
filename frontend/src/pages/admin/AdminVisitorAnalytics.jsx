@@ -10,31 +10,41 @@ const AdminVisitorAnalytics = () => {
     const [loading, setLoading] = useState(true)
     const [period, setPeriod] = useState('7d')
     const [data, setData] = useState(null)
+    const [error, setError] = useState(null)
     const [realTime, setRealTime] = useState({ active_visitors: 0, active_sessions: 0, top_pages: [] })
     const [generating, setGenerating] = useState(false)
 
     useEffect(() => {
-        fetchAnalytics()
-    }, [period])
+        if (adminToken) {
+            fetchAnalytics()
+        }
+    }, [period, adminToken])
 
     useEffect(() => {
-        // Poll real-time data every 30 seconds
-        fetchRealTime()
-        const interval = setInterval(fetchRealTime, 30000)
-        return () => clearInterval(interval)
-    }, [])
+        if (adminToken) {
+            fetchRealTime()
+            const interval = setInterval(fetchRealTime, 30000)
+            return () => clearInterval(interval)
+        }
+    }, [adminToken])
 
     const fetchAnalytics = async () => {
         try {
             setLoading(true)
+            setError(null)
             const res = await fetch(`${API_URL}/api/v1/visitor-analytics/stats?period=${period}`, {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (res.ok) {
-                setData(await res.json())
+                const jsonData = await res.json()
+                setData(jsonData)
+            } else {
+                const errText = await res.text()
+                setError(`Failed to load analytics: ${res.status} - ${errText}`)
             }
-        } catch (error) {
-            console.error('Error fetching analytics:', error)
+        } catch (err) {
+            setError(`Error fetching analytics: ${err.message}`)
+            console.error('Error fetching analytics:', err)
         } finally {
             setLoading(false)
         }
@@ -48,25 +58,29 @@ const AdminVisitorAnalytics = () => {
             if (res.ok) {
                 setRealTime(await res.json())
             }
-        } catch (error) {
-            console.error('Error fetching real-time data:', error)
+        } catch (err) {
+            console.error('Error fetching real-time data:', err)
         }
     }
 
     const generateSampleData = async () => {
         try {
             setGenerating(true)
+            setError(null)
             const res = await fetch(`${API_URL}/api/v1/visitor-analytics/generate-sample-data`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (res.ok) {
-                // Refresh data after generating
                 await fetchAnalytics()
                 await fetchRealTime()
+            } else {
+                const errText = await res.text()
+                setError(`Failed to generate data: ${errText}`)
             }
-        } catch (error) {
-            console.error('Error generating sample data:', error)
+        } catch (err) {
+            setError(`Error generating sample data: ${err.message}`)
+            console.error('Error generating sample data:', err)
         } finally {
             setGenerating(false)
         }
@@ -120,6 +134,25 @@ const AdminVisitorAnalytics = () => {
         )
     }
 
+    if (error && !data) {
+        return (
+            <div className="admin-page-content">
+                <div className="page-header">
+                    <div>
+                        <h1>Visitor Analytics</h1>
+                        <p className="subtitle">Track where your visitors come from</p>
+                    </div>
+                </div>
+                <div className="error-banner" style={{ background: '#fee2e2', color: '#dc2626', padding: '1rem', borderRadius: '8px', marginTop: '1rem' }}>
+                    <p>{error}</p>
+                    <button className="btn btn-primary" onClick={fetchAnalytics} style={{ marginTop: '0.5rem' }}>
+                        Retry
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
     // Calculate max values for chart scaling
     const maxViews = Math.max(...(data?.trends?.map(t => t.page_views) || [1]), 1)
 
@@ -142,6 +175,14 @@ const AdminVisitorAnalytics = () => {
                             </button>
                         ))}
                     </div>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={fetchAnalytics}
+                        disabled={loading}
+                        style={{ padding: '0.5rem 1rem' }}
+                    >
+                        {loading ? 'Refreshing...' : 'Refresh'}
+                    </button>
                     {(!data?.summary?.total_page_views || data.summary.total_page_views === 0) && (
                         <button
                             className="btn btn-primary"
@@ -153,6 +194,12 @@ const AdminVisitorAnalytics = () => {
                     )}
                 </div>
             </div>
+
+            {error && (
+                <div style={{ background: '#fee2e2', color: '#dc2626', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                    {error}
+                </div>
+            )}
 
             {/* Real-time indicator */}
             <div className="real-time-banner">

@@ -44,8 +44,7 @@ export const trackPageView = async () => {
     }
 
     try {
-        // Use fetch with keepalive for reliability
-        fetch(`${API_URL}/api/v1/visitor-analytics/track`, {
+        const response = await fetch(`${API_URL}/api/v1/visitor-analytics/track`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,9 +52,15 @@ export const trackPageView = async () => {
             },
             body: JSON.stringify(data),
             keepalive: true
-        }).catch(() => { }) // Silently fail - don't impact user experience
+        })
+
+        if (import.meta.env.DEV && !response.ok) {
+            console.warn('[Analytics] Tracking failed:', response.status)
+        }
     } catch (e) {
-        // Silently fail
+        if (import.meta.env.DEV) {
+            console.warn('[Analytics] Error:', e.message)
+        }
     }
 }
 
