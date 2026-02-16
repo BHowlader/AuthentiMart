@@ -102,7 +102,6 @@ const HomePage = () => {
     const [categories, setCategories] = useState([])
     const [newArrivals, setNewArrivals] = useState([])
     const [bestSellers, setBestSellers] = useState([])
-    const [loading, setLoading] = useState(true)
     const [imagesLoaded] = useState(true) // Show immediately, don't wait for images
     const [progressKey, setProgressKey] = useState(0)
 
@@ -245,13 +244,13 @@ const HomePage = () => {
         }
     ]
 
-    // Fetch categories first (visible first), then products progressively
+    // Fetch all data in parallel for faster loading
     useEffect(() => {
-        const fetchData = async () => {
+        // Start all API calls simultaneously
+        const fetchCategories = async () => {
             try {
-                // Priority 1: Fetch categories first (visible immediately after hero)
-                const categoriesRes = await categoriesAPI.getHomepage(16)
-                const mappedCategories = (categoriesRes.data || []).map(cat => ({
+                const res = await categoriesAPI.getHomepage(16)
+                const mapped = (res.data || []).map(cat => ({
                     id: cat.id,
                     name: cat.name,
                     slug: cat.slug,
@@ -259,60 +258,66 @@ const HomePage = () => {
                     count: cat.product_count || 0,
                     icon: categoryIcons[cat.slug] || '📦'
                 }))
-                setCategories(mappedCategories)
-                setLoading(false) // Show content as soon as categories are ready
-
-                // Priority 2: Fetch products in parallel (below the fold)
-                const [newArrivalsRes, bestSellersRes] = await Promise.all([
-                    productsAPI.getNewArrivals(),
-                    productsAPI.getBestSellers()
-                ])
-
-                // Process new arrivals
-                const newProducts = (newArrivalsRes.data.items || []).slice(0, 10).map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    originalPrice: p.original_price,
-                    image: p.image || '/images/placeholder.png',
-                    category: p.category || '',
-                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
-                    brand: p.brand || '',
-                    rating: p.rating || 0,
-                    reviewCount: p.review_count || 0,
-                    stock: p.stock || 0,
-                    isNew: p.is_new || false,
-                    discount: p.discount || 0,
-                    slug: p.slug
-                }))
-                setNewArrivals(newProducts)
-
-                // Process best sellers
-                const bestProducts = (bestSellersRes.data.items || []).slice(0, 10).map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    originalPrice: p.original_price,
-                    image: p.image || '/images/placeholder.png',
-                    category: p.category || '',
-                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
-                    brand: p.brand || '',
-                    rating: p.rating || 0,
-                    reviewCount: p.review_count || 0,
-                    stock: p.stock || 0,
-                    isNew: p.is_new || false,
-                    discount: p.discount || 0,
-                    slug: p.slug
-                }))
-                setBestSellers(bestProducts)
-
+                setCategories(mapped)
             } catch (error) {
-                console.error('Error fetching data:', error)
-                setLoading(false)
+                console.error('Error fetching categories:', error)
             }
         }
 
-        fetchData()
+        const fetchNewArrivals = async () => {
+            try {
+                const res = await productsAPI.getNewArrivals()
+                const products = (res.data.items || []).slice(0, 10).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalPrice: p.original_price,
+                    image: p.image || '/images/placeholder.png',
+                    category: p.category || '',
+                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
+                    brand: p.brand || '',
+                    rating: p.rating || 0,
+                    reviewCount: p.review_count || 0,
+                    stock: p.stock || 0,
+                    isNew: p.is_new || false,
+                    discount: p.discount || 0,
+                    slug: p.slug
+                }))
+                setNewArrivals(products)
+            } catch (error) {
+                console.error('Error fetching new arrivals:', error)
+            }
+        }
+
+        const fetchBestSellers = async () => {
+            try {
+                const res = await productsAPI.getBestSellers()
+                const products = (res.data.items || []).slice(0, 10).map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalPrice: p.original_price,
+                    image: p.image || '/images/placeholder.png',
+                    category: p.category || '',
+                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
+                    brand: p.brand || '',
+                    rating: p.rating || 0,
+                    reviewCount: p.review_count || 0,
+                    stock: p.stock || 0,
+                    isNew: p.is_new || false,
+                    discount: p.discount || 0,
+                    slug: p.slug
+                }))
+                setBestSellers(products)
+            } catch (error) {
+                console.error('Error fetching best sellers:', error)
+            }
+        }
+
+        // Fire all requests in parallel - each updates UI independently
+        fetchCategories()
+        fetchNewArrivals()
+        fetchBestSellers()
     }, [])
 
     // Preload remaining hero images in background (don't block render)
@@ -470,19 +475,13 @@ const HomePage = () => {
                             </Link>
                         </div>
                     </div>
-                    {loading ? (
-                        <div className="loading-state">
-                            <div className="spinner"></div>
-                        </div>
-                    ) : (
-                        <div className="products-carousel" ref={newArrivalsRef}>
-                            {newArrivals.map((product) => (
-                                <div key={product.id} className="carousel-item">
-                                    <ProductCard product={product} />
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <div className="products-carousel" ref={newArrivalsRef}>
+                        {newArrivals.map((product) => (
+                            <div key={product.id} className="carousel-item">
+                                <ProductCard product={product} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -511,19 +510,13 @@ const HomePage = () => {
                             </Link>
                         </div>
                     </div>
-                    {loading ? (
-                        <div className="loading-state">
-                            <div className="spinner"></div>
-                        </div>
-                    ) : (
-                        <div className="products-carousel" ref={bestSellersRef}>
-                            {bestSellers.map((product) => (
-                                <div key={product.id} className="carousel-item">
-                                    <ProductCard product={product} />
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <div className="products-carousel" ref={bestSellersRef}>
+                        {bestSellers.map((product) => (
+                            <div key={product.id} className="carousel-item">
+                                <ProductCard product={product} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 

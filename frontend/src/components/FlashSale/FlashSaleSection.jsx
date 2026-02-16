@@ -58,21 +58,8 @@ const FlashSaleSection = () => {
         }
     }
 
-    // Don't render if no flash sale or loading
-    if (loading) {
-        return (
-            <section className="flash-sale-section">
-                <div className="container">
-                    <div className="flash-sale-loading">
-                        <div className="spinner"></div>
-                    </div>
-                </div>
-            </section>
-        )
-    }
-
-    // Don't render anything if no active flash sale
-    if (!flashSale || error) {
+    // Don't render anything while loading or if no flash sale
+    if (loading || !flashSale || error) {
         return null
     }
 
