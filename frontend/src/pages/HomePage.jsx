@@ -363,7 +363,12 @@ const HomePage = () => {
                         >
                             {/* Full Background Image */}
                             <div className="hero-bg">
-                                <img src={slide.bgImage} alt="" className="hero-bg-image" />
+                                <img
+                                    src={slide.bgImage}
+                                    alt=""
+                                    className="hero-bg-image"
+                                    loading={index === 0 ? "eager" : "lazy"}
+                                />
                                 <div className="hero-overlay"></div>
                             </div>
 
@@ -394,7 +399,7 @@ const HomePage = () => {
                 {/* Progress Bar & Dots */}
                 <div className="hero-progress-container">
                     <div className="hero-dots">
-                        {heroSlides.map((slide, index) => (
+                        {heroSlides.map((_, index) => (
                             <button
                                 key={index}
                                 className={`hero-dot ${index === currentSlide ? 'active' : ''}`}
@@ -431,7 +436,7 @@ const HomePage = () => {
                                 className="category-item-clean"
                             >
                                 <div className="category-image-wrapper">
-                                    <img src={category.image} alt={category.name} />
+                                    <img src={category.image} alt={category.name} loading="lazy" />
                                 </div>
                                 <span className="category-name-clean">{category.name}</span>
                             </Link>
