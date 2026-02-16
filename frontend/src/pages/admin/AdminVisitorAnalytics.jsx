@@ -3,7 +3,7 @@ import { useAdminAuth } from '../../context/AdminAuthContext'
 import { Users, Eye, Clock, TrendingUp, Globe, Monitor, Smartphone, Tablet } from 'lucide-react'
 import './AdminPanel.css'
 
-const API_URL = import.meta.env.VITE_API_URL || ''
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 const AdminVisitorAnalytics = () => {
     const { adminToken } = useAdminAuth()
@@ -32,14 +32,22 @@ const AdminVisitorAnalytics = () => {
         try {
             setLoading(true)
             setError(null)
-            const res = await fetch(`${API_URL}/api/v1/visitor-analytics/stats?period=${period}`, {
+
+            const url = `${API_URL}/visitor-analytics/stats?period=${period}`
+            console.log('[VisitorAnalytics] Fetching:', url, 'Token:', adminToken ? 'present' : 'missing')
+
+            const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             })
+
+            console.log('[VisitorAnalytics] Response status:', res.status)
+
             if (res.ok) {
                 const jsonData = await res.json()
                 setData(jsonData)
             } else {
                 const errText = await res.text()
+                console.error('[VisitorAnalytics] Error response:', errText)
                 setError(`Failed to load analytics: ${res.status} - ${errText}`)
             }
         } catch (err) {
@@ -52,7 +60,7 @@ const AdminVisitorAnalytics = () => {
 
     const fetchRealTime = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/v1/visitor-analytics/real-time`, {
+            const res = await fetch(`${API_URL}/visitor-analytics/real-time`, {
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             })
             if (res.ok) {
@@ -67,7 +75,7 @@ const AdminVisitorAnalytics = () => {
         try {
             setGenerating(true)
             setError(null)
-            const res = await fetch(`${API_URL}/api/v1/visitor-analytics/generate-sample-data`, {
+            const res = await fetch(`${API_URL}/visitor-analytics/generate-sample-data`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${adminToken}` }
             })

@@ -1,5 +1,5 @@
 // Lightweight analytics tracking utility
-const API_URL = import.meta.env.VITE_API_URL || ''
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 // Generate or retrieve session ID
 const getSessionId = () => {
@@ -44,7 +44,7 @@ export const trackPageView = async () => {
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/v1/visitor-analytics/track`, {
+        const response = await fetch(`${API_URL}/visitor-analytics/track`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
