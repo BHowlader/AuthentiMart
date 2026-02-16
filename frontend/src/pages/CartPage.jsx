@@ -6,7 +6,6 @@ import './CartPage.css'
 const CartPage = () => {
     const {
         items,
-        loading,
         initialized,
         updateQuantity,
         removeFromCart,
@@ -16,7 +15,8 @@ const CartPage = () => {
         getTotal
     } = useCart()
 
-    if (!initialized || loading) {
+    // Only show loading spinner during initial cart fetch, not during updates
+    if (!initialized) {
         return (
             <div className="cart-page">
                 <div className="container">

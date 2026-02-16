@@ -102,17 +102,47 @@ export const CartProvider = ({ children }) => {
             return
         }
 
+        // Optimistic update - add to UI immediately
+        const existingItem = items.find(item => item.id === product.id)
+        const previousItems = [...items]
+
+        if (existingItem) {
+            // Update quantity optimistically
+            setItems(items.map(item =>
+                item.id === product.id
+                    ? { ...item, quantity: item.quantity + quantity }
+                    : item
+            ))
+        } else {
+            // Add new item optimistically
+            const newItem = {
+                id: product.id,
+                cartItemId: null, // Will be set after API response
+                name: product.name,
+                slug: product.slug,
+                price: product.price,
+                originalPrice: product.originalPrice,
+                image: product.image || '/images/placeholder.png',
+                stock: product.stock || 99,
+                quantity: quantity,
+                discount: product.discount || 0
+            }
+            setItems([...items, newItem])
+        }
+
+        showToast('Added to cart!', 'success')
+
+        // API call in background
         try {
-            setLoading(true)
             await cartAPI.add(product.id, quantity)
-            await fetchCart()
-            showToast('Added to cart!', 'success')
+            // Refresh to get correct cartItemId (deferred)
+            setTimeout(() => fetchCart(), 50)
         } catch (error) {
             console.error('Error adding to cart:', error)
+            // Rollback on error
+            setItems(previousItems)
             const message = error.response?.data?.detail || 'Failed to add to cart'
             showToast(message, 'error')
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -121,20 +151,25 @@ export const CartProvider = ({ children }) => {
             return
         }
 
-        // Find the cart item ID
+        // Find the cart item
         const item = items.find(item => item.id === productId)
         if (!item) return
 
+        // Optimistic update - remove from UI immediately
+        const previousItems = [...items]
+        setItems(items.filter(item => item.id !== productId))
+        showToast('Removed from cart', 'success')
+
+        // API call in background
         try {
-            setLoading(true)
-            await cartAPI.remove(item.cartItemId)
-            await fetchCart()
-            showToast('Removed from cart', 'success')
+            if (item.cartItemId) {
+                await cartAPI.remove(item.cartItemId)
+            }
         } catch (error) {
             console.error('Error removing from cart:', error)
+            // Rollback on error
+            setItems(previousItems)
             showToast('Failed to remove item', 'error')
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -148,20 +183,33 @@ export const CartProvider = ({ children }) => {
             return
         }
 
-        // Find the cart item ID
+        // Find the cart item
         const item = items.find(item => item.id === productId)
         if (!item) return
 
+        // Check stock limit
+        if (quantity > item.stock) {
+            showToast(`Only ${item.stock} items available`, 'error')
+            return
+        }
+
+        // Optimistic update - update UI immediately
+        const previousItems = [...items]
+        setItems(items.map(i =>
+            i.id === productId ? { ...i, quantity } : i
+        ))
+
+        // API call in background
         try {
-            setLoading(true)
-            await cartAPI.update(item.cartItemId, quantity)
-            await fetchCart()
+            if (item.cartItemId) {
+                await cartAPI.update(item.cartItemId, quantity)
+            }
         } catch (error) {
             console.error('Error updating cart:', error)
+            // Rollback on error
+            setItems(previousItems)
             const message = error.response?.data?.detail || 'Failed to update quantity'
             showToast(message, 'error')
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -171,16 +219,19 @@ export const CartProvider = ({ children }) => {
             return
         }
 
+        // Optimistic update - clear UI immediately
+        const previousItems = [...items]
+        setItems([])
+        showToast('Cart cleared', 'success')
+
+        // API call in background
         try {
-            setLoading(true)
             await cartAPI.clear()
-            setItems([])
-            showToast('Cart cleared', 'success')
         } catch (error) {
             console.error('Error clearing cart:', error)
+            // Rollback on error
+            setItems(previousItems)
             showToast('Failed to clear cart', 'error')
-        } finally {
-            setLoading(false)
         }
     }
 
