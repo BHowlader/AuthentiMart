@@ -17,11 +17,18 @@ export default defineConfig({
         // Code splitting configuration
         rollupOptions: {
             output: {
-                manualChunks: {
-                    // Vendor chunks - separate from app code
-                    'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-                    'vendor-ui': ['lucide-react'],
-                    'vendor-utils': ['axios', '@react-oauth/google'],
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (id.includes('react-dom') || id.includes('react-router')) {
+                            return 'vendor-react'
+                        }
+                        if (id.includes('lucide-react')) {
+                            return 'vendor-ui'
+                        }
+                        if (id.includes('axios') || id.includes('@react-oauth')) {
+                            return 'vendor-utils'
+                        }
+                    }
                 },
             },
         },
