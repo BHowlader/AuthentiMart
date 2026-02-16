@@ -118,19 +118,41 @@ async def track_page_view(
     """
     Track a page view - called from frontend.
     Privacy-conscious: no personal data, hashed identifiers, minimal data retention.
+    Deduplicates page refreshes - only counts actual navigation.
     """
-    # Get client info
-    client_ip = request.client.host if request.client else "unknown"
+    # Get client IP (check for proxies)
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    if not client_ip:
+        client_ip = request.headers.get("x-real-ip", "")
+    if not client_ip:
+        client_ip = request.client.host if request.client else "unknown"
+
     user_agent = request.headers.get("user-agent", "")
 
-    # Create anonymized identifiers
+    # Create anonymized visitor hash based on IP (rotates daily for privacy)
     today = datetime.utcnow().strftime("%Y-%m-%d")
     visitor_hash = get_visitor_hash(client_ip, user_agent, today)
 
-    # Get or create session ID from header
+    # Get session ID from header
     session_id = request.headers.get("x-session-id")
     if not session_id:
         session_id = hashlib.sha256(f"{visitor_hash}:{datetime.utcnow().timestamp()}".encode()).hexdigest()[:32]
+
+    page_path = data.page_path[:500] if data.page_path else "/"
+
+    # DEDUPLICATION: Check if same visitor viewed same page in last 30 seconds
+    thirty_seconds_ago = datetime.utcnow() - timedelta(seconds=30)
+    recent_view = db.query(PageView).filter(
+        and_(
+            PageView.session_id == session_id,
+            PageView.page_path == page_path,
+            PageView.created_at >= thirty_seconds_ago
+        )
+    ).first()
+
+    if recent_view:
+        # Same page viewed recently - this is a refresh, don't count it
+        return {"status": "deduplicated", "session_id": session_id}
 
     # Parse user agent
     device_info = parse_user_agent(user_agent)
@@ -142,7 +164,7 @@ async def track_page_view(
     page_view = PageView(
         visitor_hash=visitor_hash,
         session_id=session_id,
-        page_path=data.page_path[:500] if data.page_path else "/",
+        page_path=page_path,
         page_title=data.page_title[:255] if data.page_title else None,
         traffic_source=traffic_source,
         referrer_url=data.referrer[:500] if data.referrer else None,
@@ -169,14 +191,19 @@ async def track_page_view(
 
     if existing_session:
         existing_session.page_count += 1
-        existing_session.exit_page = data.page_path
+        existing_session.exit_page = page_path
         existing_session.last_activity = datetime.utcnow()
+        # Calculate session duration
+        if existing_session.started_at:
+            existing_session.duration_seconds = int(
+                (datetime.utcnow() - existing_session.started_at.replace(tzinfo=None)).total_seconds()
+            )
     else:
         new_session = VisitorSession(
             session_id=session_id,
             visitor_hash=visitor_hash,
-            entry_page=data.page_path,
-            exit_page=data.page_path,
+            entry_page=page_path,
+            exit_page=page_path,
             traffic_source=traffic_source,
             referrer_domain=referrer_domain,
             country_code="BD",

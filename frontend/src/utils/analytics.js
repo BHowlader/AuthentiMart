@@ -1,6 +1,11 @@
 // Lightweight analytics tracking utility
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
+// Track last page and time to avoid duplicate tracking
+let lastTrackedPage = null
+let lastTrackedTime = 0
+const DEDUP_INTERVAL = 5000 // 5 seconds - don't retrack same page within this time
+
 // Generate or retrieve session ID
 const getSessionId = () => {
     let sessionId = sessionStorage.getItem('analytics_session_id')
@@ -31,11 +36,23 @@ export const trackPageView = async () => {
     // Respect Do Not Track
     if (navigator.doNotTrack === '1') return
 
+    const currentPage = window.location.pathname
+    const currentTime = Date.now()
+
+    // Client-side deduplication: Don't track same page within DEDUP_INTERVAL
+    if (currentPage === lastTrackedPage && (currentTime - lastTrackedTime) < DEDUP_INTERVAL) {
+        return // Skip - this is a refresh or duplicate
+    }
+
+    // Update tracking state
+    lastTrackedPage = currentPage
+    lastTrackedTime = currentTime
+
     const sessionId = getSessionId()
     const utmParams = getUTMParams()
 
     const data = {
-        page_path: window.location.pathname,
+        page_path: currentPage,
         page_title: document.title,
         referrer: document.referrer || null,
         screen_width: window.screen.width,
