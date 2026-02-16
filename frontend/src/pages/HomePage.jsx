@@ -103,7 +103,7 @@ const HomePage = () => {
     const [newArrivals, setNewArrivals] = useState([])
     const [bestSellers, setBestSellers] = useState([])
     const [loading, setLoading] = useState(true)
-    const [imagesLoaded, setImagesLoaded] = useState(false)
+    const [imagesLoaded] = useState(true) // Show immediately, don't wait for images
     const [progressKey, setProgressKey] = useState(0)
 
     // Refs for horizontal scroll
@@ -315,29 +315,16 @@ const HomePage = () => {
         fetchData()
     }, [])
 
-    // Preload hero images progressively - first 2 immediately, rest deferred
+    // Preload remaining hero images in background (don't block render)
     useEffect(() => {
-        // Load first 2 slides immediately for fast initial render
-        const priorityImages = heroSlides.slice(0, 2).map((slide) => {
-            return new Promise((resolve) => {
+        // Defer preloading to not block initial render
+        const timeoutId = setTimeout(() => {
+            heroSlides.forEach((slide) => {
                 const img = new Image()
-                img.onload = resolve
-                img.onerror = resolve
                 img.src = slide.bgImage
             })
-        })
-
-        Promise.all(priorityImages).then(() => {
-            setImagesLoaded(true)
-
-            // Defer loading remaining images after initial render
-            setTimeout(() => {
-                heroSlides.slice(2).forEach((slide) => {
-                    const img = new Image()
-                    img.src = slide.bgImage
-                })
-            }, 1000)
-        })
+        }, 100)
+        return () => clearTimeout(timeoutId)
     }, [])
 
     // Trigger initial animation on mount
