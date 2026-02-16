@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
     ArrowRight,
     Sparkles,
     Zap,
     Star,
-    TrendingUp,
-    Gift
+    Gift,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 import { FlashSaleSection } from '../components/FlashSale'
@@ -104,6 +105,21 @@ const HomePage = () => {
     const [loading, setLoading] = useState(true)
     const [imagesLoaded, setImagesLoaded] = useState(false)
     const [progressKey, setProgressKey] = useState(0)
+
+    // Refs for horizontal scroll
+    const newArrivalsRef = useRef(null)
+    const bestSellersRef = useRef(null)
+
+    // Scroll carousel function
+    const scrollCarousel = (ref, direction) => {
+        if (ref.current) {
+            const scrollAmount = 300
+            ref.current.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            })
+        }
+    }
 
     const heroSlides = [
         {
@@ -234,7 +250,7 @@ const HomePage = () => {
         const fetchData = async () => {
             try {
                 // Priority 1: Fetch categories first (visible immediately after hero)
-                const categoriesRes = await categoriesAPI.getHomepage(12)
+                const categoriesRes = await categoriesAPI.getHomepage(16)
                 const mappedCategories = (categoriesRes.data || []).map(cat => ({
                     id: cat.id,
                     name: cat.name,
@@ -253,7 +269,7 @@ const HomePage = () => {
                 ])
 
                 // Process new arrivals
-                const newProducts = (newArrivalsRes.data.items || []).slice(0, 4).map(p => ({
+                const newProducts = (newArrivalsRes.data.items || []).slice(0, 10).map(p => ({
                     id: p.id,
                     name: p.name,
                     price: p.price,
@@ -272,7 +288,7 @@ const HomePage = () => {
                 setNewArrivals(newProducts)
 
                 // Process best sellers
-                const bestProducts = (bestSellersRes.data.items || []).slice(0, 4).map(p => ({
+                const bestProducts = (bestSellersRes.data.items || []).slice(0, 10).map(p => ({
                     id: p.id,
                     name: p.name,
                     price: p.price,
@@ -414,90 +430,105 @@ const HomePage = () => {
             {/* Flash Sale Section - Top Priority */}
             <FlashSaleSection />
 
-            {/* Categories Section */}
+            {/* Categories Section - Apple Gadgets Style Grid */}
             <section className="section categories-section">
                 <div className="container">
-                    <div className="section-header">
-                        <div>
-                            <h2 className="section-title">Shop by Category</h2>
-                            <p className="text-secondary">Explore our wide range of products</p>
-                        </div>
-                        <Link to="/products" className="section-link">
-                            View All <ArrowRight size={18} />
-                        </Link>
+                    <div className="section-header-clean">
+                        <h2 className="section-title-clean">Featured Categories</h2>
                     </div>
-                    <div className="categories-grid">
+                    <div className="categories-grid-clean">
                         {categories.map((category) => (
                             <Link
                                 key={category.id}
                                 to={`/products/${category.slug}`}
-                                className="category-card"
+                                className="category-item-clean"
                             >
-                                <img src={category.image} alt={category.name} />
-                                <div className="category-card-overlay"></div>
-                                <div className="category-card-content">
-                                    <span className="category-icon">{category.icon}</span>
-                                    <h3 className="category-card-title">{category.name}</h3>
-                                    <p className="category-card-count">{category.count} Products</p>
+                                <div className="category-image-wrapper">
+                                    <img src={category.image} alt={category.name} />
                                 </div>
+                                <span className="category-name-clean">{category.name}</span>
                             </Link>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* New Arrivals Section */}
-            <section className="section">
+            {/* New Arrivals Section - Horizontal Carousel */}
+            <section className="section products-carousel-section">
                 <div className="container">
-                    <div className="section-header">
-                        <div>
-                            <span className="section-badge">
-                                <Gift size={16} />
-                                Just Arrived
-                            </span>
-                            <h2 className="section-title">New Arrivals</h2>
+                    <div className="carousel-header">
+                        <h2 className="section-title-clean">New Arrivals</h2>
+                        <div className="carousel-controls">
+                            <button
+                                className="carousel-btn"
+                                onClick={() => scrollCarousel(newArrivalsRef, 'left')}
+                                aria-label="Scroll left"
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+                            <button
+                                className="carousel-btn"
+                                onClick={() => scrollCarousel(newArrivalsRef, 'right')}
+                                aria-label="Scroll right"
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                            <Link to="/products?new=true" className="view-all-link">
+                                View All <ArrowRight size={16} />
+                            </Link>
                         </div>
-                        <Link to="/products?new=true" className="section-link">
-                            View All <ArrowRight size={18} />
-                        </Link>
                     </div>
                     {loading ? (
                         <div className="loading-state">
                             <div className="spinner"></div>
                         </div>
                     ) : (
-                        <div className="products-grid">
+                        <div className="products-carousel" ref={newArrivalsRef}>
                             {newArrivals.map((product) => (
-                                <ProductCard key={product.id} product={product} />
+                                <div key={product.id} className="carousel-item">
+                                    <ProductCard product={product} />
+                                </div>
                             ))}
                         </div>
                     )}
                 </div>
             </section>
 
-            {/* Best Sellers Section */}
-            <section className="section">
+            {/* Best Sellers Section - Horizontal Carousel */}
+            <section className="section products-carousel-section">
                 <div className="container">
-                    <div className="section-header">
-                        <div>
-                            <span className="section-badge trending">
-                                <TrendingUp size={16} />
-                                Most Popular
-                            </span>
-                            <h2 className="section-title">Best Sellers</h2>
+                    <div className="carousel-header">
+                        <h2 className="section-title-clean">Best Sellers</h2>
+                        <div className="carousel-controls">
+                            <button
+                                className="carousel-btn"
+                                onClick={() => scrollCarousel(bestSellersRef, 'left')}
+                                aria-label="Scroll left"
+                            >
+                                <ChevronLeft size={20} />
+                            </button>
+                            <button
+                                className="carousel-btn"
+                                onClick={() => scrollCarousel(bestSellersRef, 'right')}
+                                aria-label="Scroll right"
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                            <Link to="/products?bestseller=true" className="view-all-link">
+                                View All <ArrowRight size={16} />
+                            </Link>
                         </div>
-                        <Link to="/products?bestseller=true" className="section-link">
-                            View All <ArrowRight size={18} />
-                        </Link>
                     </div>
                     {loading ? (
                         <div className="loading-state">
                             <div className="spinner"></div>
                         </div>
                     ) : (
-                        <div className="products-grid">
+                        <div className="products-carousel" ref={bestSellersRef}>
                             {bestSellers.map((product) => (
-                                <ProductCard key={product.id} product={product} />
+                                <div key={product.id} className="carousel-item">
+                                    <ProductCard product={product} />
+                                </div>
                             ))}
                         </div>
                     )}
