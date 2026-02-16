@@ -13,28 +13,41 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null)
+    // Initialize from localStorage immediately for instant render
+    const [user, setUser] = useState(() => {
+        try {
+            const stored = localStorage.getItem('user')
+            return stored ? JSON.parse(stored) : null
+        } catch {
+            return null
+        }
+    })
     const [token, setToken] = useState(localStorage.getItem('token'))
-    const [loading, setLoading] = useState(true)
+    const [loading] = useState(false) // Start false - we have cached data
     const { showToast } = useToast()
 
+    // Validate token in background (deferred)
     useEffect(() => {
-        const initAuth = async () => {
+        const validateAuth = async () => {
             const storedToken = localStorage.getItem('token')
             if (storedToken) {
-                setToken(storedToken)
                 try {
+                    // Validate and refresh user data in background
                     const response = await authAPI.getProfile()
                     setUser(response.data)
+                    localStorage.setItem('user', JSON.stringify(response.data))
                 } catch (error) {
+                    // Token invalid - clear auth
                     localStorage.removeItem('token')
                     localStorage.removeItem('user')
                     setToken(null)
+                    setUser(null)
                 }
             }
-            setLoading(false)
         }
-        initAuth()
+        // Defer validation to not block initial render
+        const timeoutId = setTimeout(validateAuth, 50)
+        return () => clearTimeout(timeoutId)
     }, [])
 
     const login = async (email, password) => {

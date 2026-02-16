@@ -65,9 +65,12 @@ export const WishlistProvider = ({ children }) => {
         }
     }, [])
 
-    // Fetch wishlist on mount
+    // Fetch wishlist after initial render (deferred for performance)
     useEffect(() => {
-        fetchWishlist()
+        const timeoutId = setTimeout(() => {
+            fetchWishlist()
+        }, 200)
+        return () => clearTimeout(timeoutId)
     }, [fetchWishlist])
 
     // Listen for login events
