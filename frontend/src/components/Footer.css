@@ -94,6 +94,23 @@
     color: var(--text-primary);
 }
 
+.footer-logo-image {
+    height: 48px;
+    width: auto;
+}
+
+.footer-logo-text {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+}
+
+.footer-logo-accent {
+    color: #E8923A;
+}
+
 .footer-description {
     color: var(--text-secondary);
     line-height: 1.7;

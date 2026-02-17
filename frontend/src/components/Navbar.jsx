@@ -103,8 +103,8 @@ const Navbar = () => {
             <div className="navbar-container container">
                 {/* Logo */}
                 <Link to="/" className="navbar-logo">
-                    <div className="logo-icon">🛍️</div>
-                    <span className="logo-text">AuthentiMart</span>
+                    <img src="/logo.png" alt="AuthentiMart" className="logo-image" />
+                    <span className="logo-text">Authenti<span className="logo-text-accent">Mart</span></span>
                 </Link>
 
                 {/* Desktop Navigation */}

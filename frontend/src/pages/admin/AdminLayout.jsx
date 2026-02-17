@@ -165,7 +165,7 @@ const AdminLayout = () => {
             <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-header">
                     <Link to="/admin" className="sidebar-logo">
-                        <span className="logo-icon">🛍️</span>
+                        <img src="/logo-icon.png" alt="AuthentiMart" className="sidebar-logo-icon" />
                         {!sidebarCollapsed && <span className="logo-text">AuthentiMart</span>}
                     </Link>
                     <button

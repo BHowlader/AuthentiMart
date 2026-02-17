@@ -79,8 +79,7 @@ const ResetPasswordPage = () => {
                     <div className="auth-form-section">
                         <div className="auth-header">
                             <Link to="/" className="auth-logo">
-                                <div className="logo-icon">🛍️</div>
-                                <span>AuthentiMart</span>
+                                <img src="/logo.png" alt="AuthentiMart" className="auth-logo-image" />
                             </Link>
                             <h1>Reset Password</h1>
                             <p>Enter your new password below.</p>

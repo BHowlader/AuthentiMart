@@ -75,8 +75,7 @@ const LoginPage = () => {
                     <div className="auth-form-section">
                         <div className="auth-header">
                             <Link to="/" className="auth-logo">
-                                <div className="logo-icon">🛍️</div>
-                                <span>AuthentiMart</span>
+                                <img src="/logo.png" alt="AuthentiMart" className="auth-logo-image" />
                             </Link>
                             <h1>Welcome back!</h1>
                             <p>Enter your credentials to access your account</p>

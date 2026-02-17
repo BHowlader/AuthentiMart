@@ -39,8 +39,7 @@ const ForgotPasswordPage = () => {
                     <div className="auth-form-section">
                         <div className="auth-header">
                             <Link to="/" className="auth-logo">
-                                <div className="logo-icon">🛍️</div>
-                                <span>AuthentiMart</span>
+                                <img src="/logo.png" alt="AuthentiMart" className="auth-logo-image" />
                             </Link>
                             <h1>Forgot Password?</h1>
                             <p>Enter your email address to reset your password.</p>

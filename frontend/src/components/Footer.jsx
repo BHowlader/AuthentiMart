@@ -70,8 +70,8 @@ const Footer = () => {
                         {/* Brand Column */}
                         <div className="footer-brand">
                             <Link to="/" className="footer-logo">
-                                <div className="logo-icon">🛍️</div>
-                                <span>AuthentiMart</span>
+                                <img src="/logo.png" alt="AuthentiMart" className="footer-logo-image" />
+                                <span className="footer-logo-text">Authenti<span className="footer-logo-accent">Mart</span></span>
                             </Link>
                             <p className="footer-description">
                                 Your trusted destination for authentic beauty, skincare, tech accessories, and home products in Bangladesh.

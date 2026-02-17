@@ -124,8 +124,7 @@ const RegisterPage = () => {
                     <div className="auth-form-section">
                         <div className="auth-header">
                             <Link to="/" className="auth-logo">
-                                <div className="logo-icon">🛍️</div>
-                                <span>AuthentiMart</span>
+                                <img src="/logo.png" alt="AuthentiMart" className="auth-logo-image" />
                             </Link>
                             <h1>Create account</h1>
                             <p>Join us and start shopping authentic products</p>

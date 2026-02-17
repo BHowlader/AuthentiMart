@@ -87,6 +87,11 @@
     color: var(--text-primary);
 }
 
+.auth-logo-image {
+    height: 48px;
+    width: auto;
+}
+
 .auth-header h1 {
     font-size: 1.75rem;
     margin-bottom: 4px;

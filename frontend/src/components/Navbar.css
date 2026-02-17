@@ -29,8 +29,17 @@
 .navbar-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0;
     text-decoration: none;
+}
+
+.logo-image {
+    height: 90px;
+    width: auto;
+    object-fit: contain;
+    margin-top: -25px;
+    margin-bottom: -20px;
+    margin-right: -22px;
 }
 
 .logo-icon {
@@ -42,12 +51,14 @@
 
 .logo-text {
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #1E3550;
+    letter-spacing: -0.5px;
+}
+
+.logo-text-accent {
+    color: #E8923A;
 }
 
 /* Desktop Navigation */
@@ -619,6 +630,10 @@
         display: none;
     }
 
+    .logo-image {
+        height: 44px;
+    }
+
     .navbar-search {
         display: none;
     }
@@ -696,6 +711,10 @@
         font-size: 1.75rem;
     }
 
+    .logo-image {
+        height: 40px;
+    }
+
     .user-avatar {
         width: 36px;
         height: 36px;
@@ -741,6 +760,10 @@
 
     .logo-icon {
         font-size: 1.5rem;
+    }
+
+    .logo-image {
+        height: 36px;
     }
 
     .action-badge {

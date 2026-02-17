@@ -67,6 +67,11 @@
     font-size: 1.5rem;
 }
 
+.sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+}
+
 .sidebar-toggle {
     width: 32px;
     height: 32px;
