@@ -105,9 +105,18 @@ const ProductDetailPage = () => {
         return (
             <div className="product-detail-page">
                 <div className="container">
-                    <div className="loading-state">
-                        <div className="spinner"></div>
-                        <p>Loading product...</p>
+                    {/* Skeleton loader for product detail */}
+                    <div className="product-detail-skeleton">
+                        <div className="skeleton-gallery">
+                            <div className="skeleton-main-image"></div>
+                        </div>
+                        <div className="skeleton-info">
+                            <div className="skeleton-line short"></div>
+                            <div className="skeleton-line title"></div>
+                            <div className="skeleton-line medium"></div>
+                            <div className="skeleton-line price"></div>
+                            <div className="skeleton-btn"></div>
+                        </div>
                     </div>
                 </div>
             </div>

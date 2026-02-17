@@ -316,9 +316,19 @@ const ProductsPage = () => {
 
                         {/* Products Grid */}
                         {loading ? (
-                            <div className="loading-state">
-                                <div className="spinner"></div>
-                                <p>Loading products...</p>
+                            <div className={`products-grid ${viewMode}`}>
+                                {/* Skeleton loaders - show 8 placeholder cards */}
+                                {[...Array(8)].map((_, i) => (
+                                    <div key={i} className="product-card-skeleton">
+                                        <div className="skeleton-image"></div>
+                                        <div className="skeleton-content">
+                                            <div className="skeleton-line short"></div>
+                                            <div className="skeleton-line"></div>
+                                            <div className="skeleton-line medium"></div>
+                                            <div className="skeleton-btn"></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : filteredProducts.length > 0 ? (
                             <>
