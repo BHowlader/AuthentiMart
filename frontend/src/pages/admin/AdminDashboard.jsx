@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext'
+import { ADMIN_PATH } from '../../config/adminConfig'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -80,7 +81,7 @@ const AdminDashboard = () => {
                     <p className="subtitle">Welcome back! Here's what's happening with your store.</p>
                 </div>
                 <div className="header-actions">
-                    <Link to="/admin/products/new" className="btn btn-primary">
+                    <Link to={`${ADMIN_PATH}/products/new`} className="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19" />
                             <line x1="5" y1="12" x2="19" y2="12" />
@@ -136,7 +137,7 @@ const AdminDashboard = () => {
                     <div className="stat-content">
                         <span className="stat-label">Active Products</span>
                         <span className="stat-value">{stats?.total_products || 0}</span>
-                        <Link to="/admin/products" className="stat-link">Manage products →</Link>
+                        <Link to={`${ADMIN_PATH}/products`} className="stat-link">Manage products →</Link>
                     </div>
                 </div>
 
@@ -152,7 +153,7 @@ const AdminDashboard = () => {
                     <div className="stat-content">
                         <span className="stat-label">Total Customers</span>
                         <span className="stat-value">{stats?.total_customers || 0}</span>
-                        <Link to="/admin/analytics" className="stat-link">View analytics →</Link>
+                        <Link to={`${ADMIN_PATH}/analytics`} className="stat-link">View analytics →</Link>
                     </div>
                 </div>
             </div>
@@ -171,7 +172,7 @@ const AdminDashboard = () => {
                         <div className="alert-content">
                             <strong>{stats?.pending_orders}</strong> orders pending
                         </div>
-                        <Link to="/admin/orders?status=pending" className="alert-action">View orders</Link>
+                        <Link to={`${ADMIN_PATH}/orders?status=pending`} className="alert-action">View orders</Link>
                     </div>
                 )}
 
@@ -187,7 +188,7 @@ const AdminDashboard = () => {
                         <div className="alert-content">
                             <strong>{stats?.low_stock_products}</strong> products low on stock
                         </div>
-                        <Link to="/admin/inventory?filter=low" className="alert-action">Check inventory</Link>
+                        <Link to={`${ADMIN_PATH}/inventory?filter=low`} className="alert-action">Check inventory</Link>
                     </div>
                 )}
             </div>
@@ -239,7 +240,7 @@ const AdminDashboard = () => {
                 <div className="dashboard-card">
                     <div className="card-header">
                         <h2>Recent Orders</h2>
-                        <Link to="/admin/orders" className="card-link">View all →</Link>
+                        <Link to={`${ADMIN_PATH}/orders`} className="card-link">View all →</Link>
                     </div>
                     <div className="orders-list">
                         {recentOrders.length === 0 ? (
@@ -269,7 +270,7 @@ const AdminDashboard = () => {
                 <div className="dashboard-card">
                     <div className="card-header">
                         <h2>Top Selling Products</h2>
-                        <Link to="/admin/products" className="card-link">View all →</Link>
+                        <Link to={`${ADMIN_PATH}/products`} className="card-link">View all →</Link>
                     </div>
                     <div className="products-list">
                         {topProducts.length === 0 ? (
@@ -305,7 +306,7 @@ const AdminDashboard = () => {
                 <div className="dashboard-card quick-actions">
                     <h2>Quick Actions</h2>
                     <div className="actions-grid">
-                        <Link to="/admin/products/new" className="action-btn">
+                        <Link to={`${ADMIN_PATH}/products/new`} className="action-btn">
                             <div className="action-icon new-product">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -314,7 +315,7 @@ const AdminDashboard = () => {
                             </div>
                             <span>Add Product</span>
                         </Link>
-                        <Link to="/admin/inventory" className="action-btn">
+                        <Link to={`${ADMIN_PATH}/inventory`} className="action-btn">
                             <div className="action-icon inventory">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M12 12H5a2 2 0 0 0-2 2v5" />
@@ -326,7 +327,7 @@ const AdminDashboard = () => {
                             </div>
                             <span>Update Stock</span>
                         </Link>
-                        <Link to="/admin/predictions" className="action-btn">
+                        <Link to={`${ADMIN_PATH}/predictions`} className="action-btn">
                             <div className="action-icon predictions">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="12" r="10" />
@@ -335,7 +336,7 @@ const AdminDashboard = () => {
                             </div>
                             <span>View Predictions</span>
                         </Link>
-                        <Link to="/admin/analytics" className="action-btn">
+                        <Link to={`${ADMIN_PATH}/analytics`} className="action-btn">
                             <div className="action-icon analytics">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M3 3v18h18" />

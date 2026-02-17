@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext'
+import { ADMIN_PATH } from '../../config/adminConfig'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -170,7 +171,7 @@ const ProductForm = () => {
 
             setSuccess('Product saved successfully!')
             setTimeout(() => {
-                navigate('/admin/products')
+                navigate(`${ADMIN_PATH}/products`)
             }, 1500)
 
         } catch (error) {
@@ -193,7 +194,7 @@ const ProductForm = () => {
     return (
         <div className="product-form-page">
             <div className="page-header">
-                <button className="back-btn" onClick={() => navigate('/admin/products')}>
+                <button className="back-btn" onClick={() => navigate(`${ADMIN_PATH}/products`)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="m15 18-6-6 6-6" />
                     </svg>
@@ -474,7 +475,7 @@ const ProductForm = () => {
                     <button
                         type="button"
                         className="btn btn-secondary"
-                        onClick={() => navigate('/admin/products')}
+                        onClick={() => navigate(`${ADMIN_PATH}/products`)}
                     >
                         Cancel
                     </button>

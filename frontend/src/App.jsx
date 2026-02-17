@@ -50,10 +50,12 @@ const PageLoader = () => (
     </div>
 )
 
+import { ADMIN_PATH } from './config/adminConfig'
+
 function App() {
     const location = useLocation()
-    const hideNavFooterPaths = ['/login', '/register', '/admin', '/admin/login', '/forgot-password', '/reset-password']
-    const isAdminRoute = location.pathname.startsWith('/admin')
+    const isAdminRoute = location.pathname.startsWith(ADMIN_PATH)
+    const hideNavFooterPaths = ['/login', '/register', '/forgot-password', '/reset-password', ADMIN_PATH, `${ADMIN_PATH}/login`]
     const showNavbar = !isAdminRoute && !hideNavFooterPaths.includes(location.pathname)
     const showFooter = !isAdminRoute && !hideNavFooterPaths.includes(location.pathname)
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"
@@ -120,10 +122,10 @@ function App() {
                                 }
                             />
 
-                            {/* Admin Routes - Lazy loaded */}
+                            {/* Admin Routes - Obscure URL for security */}
                             <Route element={<AdminAuthWrapper />}>
-                                <Route path="/admin/login" element={<AdminLoginPage />} />
-                                <Route path="/admin" element={<AdminLayout />}>
+                                <Route path={`${ADMIN_PATH}/login`} element={<AdminLoginPage />} />
+                                <Route path={ADMIN_PATH} element={<AdminLayout />}>
                                     <Route index element={<AdminDashboard />} />
                                     <Route path="products" element={<AdminProducts />} />
                                     <Route path="products/new" element={<ProductForm />} />

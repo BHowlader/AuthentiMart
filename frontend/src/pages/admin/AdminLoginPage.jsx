@@ -4,6 +4,7 @@ import { Eye, EyeOff, Mail, Lock, Shield, ArrowRight } from 'lucide-react'
 import { useAdminAuth } from '../../context/AdminAuthContext'
 import { useGoogleLogin } from '@react-oauth/google'
 import './AdminLoginPage.css'
+import { ADMIN_PATH } from '../../config/adminConfig'
 
 const AdminLoginPage = () => {
     const [email, setEmail] = useState('')
@@ -22,7 +23,7 @@ const AdminLoginPage = () => {
             setError('')
             const result = await adminGoogleLogin(tokenResponse.access_token)
             if (result.success) {
-                navigate('/admin')
+                navigate(ADMIN_PATH)
             } else {
                 setError(result.error || 'Google login failed')
             }
@@ -36,7 +37,7 @@ const AdminLoginPage = () => {
     // Redirect if already logged in as admin
     useEffect(() => {
         if (!authLoading && admin) {
-            navigate('/admin')
+            navigate(ADMIN_PATH)
         }
     }, [admin, authLoading, navigate])
 
@@ -57,7 +58,7 @@ const AdminLoginPage = () => {
         const result = await adminLogin(email, password)
 
         if (result.success) {
-            navigate('/admin')
+            navigate(ADMIN_PATH)
         } else {
             setError(result.error || 'Invalid credentials')
         }

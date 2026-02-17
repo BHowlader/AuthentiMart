@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext'
 import './AdminPanel.css'
+import { ADMIN_PATH } from '../../config/adminConfig'
 
 const AdminLayout = () => {
     const { admin, adminLogout, loading } = useAdminAuth()
@@ -13,13 +14,13 @@ const AdminLayout = () => {
     useEffect(() => {
         // Check if admin is authenticated
         if (!loading && !admin) {
-            navigate('/admin/login')
+            navigate(`${ADMIN_PATH}/login`)
         }
     }, [admin, loading, navigate])
 
     const menuItems = [
         {
-            path: '/admin',
+            path: ADMIN_PATH,
             label: 'Dashboard',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -31,7 +32,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/products',
+            path: `${ADMIN_PATH}/products`,
             label: 'Products',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -43,7 +44,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/inventory',
+            path: `${ADMIN_PATH}/inventory`,
             label: 'Inventory',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -56,7 +57,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/flash-sales',
+            path: `${ADMIN_PATH}/flash-sales`,
             label: 'Flash Sales',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,7 +66,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/vouchers',
+            path: `${ADMIN_PATH}/vouchers`,
             label: 'Vouchers',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -77,7 +78,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/orders',
+            path: `${ADMIN_PATH}/orders`,
             label: 'Orders',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -90,7 +91,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/customers',
+            path: `${ADMIN_PATH}/customers`,
             label: 'Customers',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -102,7 +103,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/analytics',
+            path: `${ADMIN_PATH}/analytics`,
             label: 'Sales Analytics',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +113,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/visitor-analytics',
+            path: `${ADMIN_PATH}/visitor-analytics`,
             label: 'Visitor Analytics',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -124,7 +125,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/predictions',
+            path: `${ADMIN_PATH}/predictions`,
             label: 'Predictions',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -137,7 +138,7 @@ const AdminLayout = () => {
             )
         },
         {
-            path: '/admin/users',
+            path: `${ADMIN_PATH}/users`,
             label: 'User Management',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -149,8 +150,8 @@ const AdminLayout = () => {
     ]
 
     const isActive = (path) => {
-        if (path === '/admin') {
-            return location.pathname === '/admin'
+        if (path === ADMIN_PATH) {
+            return location.pathname === ADMIN_PATH
         }
         return location.pathname.startsWith(path)
     }
@@ -164,7 +165,7 @@ const AdminLayout = () => {
             {/* Sidebar */}
             <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-header">
-                    <Link to="/admin" className="sidebar-logo">
+                    <Link to={ADMIN_PATH} className="sidebar-logo">
                         <img src="/logo-icon.png" alt="AuthentiMart" className="sidebar-logo-icon" />
                         {!sidebarCollapsed && <span className="logo-text">AuthentiMart</span>}
                     </Link>
@@ -206,7 +207,7 @@ const AdminLayout = () => {
                         </span>
                         {!sidebarCollapsed && <span className="nav-label">Back to Store</span>}
                     </Link>
-                    <button onClick={() => { adminLogout(); navigate('/admin/login'); }} className="nav-item logout-btn">
+                    <button onClick={() => { adminLogout(); navigate(`${ADMIN_PATH}/login`); }} className="nav-item logout-btn">
                         <span className="nav-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

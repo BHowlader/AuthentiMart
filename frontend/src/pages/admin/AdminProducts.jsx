@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext'
+import { ADMIN_PATH } from '../../config/adminConfig'
 import './AdminPanel.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
@@ -106,7 +107,7 @@ const AdminProducts = () => {
                     <h1>Products</h1>
                     <p className="subtitle">Manage your product catalog</p>
                 </div>
-                <Link to="/admin/products/new" className="btn btn-primary">
+                <Link to={`${ADMIN_PATH}/products/new`} className="btn btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="12" y1="5" x2="12" y2="19" />
                         <line x1="5" y1="12" x2="19" y2="12" />
@@ -158,7 +159,7 @@ const AdminProducts = () => {
                     <div className="empty-icon">📦</div>
                     <h3>No products found</h3>
                     <p>Start by adding your first product</p>
-                    <Link to="/admin/products/new" className="btn btn-primary">Add Product</Link>
+                    <Link to={`${ADMIN_PATH}/products/new`} className="btn btn-primary">Add Product</Link>
                 </div>
             ) : (
                 <div className="table-container">
@@ -215,7 +216,7 @@ const AdminProducts = () => {
                                         <td>
                                             <div className="action-buttons">
                                                 <Link
-                                                    to={`/admin/products/${product.id}/edit`}
+                                                    to={`${ADMIN_PATH}/products/${product.id}/edit`}
                                                     className="action-btn edit"
                                                     title="Edit"
                                                 >

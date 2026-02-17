@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { trackPageView } from '../utils/analytics'
+import { ADMIN_PATH } from '../config/adminConfig'
 
 // Routes that should NOT be tracked (internal/admin pages)
-const EXCLUDED_PATHS = ['/admin', '/login', '/register', '/forgot-password', '/reset-password']
+const EXCLUDED_PATHS = [ADMIN_PATH, '/login', '/register', '/forgot-password', '/reset-password']
 
 // Hook to track page views on route changes
 const usePageTracking = () => {
