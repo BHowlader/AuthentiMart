@@ -1,9 +1,24 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Filter, Grid, List, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 import { productsAPI, categoriesAPI } from '../utils/api'
 import './ProductsPage.css'
+
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value)
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value)
+        }, delay)
+
+        return () => clearTimeout(handler)
+    }, [value, delay])
+
+    return debouncedValue
+}
 
 const sortOptions = [
     { label: 'Newest', value: 'newest' },
@@ -30,6 +45,9 @@ const ProductsPage = () => {
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [loadingMore, setLoadingMore] = useState(false)
+
+    // Debounce price range to avoid API calls on every keystroke
+    const debouncedPriceRange = useDebounce(priceRange, 500)
 
     // Fetch categories
     useEffect(() => {
@@ -69,7 +87,7 @@ const ProductsPage = () => {
         }))
     }
 
-    // Fetch products
+    // Fetch products (uses debounced price range to avoid excessive API calls)
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -86,11 +104,11 @@ const ProductsPage = () => {
                 if (searchQuery) {
                     params.search = searchQuery
                 }
-                if (priceRange[0] > 0) {
-                    params.min_price = priceRange[0]
+                if (debouncedPriceRange[0] > 0) {
+                    params.min_price = debouncedPriceRange[0]
                 }
-                if (priceRange[1] < 100000) {
-                    params.max_price = priceRange[1]
+                if (debouncedPriceRange[1] < 100000) {
+                    params.max_price = debouncedPriceRange[1]
                 }
 
                 const response = await productsAPI.getAll(params)
@@ -106,7 +124,7 @@ const ProductsPage = () => {
             }
         }
         fetchProducts()
-    }, [selectedCategory, searchQuery, sortBy, priceRange])
+    }, [selectedCategory, searchQuery, sortBy, debouncedPriceRange])
 
     // Load more products
     const loadMoreProducts = async () => {
@@ -126,11 +144,11 @@ const ProductsPage = () => {
             if (searchQuery) {
                 params.search = searchQuery
             }
-            if (priceRange[0] > 0) {
-                params.min_price = priceRange[0]
+            if (debouncedPriceRange[0] > 0) {
+                params.min_price = debouncedPriceRange[0]
             }
-            if (priceRange[1] < 100000) {
-                params.max_price = priceRange[1]
+            if (debouncedPriceRange[1] < 100000) {
+                params.max_price = debouncedPriceRange[1]
             }
 
             const response = await productsAPI.getAll(params)

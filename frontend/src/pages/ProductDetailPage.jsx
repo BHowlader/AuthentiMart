@@ -27,11 +27,15 @@ const ProductDetailPage = () => {
 
     const { addToCart } = useCart()
 
-    // Fetch product data
+    // Fetch product data - show product immediately, load related in background
     useEffect(() => {
         const fetchProduct = async () => {
             try {
                 setLoading(true)
+                setRelatedProducts([]) // Reset
+                setSelectedImage(0)
+                setQuantity(1)
+
                 const response = await productsAPI.getById(slug)
                 const p = response.data
 
@@ -58,47 +62,44 @@ const ProductDetailPage = () => {
                 }
 
                 setProduct(mappedProduct)
+                setLoading(false) // Show product immediately
 
-                // Fetch related products
-                fetchRelatedProducts(mappedProduct.categorySlug)
+                // Fetch related products in background (non-blocking)
+                if (mappedProduct.categorySlug) {
+                    productsAPI.getAll({ category: mappedProduct.categorySlug, limit: 5 })
+                        .then(res => {
+                            const products = (res.data.items || res.data || [])
+                                .filter(prod => prod.slug !== slug)
+                                .slice(0, 4)
+                                .map(prod => ({
+                                    id: prod.id,
+                                    name: prod.name,
+                                    price: prod.price,
+                                    originalPrice: prod.original_price,
+                                    image: prod.image || (prod.images && prod.images[0]?.url) || '/images/placeholder.png',
+                                    category: prod.category || '',
+                                    categorySlug: prod.category?.toLowerCase().replace(/\s+/g, '-') || '',
+                                    brand: prod.brand || '',
+                                    rating: prod.rating || 0,
+                                    reviewCount: prod.review_count || 0,
+                                    stock: prod.stock || 0,
+                                    isNew: prod.is_new || false,
+                                    discount: prod.discount || 0,
+                                    slug: prod.slug
+                                }))
+                            setRelatedProducts(products)
+                        })
+                        .catch(() => {}) // Silently fail for related products
+                }
             } catch (error) {
                 console.error('Error fetching product:', error)
                 setProduct(null)
-            } finally {
                 setLoading(false)
             }
         }
 
         fetchProduct()
     }, [slug])
-
-    const fetchRelatedProducts = async (categorySlug) => {
-        try {
-            const response = await productsAPI.getAll({ category: categorySlug, limit: 5 })
-            const products = (response.data.items || response.data || [])
-                .filter(p => p.slug !== slug)
-                .slice(0, 4)
-                .map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    originalPrice: p.original_price,
-                    image: p.image || (p.images && p.images[0]?.url) || '/images/placeholder.png',
-                    category: p.category || '',
-                    categorySlug: p.category?.toLowerCase().replace(/\s+/g, '-') || '',
-                    brand: p.brand || '',
-                    rating: p.rating || 0,
-                    reviewCount: p.review_count || 0,
-                    stock: p.stock || 0,
-                    isNew: p.is_new || false,
-                    discount: p.discount || 0,
-                    slug: p.slug
-                }))
-            setRelatedProducts(products)
-        } catch (error) {
-            console.error('Error fetching related products:', error)
-        }
-    }
 
     if (loading) {
         return (
