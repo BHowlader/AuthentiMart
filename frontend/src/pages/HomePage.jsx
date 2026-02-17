@@ -476,11 +476,28 @@ const HomePage = () => {
                         </div>
                     </div>
                     <div className="products-carousel" ref={newArrivalsRef}>
-                        {newArrivals.map((product) => (
-                            <div key={product.id} className="carousel-item">
-                                <ProductCard product={product} />
-                            </div>
-                        ))}
+                        {newArrivals.length > 0 ? (
+                            newArrivals.map((product) => (
+                                <div key={product.id} className="carousel-item">
+                                    <ProductCard product={product} />
+                                </div>
+                            ))
+                        ) : (
+                            /* Skeleton loaders while loading */
+                            [...Array(5)].map((_, i) => (
+                                <div key={i} className="carousel-item">
+                                    <div className="product-card-skeleton">
+                                        <div className="skeleton-image"></div>
+                                        <div className="skeleton-content">
+                                            <div className="skeleton-line short"></div>
+                                            <div className="skeleton-line"></div>
+                                            <div className="skeleton-line medium"></div>
+                                            <div className="skeleton-btn"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
@@ -511,11 +528,28 @@ const HomePage = () => {
                         </div>
                     </div>
                     <div className="products-carousel" ref={bestSellersRef}>
-                        {bestSellers.map((product) => (
-                            <div key={product.id} className="carousel-item">
-                                <ProductCard product={product} />
-                            </div>
-                        ))}
+                        {bestSellers.length > 0 ? (
+                            bestSellers.map((product) => (
+                                <div key={product.id} className="carousel-item">
+                                    <ProductCard product={product} />
+                                </div>
+                            ))
+                        ) : (
+                            /* Skeleton loaders while loading */
+                            [...Array(5)].map((_, i) => (
+                                <div key={i} className="carousel-item">
+                                    <div className="product-card-skeleton">
+                                        <div className="skeleton-image"></div>
+                                        <div className="skeleton-content">
+                                            <div className="skeleton-line short"></div>
+                                            <div className="skeleton-line"></div>
+                                            <div className="skeleton-line medium"></div>
+                                            <div className="skeleton-btn"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
