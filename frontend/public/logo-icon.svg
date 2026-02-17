@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 55">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F17E23"/>
+      <stop offset="100%" style="stop-color:#E85D04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Shield/Badge shape with checkmark -->
+  <path d="M25 2 L45 10 L45 30 C45 42 35 50 25 55 C15 50 5 42 5 30 L5 10 Z"
+        fill="url(#brandGradient)"/>
+  <!-- Checkmark inside -->
+  <path d="M15 28 L22 36 L36 20"
+        stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

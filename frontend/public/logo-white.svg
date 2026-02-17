@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60">
+  <!-- Icon: Stylized "A" with checkmark/shield -->
+  <g transform="translate(0, 5)">
+    <!-- Shield/Badge shape -->
+    <path d="M25 2 L45 10 L45 28 C45 38 35 46 25 50 C15 46 5 38 5 28 L5 10 Z"
+          fill="white"/>
+    <!-- Checkmark inside -->
+    <path d="M15 26 L22 33 L36 18"
+          stroke="#F17E23" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- Text: AuthentiMart -->
+  <text x="55" y="40" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="white">
+    <tspan>Authenti</tspan><tspan fill="#F17E23">Mart</tspan>
+  </text>
+</svg>

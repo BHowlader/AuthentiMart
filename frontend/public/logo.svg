@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F17E23"/>
+      <stop offset="100%" style="stop-color:#E85D04"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: Stylized "A" with checkmark/shield -->
+  <g transform="translate(0, 5)">
+    <!-- Shield/Badge shape -->
+    <path d="M25 2 L45 10 L45 28 C45 38 35 46 25 50 C15 46 5 38 5 28 L5 10 Z"
+          fill="url(#brandGradient)"/>
+    <!-- Checkmark inside -->
+    <path d="M15 26 L22 33 L36 18"
+          stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- Text: AuthentiMart -->
+  <text x="55" y="40" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="32" font-weight="700">
+    <tspan fill="#1a1a2e">Authenti</tspan><tspan fill="url(#brandGradient)">Mart</tspan>
+  </text>
+</svg>
