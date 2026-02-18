@@ -5,7 +5,6 @@ import {
     Twitter,
     Youtube,
     Mail,
-    Phone,
     MapPin,
     CreditCard,
     Truck,
@@ -121,12 +120,8 @@ const Footer = () => {
                             <h3>Contact Us</h3>
                             <ul className="contact-list">
                                 <li>
-                                    <Phone size={18} />
-                                    <span>+8801319826059</span>
-                                </li>
-                                <li>
                                     <Mail size={18} />
-                                    <span>support@authentimart.com</span>
+                                    <a href="mailto:bibekhowlader8@gmail.com">bibekhowlader8@gmail.com</a>
                                 </li>
                                 <li>
                                     <MapPin size={18} />

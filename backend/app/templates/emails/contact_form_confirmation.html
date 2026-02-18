@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}We Received Your Message{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0; color: #333;">Thank You for Contacting Us!</h2>
+
+<p>Hi {{ name }},</p>
+
+<p>We have received your message and appreciate you reaching out to us. Our team will review your inquiry and get back to you as soon as possible.</p>
+
+<div style="background-color: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0; color: #155724;">
+        <strong>What happens next?</strong><br>
+        Our customer support team typically responds within 24 hours during business days (Saturday - Thursday, 10:00 AM - 8:00 PM BST).
+    </p>
+</div>
+
+<p>In the meantime, you might find answers to common questions in our:</p>
+
+<ul style="padding-left: 20px;">
+    <li><a href="{{ app_url }}/faq" style="color: #667eea;">Frequently Asked Questions</a></li>
+    <li><a href="{{ app_url }}/returns" style="color: #667eea;">Returns & Refunds Policy</a></li>
+    <li><a href="{{ app_url }}/size-guide" style="color: #667eea;">Size Guide</a></li>
+</ul>
+
+<p>Thank you for choosing {{ app_name }}!</p>
+
+<p>Best regards,<br>
+The {{ app_name }} Team</p>
+{% endblock %}

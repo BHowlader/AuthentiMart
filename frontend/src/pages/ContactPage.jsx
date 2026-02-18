@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Mail, Phone, MapPin, Clock, Send, MessageCircle } from 'lucide-react'
+import { ChevronRight, Mail, MapPin, Clock, Send } from 'lucide-react'
 import './StaticPages.css'
+
+// Change this to your actual email address
+const SUPPORT_EMAIL = 'bibekhowlader8@gmail.com'
 
 const ContactPage = () => {
     const [formData, setFormData] = useState({
@@ -10,27 +13,36 @@ const ContactPage = () => {
         subject: '',
         message: ''
     })
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [submitStatus, setSubmitStatus] = useState(null)
 
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
-        setIsSubmitting(true)
 
-        // Simulate form submission
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        // Build mailto link
+        const subjectMap = {
+            'order': 'Order Inquiry',
+            'product': 'Product Question',
+            'return': 'Return/Refund Request',
+            'shipping': 'Shipping Issue',
+            'feedback': 'Feedback',
+            'other': 'General Inquiry'
+        }
 
-        setSubmitStatus('success')
-        setFormData({ name: '', email: '', subject: '', message: '' })
-        setIsSubmitting(false)
+        const emailSubject = subjectMap[formData.subject] || 'Contact Form Inquiry'
+        const emailBody = `Name: ${formData.name}
+Email: ${formData.email}
 
-        // Reset status after 5 seconds
-        setTimeout(() => setSubmitStatus(null), 5000)
+Message:
+${formData.message}`
+
+        const mailtoLink = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+
+        // Open email client
+        window.location.href = mailtoLink
     }
 
     return (
@@ -52,38 +64,16 @@ const ContactPage = () => {
                     <div className="contact-grid">
                         {/* Contact Info */}
                         <div className="contact-info">
-                            <div className="contact-card glass-card">
-                                <div className="contact-icon">
-                                    <Phone size={24} />
-                                </div>
-                                <div className="contact-details">
-                                    <h3>Phone</h3>
-                                    <p>+8801319826059</p>
-                                    <span>Mon-Sat, 10AM-8PM</span>
-                                </div>
-                            </div>
-
-                            <div className="contact-card glass-card">
+                            <a href={`mailto:${SUPPORT_EMAIL}`} className="contact-card glass-card clickable">
                                 <div className="contact-icon">
                                     <Mail size={24} />
                                 </div>
                                 <div className="contact-details">
                                     <h3>Email</h3>
-                                    <p>support@authentimart.com</p>
+                                    <p>{SUPPORT_EMAIL}</p>
                                     <span>We respond within 24 hours</span>
                                 </div>
-                            </div>
-
-                            <div className="contact-card glass-card">
-                                <div className="contact-icon">
-                                    <MessageCircle size={24} />
-                                </div>
-                                <div className="contact-details">
-                                    <h3>WhatsApp</h3>
-                                    <p>+8801319826059</p>
-                                    <span>Chat with us instantly</span>
-                                </div>
-                            </div>
+                            </a>
 
                             <div className="contact-card glass-card">
                                 <div className="contact-icon">
@@ -111,13 +101,7 @@ const ContactPage = () => {
                         {/* Contact Form */}
                         <div className="contact-form-container glass-card">
                             <h2>Send Us a Message</h2>
-                            <p>Fill out the form below and we'll get back to you as soon as possible.</p>
-
-                            {submitStatus === 'success' && (
-                                <div className="form-success">
-                                    <span>Thank you! Your message has been sent successfully. We'll get back to you soon.</span>
-                                </div>
-                            )}
+                            <p>Fill out the form below to compose an email to our support team.</p>
 
                             <form className="contact-form" onSubmit={handleSubmit}>
                                 <div className="form-row">
@@ -182,16 +166,9 @@ const ContactPage = () => {
                                 <button
                                     type="submit"
                                     className="btn btn-primary btn-lg"
-                                    disabled={isSubmitting}
                                 >
-                                    {isSubmitting ? (
-                                        'Sending...'
-                                    ) : (
-                                        <>
-                                            <Send size={18} />
-                                            Send Message
-                                        </>
-                                    )}
+                                    <Send size={18} />
+                                    Open Email Client
                                 </button>
                             </form>
                         </div>

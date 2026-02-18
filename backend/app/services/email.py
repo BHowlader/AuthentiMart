@@ -325,6 +325,51 @@ class EmailService:
             email_type="newsletter_confirmation"
         )
 
+    # ========================================
+    # CONTACT FORM
+    # ========================================
+
+    def send_contact_form_email(
+        self,
+        name: str,
+        email: str,
+        subject: str,
+        message: str
+    ) -> bool:
+        """Send contact form submission to support"""
+        html_content = self._render_template(
+            "contact_form.html",
+            sender_name=name,
+            sender_email=email,
+            subject=subject,
+            message=message,
+            submitted_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+        # Send to support email
+        support_email = self.from_email  # Or configure a separate support email
+
+        return self._send_email(
+            to_email=support_email,
+            subject=f"Contact Form: {subject}",
+            html_content=html_content,
+            email_type="contact_form"
+        )
+
+    def send_contact_form_confirmation(self, name: str, email: str) -> bool:
+        """Send confirmation to user that their message was received"""
+        html_content = self._render_template(
+            "contact_form_confirmation.html",
+            name=name
+        )
+
+        return self._send_email(
+            to_email=email,
+            subject=f"We received your message - {self.app_name}",
+            html_content=html_content,
+            email_type="contact_form_confirmation"
+        )
+
 
 # Singleton instance
 email_service = EmailService()
