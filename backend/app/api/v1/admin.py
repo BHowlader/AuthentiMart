@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc, and_
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 import os
 import uuid
 import math
+import time
 
 from app.database import get_db
 from app.models.models import (
@@ -17,6 +18,40 @@ from app.utils.auth import get_current_user, get_current_admin
 from app.config import settings
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+# ============ Simple In-Memory Cache ============
+# Cache expensive dashboard queries for faster loading
+
+class SimpleCache:
+    def __init__(self):
+        self._cache: Dict[str, Any] = {}
+        self._timestamps: Dict[str, float] = {}
+
+    def get(self, key: str, max_age_seconds: int = 60) -> Optional[Any]:
+        """Get cached value if not expired"""
+        if key in self._cache:
+            if time.time() - self._timestamps[key] < max_age_seconds:
+                return self._cache[key]
+        return None
+
+    def set(self, key: str, value: Any):
+        """Set cache value"""
+        self._cache[key] = value
+        self._timestamps[key] = time.time()
+
+    def invalidate(self, pattern: str = None):
+        """Clear cache entries matching pattern or all if no pattern"""
+        if pattern is None:
+            self._cache.clear()
+            self._timestamps.clear()
+        else:
+            keys_to_delete = [k for k in self._cache if pattern in k]
+            for k in keys_to_delete:
+                del self._cache[k]
+                del self._timestamps[k]
+
+# Global cache instance
+cache = SimpleCache()
 
 # ============ Pydantic Schemas ============
 
@@ -126,20 +161,25 @@ class ProductUpdate(BaseModel):
 @router.get("/dashboard/stats", response_model=DashboardStats)
 async def get_dashboard_stats(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)
+    _: User = Depends(get_current_admin)
 ):
-    """Get main dashboard statistics"""
-    
+    """Get main dashboard statistics (cached for 60 seconds)"""
+
+    # Check cache first
+    cached = cache.get("dashboard_stats", max_age_seconds=60)
+    if cached:
+        return cached
+
     # Current period (last 30 days)
     now = datetime.utcnow()
     thirty_days_ago = now - timedelta(days=30)
     sixty_days_ago = now - timedelta(days=60)
-    
+
     # Total revenue (all time)
     total_revenue = db.query(func.sum(Order.total)).filter(
         Order.payment_status == PaymentStatus.COMPLETED
     ).scalar() or 0
-    
+
     # Revenue this period
     current_period_revenue = db.query(func.sum(Order.total)).filter(
         and_(
@@ -147,7 +187,7 @@ async def get_dashboard_stats(
             Order.created_at >= thirty_days_ago
         )
     ).scalar() or 0
-    
+
     # Revenue previous period
     previous_period_revenue = db.query(func.sum(Order.total)).filter(
         and_(
@@ -156,21 +196,21 @@ async def get_dashboard_stats(
             Order.created_at < thirty_days_ago
         )
     ).scalar() or 0
-    
+
     # Calculate revenue change percentage
     if previous_period_revenue > 0:
         revenue_change = ((current_period_revenue - previous_period_revenue) / previous_period_revenue) * 100
     else:
         revenue_change = 100 if current_period_revenue > 0 else 0
-    
+
     # Total orders
     total_orders = db.query(func.count(Order.id)).scalar() or 0
-    
+
     # Orders this period
     current_period_orders = db.query(func.count(Order.id)).filter(
         Order.created_at >= thirty_days_ago
     ).scalar() or 0
-    
+
     # Orders previous period
     previous_period_orders = db.query(func.count(Order.id)).filter(
         and_(
@@ -178,34 +218,34 @@ async def get_dashboard_stats(
             Order.created_at < thirty_days_ago
         )
     ).scalar() or 0
-    
+
     # Calculate orders change percentage
     if previous_period_orders > 0:
         orders_change = ((current_period_orders - previous_period_orders) / previous_period_orders) * 100
     else:
         orders_change = 100 if current_period_orders > 0 else 0
-    
+
     # Total products
     total_products = db.query(func.count(Product.id)).filter(
         Product.is_active == True
     ).scalar() or 0
-    
+
     # Total customers
     total_customers = db.query(func.count(User.id)).filter(
         User.role == UserRole.USER
     ).scalar() or 0
-    
+
     # Pending orders
     pending_orders = db.query(func.count(Order.id)).filter(
         Order.status.in_([OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PROCESSING])
     ).scalar() or 0
-    
+
     # Low stock products (stock < 10)
     low_stock_products = db.query(func.count(Product.id)).filter(
         and_(Product.stock < 10, Product.is_active == True)
     ).scalar() or 0
-    
-    return DashboardStats(
+
+    result = DashboardStats(
         total_revenue=round(total_revenue, 2),
         total_orders=total_orders,
         total_products=total_products,
@@ -216,16 +256,26 @@ async def get_dashboard_stats(
         orders_change=round(orders_change, 1)
     )
 
+    # Cache the result
+    cache.set("dashboard_stats", result)
+    return result
+
 @router.get("/dashboard/sales", response_model=List[SalesData])
 async def get_sales_data(
     period: str = "7d",  # 7d, 30d, 90d, 1y
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_admin)
+    _: User = Depends(get_current_admin)
 ):
-    """Get sales data for charts"""
-    
+    """Get sales data for charts (cached for 120 seconds)"""
+
+    # Check cache first
+    cache_key = f"sales_data_{period}"
+    cached = cache.get(cache_key, max_age_seconds=120)
+    if cached:
+        return cached
+
     now = datetime.utcnow()
-    
+
     if period == "7d":
         start_date = now - timedelta(days=7)
         group_format = "%Y-%m-%d"
@@ -277,7 +327,9 @@ async def get_sales_data(
                 sales=round(data["sales"], 2),
                 orders=data["orders"]
             ))
-    
+
+    # Cache the result
+    cache.set(cache_key, result)
     return result
 
 @router.get("/dashboard/recent-orders", response_model=List[RecentOrder])
