@@ -12,14 +12,13 @@
    ======================================== */
 .hero {
     position: relative;
-    width: 100%;
+    width: calc(100% - 32px);
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 20px auto 0;
     height: 450px;
     overflow: hidden;
     background: var(--bg-secondary);
     border-radius: var(--radius-xl);
-    margin-top: 20px;
 }
 
 .hero-slider {
@@ -735,10 +734,10 @@
 
     .hero {
         height: 320px;
-        margin: 0;
-        border-radius: 0;
-        width: 100%;
-        max-width: 100%;
+        margin: 12px;
+        border-radius: var(--radius-lg);
+        width: calc(100% - 24px);
+        max-width: calc(100% - 24px);
     }
 
     .hero-overlay {
@@ -904,8 +903,10 @@
 
     .hero {
         height: 280px;
-        margin: 0;
-        border-radius: 0;
+        margin: 10px;
+        border-radius: var(--radius-md);
+        width: calc(100% - 20px);
+        max-width: calc(100% - 20px);
     }
 
     .hero-slide>.container {
@@ -1021,7 +1022,10 @@
 @media (max-width: 360px) {
     .hero {
         height: 250px;
-        margin: 0;
+        margin: 8px;
+        border-radius: var(--radius-md);
+        width: calc(100% - 16px);
+        max-width: calc(100% - 16px);
     }
 
     .hero-slide>.container {
