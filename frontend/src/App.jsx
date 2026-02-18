@@ -25,6 +25,10 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const ComparePage = lazy(() => import('./pages/ComparePage'))
 const FlashSalePage = lazy(() => import('./pages/FlashSalePage'))
+const ReturnsPage = lazy(() => import('./pages/ReturnsPage'))
+const FAQPage = lazy(() => import('./pages/FAQPage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const SizeGuidePage = lazy(() => import('./pages/SizeGuidePage'))
 
 // Admin pages - loaded only when accessing /admin routes
 const AdminAuthWrapper = lazy(() => import('./components/AdminAuthWrapper'))
@@ -89,6 +93,10 @@ function App() {
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                             <Route path="/reset-password" element={<ResetPasswordPage />} />
+                            <Route path="/returns" element={<ReturnsPage />} />
+                            <Route path="/faq" element={<FAQPage />} />
+                            <Route path="/contact" element={<ContactPage />} />
+                            <Route path="/size-guide" element={<SizeGuidePage />} />
                             <Route
                                 path="/checkout"
                                 element={
