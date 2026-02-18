@@ -3,6 +3,13 @@
 /* Import base auth styles */
 @import '../AuthPages.css';
 
+/* Admin logo image */
+.admin-auth-page .logo-icon-img {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+}
+
 /* Admin-specific visual section with purple/indigo gradient */
 .admin-auth-page .auth-visual.admin-visual {
     background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%);

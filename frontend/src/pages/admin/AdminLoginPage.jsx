@@ -86,7 +86,7 @@ const AdminLoginPage = () => {
                     <div className="auth-form-section">
                         <div className="auth-header">
                             <div className="auth-logo">
-                                <div className="logo-icon">🛡️</div>
+                                <img src="/logo-icon.png" alt="AuthentiMart" className="logo-icon-img" />
                                 <span>AuthentiMart Admin</span>
                             </div>
                             <h1>Welcome Back, Admin</h1>
