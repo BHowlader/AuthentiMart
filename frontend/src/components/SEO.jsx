@@ -1,6 +1,4 @@
-import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import PropTypes from 'prop-types';
 
 const SEO = ({
     title,
@@ -117,27 +115,6 @@ const SEO = ({
             </script>
         </Helmet>
     );
-};
-
-SEO.propTypes = {
-    title: PropTypes.string,
-    description: PropTypes.string,
-    keywords: PropTypes.string,
-    image: PropTypes.string,
-    url: PropTypes.string,
-    type: PropTypes.string,
-    product: PropTypes.shape({
-        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        name: PropTypes.string,
-        description: PropTypes.string,
-        image: PropTypes.string,
-        price: PropTypes.number,
-        brand: PropTypes.string,
-        sku: PropTypes.string,
-        inStock: PropTypes.bool,
-        rating: PropTypes.number,
-        reviewCount: PropTypes.number
-    })
 };
 
 export default SEO;
