@@ -3,6 +3,7 @@ import { Heart, ShoppingCart, Star, GitCompare } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
 import { useCompare } from '../context/CompareContext'
+import { imagePresets } from '../utils/imageOptimizer'
 import './ProductCard.css'
 
 const ProductCard = ({ product }) => {
@@ -49,7 +50,7 @@ const ProductCard = ({ product }) => {
     return (
         <Link to={`/product/${slug}`} className="product-card">
             <div className="product-card-image">
-                <img src={image} alt={name} loading="lazy" />
+                <img src={imagePresets.productCard(image)} alt={name} loading="lazy" />
 
                 {/* Badges */}
                 <div className="product-card-badges">

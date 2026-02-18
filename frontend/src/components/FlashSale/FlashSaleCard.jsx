@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Zap } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
+import { imagePresets } from '../../utils/imageOptimizer'
 import './FlashSale.css'
 
 // Get the base URL for uploads
 const API_BASE = import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://127.0.0.1:8000'
 
-// Helper to get full image URL
+// Helper to get full image URL with Cloudinary optimization
 const getImageUrl = (path) => {
     if (!path) return '/images/placeholder.png'
-    if (path.startsWith('http')) return path
     if (path.startsWith('/uploads')) return `${API_BASE}${path}`
-    return path
+    if (path.startsWith('/')) return path
+    // External URLs get Cloudinary optimization
+    return imagePresets.productCard(path)
 }
 
 const FlashSaleCard = ({ item }) => {

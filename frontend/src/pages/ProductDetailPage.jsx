@@ -14,6 +14,7 @@ import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
 import AccessoriesSection from '../components/AccessoriesSection'
 import { productsAPI } from '../utils/api'
+import { imagePresets } from '../utils/imageOptimizer'
 import './ProductDetailPage.css'
 
 const ProductDetailPage = () => {
@@ -171,7 +172,7 @@ const ProductDetailPage = () => {
                     {/* Image Gallery */}
                     <div className="product-gallery">
                         <div className="main-image">
-                            <img src={product.images[selectedImage]} alt={product.name} />
+                            <img src={imagePresets.productDetail(product.images[selectedImage])} alt={product.name} />
                             {product.isNew && <span className="badge badge-new">New</span>}
                             {product.discount > 0 && (
                                 <span className="badge badge-primary discount-badge">-{product.discount}%</span>
@@ -185,7 +186,7 @@ const ProductDetailPage = () => {
                                         className={`thumbnail ${index === selectedImage ? 'active' : ''}`}
                                         onClick={() => setSelectedImage(index)}
                                     >
-                                        <img src={img} alt={`${product.name} ${index + 1}`} />
+                                        <img src={imagePresets.productCard(img)} alt={`${product.name} ${index + 1}`} />
                                     </button>
                                 ))}
                             </div>
