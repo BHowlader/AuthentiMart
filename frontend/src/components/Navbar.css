@@ -632,6 +632,9 @@
 
     .logo-image {
         height: 58px;
+        width: auto;
+        max-width: none;
+        object-fit: contain;
         margin-top: -12px;
         margin-bottom: -10px;
     }
@@ -686,6 +689,20 @@
         font-size: 16px;
         /* Prevent zoom on iOS */
     }
+
+    .logo-image {
+        height: 50px;
+        width: auto;
+        max-width: none;
+        object-fit: contain;
+        margin-top: -10px;
+        margin-bottom: -8px;
+    }
+
+    .login-btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -715,9 +732,12 @@
     }
 
     .logo-image {
-        height: 50px;
-        margin-top: -10px;
-        margin-bottom: -8px;
+        height: 44px;
+        width: auto;
+        max-width: none;
+        object-fit: contain;
+        margin-top: -8px;
+        margin-bottom: -6px;
     }
 
     .user-avatar {
@@ -768,9 +788,12 @@
     }
 
     .logo-image {
-        height: 42px;
-        margin-top: -8px;
-        margin-bottom: -6px;
+        height: 36px;
+        width: auto;
+        max-width: none;
+        object-fit: contain;
+        margin-top: -6px;
+        margin-bottom: -4px;
     }
 
     .action-badge {
