@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     status_poll_interval_minutes: int = 30  # Poll courier APIs for status updates
     auto_assign_courier: bool = True  # Auto-assign courier after confirmation
 
+    # Superadmin (cannot be removed or demoted)
+    superadmin_email: str = "bibekhowlader8@gmail.com"
+
     # Application
     app_name: str = "AuthentiMart"
     app_url: str = "http://localhost:5173"

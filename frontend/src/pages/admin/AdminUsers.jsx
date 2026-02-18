@@ -82,8 +82,16 @@ const AdminUsers = () => {
         })
     }
 
-    const getRoleBadge = (role) => {
-        return role === 'admin' ? (
+    const getRoleBadge = (user) => {
+        if (user.is_superadmin) {
+            return (
+                <span className="status-badge superadmin-role">
+                    <Shield size={14} />
+                    Superadmin
+                </span>
+            )
+        }
+        return user.role === 'admin' ? (
             <span className="status-badge admin-role">
                 <Shield size={14} />
                 Admin
@@ -183,7 +191,7 @@ const AdminUsers = () => {
                                         <span className="customer-phone">{user.phone || 'N/A'}</span>
                                     </td>
                                     <td>
-                                        {getRoleBadge(user.role)}
+                                        {getRoleBadge(user)}
                                     </td>
                                     <td>
                                         <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
@@ -195,7 +203,9 @@ const AdminUsers = () => {
                                     </td>
                                     <td>
                                         <div className="action-buttons">
-                                            {user.role === 'admin' ? (
+                                            {user.is_superadmin ? (
+                                                <span className="protected-badge">Protected</span>
+                                            ) : user.role === 'admin' ? (
                                                 <button
                                                     className="btn btn-sm btn-warning"
                                                     onClick={() => updateUserRole(user.id, 'user')}

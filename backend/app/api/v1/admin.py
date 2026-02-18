@@ -14,6 +14,7 @@ from app.models.models import (
     ProductImage, UserRole, OrderStatus, PaymentStatus, Address, OrderTracking
 )
 from app.utils.auth import get_current_user, get_current_admin
+from app.config import settings
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -1522,6 +1523,7 @@ async def get_all_users(
                 "picture": user.picture,
                 "role": user.role,
                 "is_active": user.is_active,
+                "is_superadmin": user.email == settings.superadmin_email,
                 "created_at": user.created_at
             }
             for user in users
@@ -1530,6 +1532,33 @@ async def get_all_users(
         "page": page,
         "pages": math.ceil(total / limit)
     }
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin)
+):
+    """Delete a user (cannot delete superadmin)"""
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Protect superadmin from being deleted
+    if user.email == settings.superadmin_email:
+        raise HTTPException(status_code=403, detail="Cannot delete superadmin")
+
+    # Prevent self-deletion
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+
+    db.delete(user)
+    db.commit()
+
+    return {"message": "User deleted successfully"}
 
 
 @router.put("/users/{user_id}/role")
@@ -1548,6 +1577,10 @@ async def update_user_role(
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Protect superadmin from being demoted
+    if user.email == settings.superadmin_email and role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Cannot modify superadmin role")
 
     # Prevent self-demotion
     if user.id == current_user.id and role != UserRole.ADMIN.value:

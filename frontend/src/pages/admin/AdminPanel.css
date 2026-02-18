@@ -3273,9 +3273,28 @@
     gap: 4px;
 }
 
+.status-badge.superadmin-role {
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(245, 158, 11, 0.2));
+    color: #FBBF24;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
 .status-badge.user-role {
     background: rgba(107, 114, 128, 0.2);
     color: #9CA3AF;
+}
+
+.protected-badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(234, 179, 8, 0.15);
+    color: #FBBF24;
+    border: 1px solid rgba(234, 179, 8, 0.3);
 }
 
 .you-badge {
