@@ -631,9 +631,9 @@
     }
 
     .logo-image {
-        height: 70px;
-        margin-top: -16px;
-        margin-bottom: -14px;
+        height: 58px;
+        margin-top: -12px;
+        margin-bottom: -10px;
     }
 
     .navbar-search {
@@ -715,9 +715,9 @@
     }
 
     .logo-image {
-        height: 62px;
-        margin-top: -14px;
-        margin-bottom: -12px;
+        height: 50px;
+        margin-top: -10px;
+        margin-bottom: -8px;
     }
 
     .user-avatar {
@@ -768,9 +768,9 @@
     }
 
     .logo-image {
-        height: 62px;
-        margin-top: -12px;
-        margin-bottom: -10px;
+        height: 42px;
+        margin-top: -8px;
+        margin-bottom: -6px;
     }
 
     .action-badge {
