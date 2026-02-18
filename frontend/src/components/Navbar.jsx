@@ -22,6 +22,7 @@ const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [isSearchOpen, setIsSearchOpen] = useState(false)
 
@@ -41,6 +42,7 @@ const Navbar = () => {
 
     useEffect(() => {
         setIsMobileMenuOpen(false)
+        setIsCategoriesOpen(false)
     }, [location])
 
     const handleSearch = (e) => {
@@ -112,10 +114,16 @@ const Navbar = () => {
                     <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
                         Home
                     </Link>
-                    <div className="nav-dropdown">
-                        <button className="nav-link dropdown-trigger">
+                    <div className={`nav-dropdown ${isCategoriesOpen ? 'open' : ''}`}>
+                        <button
+                            className="nav-link dropdown-trigger"
+                            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                        >
                             Categories <ChevronDown size={16} />
                         </button>
+                        {isCategoriesOpen && (
+                            <div className="dropdown-overlay" onClick={() => setIsCategoriesOpen(false)} />
+                        )}
                         <div className="dropdown-menu mega-menu">
                             <div className="mega-menu-grid">
                                 {categoryGroups.map((group) => (

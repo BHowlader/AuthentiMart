@@ -114,10 +114,22 @@
     box-shadow: var(--shadow-lg);
 }
 
-.nav-dropdown:hover .dropdown-menu {
+.nav-dropdown:hover .dropdown-menu,
+.nav-dropdown.open .dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+}
+
+/* Dropdown overlay for click-to-close */
+.dropdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 98;
+    background: transparent;
 }
 
 /* Mega Menu Styles */
@@ -130,7 +142,8 @@
     overflow: hidden;
 }
 
-.nav-dropdown:hover .dropdown-menu.mega-menu {
+.nav-dropdown:hover .dropdown-menu.mega-menu,
+.nav-dropdown.open .dropdown-menu.mega-menu {
     transform: translateX(-50%) translateY(0);
 }
 
