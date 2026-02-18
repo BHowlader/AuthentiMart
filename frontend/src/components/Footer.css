@@ -298,10 +298,24 @@
 /* All payment icons have consistent white background */
 .payment-icon.bkash,
 .payment-icon.visa,
-.payment-icon.mastercard,
-.payment-icon.amex {
+.payment-icon.mastercard {
     background-color: #ffffff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* American Express - full bleed, no border */
+.payment-icon.amex {
+    padding: 0;
+    background-color: transparent;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.payment-icon.amex img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
 /* Footer Bottom */
