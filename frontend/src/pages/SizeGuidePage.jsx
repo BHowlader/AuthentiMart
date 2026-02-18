@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Ruler, Info } from 'lucide-react'
+import SEO from '../components/SEO'
 import './StaticPages.css'
 
 const SizeGuidePage = () => {
@@ -66,6 +67,12 @@ const SizeGuidePage = () => {
 
     return (
         <div className="static-page">
+            <SEO
+                title="Size Guide"
+                description="Find your perfect fit with AuthentiMart's comprehensive size charts for clothing, shoes, and bags. Measurements in inches and centimeters."
+                keywords="size guide, size chart, clothing sizes, shoe sizes, measurements, AuthentiMart sizing"
+                url="/size-guide"
+            />
             <div className="container">
                 {/* Breadcrumb */}
                 <nav className="breadcrumb">

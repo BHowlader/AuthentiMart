@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 import { FlashSaleSection } from '../components/FlashSale'
+import SEO from '../components/SEO'
 import { productsAPI, categoriesAPI } from '../utils/api'
 import './HomePage.css'
 
@@ -353,6 +354,11 @@ const HomePage = () => {
 
     return (
         <div className="home-page">
+            <SEO
+                title="Home"
+                description="AuthentiMart - Your one-stop shop for authentic cosmetics, electronics, and home appliances in Bangladesh. Premium brands, best prices, and fast delivery."
+                keywords="online shopping bd, authentic cosmetics bangladesh, electronics shop dhaka, home appliances bd"
+            />
             {/* Hero Section */}
             <section className="hero">
                 {!imagesLoaded && (

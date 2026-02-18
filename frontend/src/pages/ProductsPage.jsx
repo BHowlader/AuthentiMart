@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Filter, Grid, List, ChevronDown, X, SlidersHorizontal } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
+import SEO from '../components/SEO'
 import { productsAPI, categoriesAPI } from '../utils/api'
 import './ProductsPage.css'
 
@@ -194,6 +195,11 @@ const ProductsPage = () => {
 
     return (
         <div className="products-page">
+            <SEO
+                title={getCategoryName()}
+                description={`Browse our extensive collection of ${getCategoryName().toLowerCase()} products. Genuine authentic items at the best prices in Bangladesh.`}
+                keywords={`buy ${getCategoryName().toLowerCase()} bd, online shopping bangladesh, authentic products`}
+            />
             <div className="container">
                 {/* Page Header */}
                 <div className="page-header">

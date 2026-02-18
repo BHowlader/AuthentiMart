@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight, RotateCcw, Package, Clock, CheckCircle } from 'lucide-react'
+import SEO from '../components/SEO'
 import './StaticPages.css'
 
 const ReturnsPage = () => {
     return (
         <div className="static-page">
+            <SEO
+                title="Returns & Refunds"
+                description="Learn about AuthentiMart's 7-day return policy, refund process, and exchange guidelines. Easy returns for authentic products in Bangladesh."
+                keywords="returns policy, refund, exchange, AuthentiMart returns, online shopping returns Bangladesh"
+                url="/returns"
+            />
             <div className="container">
                 {/* Breadcrumb */}
                 <nav className="breadcrumb">

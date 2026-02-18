@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Mail, MapPin, Clock, Send } from 'lucide-react'
+import SEO from '../components/SEO'
 import './StaticPages.css'
 
 // Change this to your actual email address
@@ -47,6 +48,11 @@ ${formData.message}`
 
     return (
         <div className="static-page">
+            <SEO
+                title="Contact Us"
+                description="Contact AuthentiMart - Get in touch with our support team for any inquiries about products, orders, or returns."
+                keywords="contact authentimart, customer support, email support, dhaka office location"
+            />
             <div className="container">
                 {/* Breadcrumb */}
                 <nav className="breadcrumb">

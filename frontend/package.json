@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "build": "npm run generate-sitemap && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,6 +16,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-facebook-login": "^4.1.1",
+    "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.0.0"
   },
   "devDependencies": {

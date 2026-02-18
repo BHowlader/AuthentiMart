@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
@@ -10,17 +11,19 @@ import './index.css'
 
 // Removed React.StrictMode - it causes double renders and slows initial load
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <BrowserRouter>
-        <ToastProvider>
-            <AuthProvider>
-                <CartProvider>
-                    <WishlistProvider>
-                        <CompareProvider>
-                            <App />
-                        </CompareProvider>
-                    </WishlistProvider>
-                </CartProvider>
-            </AuthProvider>
-        </ToastProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+        <BrowserRouter>
+            <ToastProvider>
+                <AuthProvider>
+                    <CartProvider>
+                        <WishlistProvider>
+                            <CompareProvider>
+                                <App />
+                            </CompareProvider>
+                        </WishlistProvider>
+                    </CartProvider>
+                </AuthProvider>
+            </ToastProvider>
+        </BrowserRouter>
+    </HelmetProvider>
 )

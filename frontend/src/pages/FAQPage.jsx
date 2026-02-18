@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, ChevronDown, Search } from 'lucide-react'
+import SEO from '../components/SEO'
 import './StaticPages.css'
 
 const FAQPage = () => {
@@ -132,6 +133,11 @@ const FAQPage = () => {
 
     return (
         <div className="static-page">
+            <SEO
+                title="FAQ - Frequently Asked Questions"
+                description="Find answers to common questions about AuthentiMart orders, shipping, returns, and payments."
+                keywords="faq, help center, shipping questions, return policy, payment methods"
+            />
             <div className="container">
                 {/* Breadcrumb */}
                 <nav className="breadcrumb">

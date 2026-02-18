@@ -13,6 +13,7 @@ import {
 import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
 import AccessoriesSection from '../components/AccessoriesSection'
+import SEO from '../components/SEO'
 import { productsAPI } from '../utils/api'
 import { imagePresets } from '../utils/imageOptimizer'
 import './ProductDetailPage.css'
@@ -90,7 +91,7 @@ const ProductDetailPage = () => {
                                 }))
                             setRelatedProducts(products)
                         })
-                        .catch(() => {}) // Silently fail for related products
+                        .catch(() => { }) // Silently fail for related products
                 }
             } catch (error) {
                 console.error('Error fetching product:', error)
@@ -105,6 +106,7 @@ const ProductDetailPage = () => {
     if (loading) {
         return (
             <div className="product-detail-page">
+                <SEO title="Loading Product..." />
                 <div className="container">
                     {/* Skeleton loader for product detail */}
                     <div className="product-detail-skeleton">
@@ -127,6 +129,7 @@ const ProductDetailPage = () => {
     if (!product) {
         return (
             <div className="product-detail-page">
+                <SEO title="Product Not Found" />
                 <div className="container">
                     <div className="not-found-state">
                         <h2>Product not found</h2>
@@ -151,6 +154,26 @@ const ProductDetailPage = () => {
 
     return (
         <div className="product-detail-page">
+            <SEO
+                title={product.name}
+                description={product.description.substring(0, 160)}
+                image={product.image}
+                url={`/product/${product.slug}`}
+                type="product"
+                keywords={`${product.category}, ${product.brand}, buy ${product.name} bd, price of ${product.name}`}
+                product={{
+                    id: product.id,
+                    name: product.name,
+                    description: product.description,
+                    image: product.image,
+                    price: product.price,
+                    brand: product.brand,
+                    sku: product.slug,
+                    inStock: product.stock > 0,
+                    rating: product.rating,
+                    reviewCount: product.reviewCount
+                }}
+            />
             <div className="container">
                 {/* Breadcrumb */}
                 <nav className="breadcrumb">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Zap, ShoppingCart } from 'lucide-react'
+import SEO from '../components/SEO'
 import { flashSalesAPI } from '../utils/api'
 import { useCart } from '../context/CartContext'
 import CountdownTimer from '../components/FlashSale/CountdownTimer'
@@ -113,6 +114,12 @@ const FlashSalePage = () => {
 
     return (
         <div className="flash-sale-page">
+            <SEO
+                title={flashSale.name}
+                description={flashSale.description || `Don't miss out on ${flashSale.name}! Limited time offers on authentic products.`}
+                image={bannerUrl}
+                keywords="flash sale, daily deals, offer price bd, discount shopping"
+            />
             {/* Hero Banner */}
             <div
                 className="flash-sale-hero"
