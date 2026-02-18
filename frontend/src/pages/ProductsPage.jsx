@@ -126,6 +126,18 @@ const ProductsPage = () => {
         fetchProducts()
     }, [selectedCategory, searchQuery, sortBy, debouncedPriceRange])
 
+    // Lock body scroll when filters are shown (mobile)
+    useEffect(() => {
+        if (showFilters) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [showFilters])
+
     // Load more products
     const loadMoreProducts = async () => {
         if (loadingMore || page >= totalPages) return
