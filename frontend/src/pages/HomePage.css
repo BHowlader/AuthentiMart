@@ -648,7 +648,16 @@
     .hero {
         height: 380px;
         margin: 16px;
+        max-width: calc(100% - 32px);
         border-radius: var(--radius-lg);
+    }
+
+    .hero-slide>.container {
+        padding: 0 24px;
+    }
+
+    .hero-content {
+        max-width: 420px;
     }
 
     .hero-title {
@@ -657,6 +666,10 @@
 
     .hero-description {
         font-size: 0.95rem;
+    }
+
+    .hero-bg-image {
+        object-position: center right;
     }
 
     .features-list {
@@ -681,6 +694,36 @@
 
     .carousel-item {
         width: 220px;
+    }
+}
+
+/* iPad landscape and small tablets */
+@media (max-width: 900px) {
+    .hero {
+        height: 350px;
+        margin: 12px;
+        max-width: calc(100% - 24px);
+    }
+
+    .hero-slide>.container {
+        padding: 0 20px;
+    }
+
+    .hero-content {
+        max-width: 380px;
+    }
+
+    .hero-title {
+        font-size: 1.75rem;
+    }
+
+    .hero-description {
+        font-size: 0.9rem;
+        max-width: 340px;
+    }
+
+    .hero-bg-image {
+        object-position: 70% center;
     }
 }
 
@@ -764,6 +807,10 @@
         height: 42px;
         min-width: auto;
         flex: 0 1 auto;
+    }
+
+    .hero-bg-image {
+        object-position: center center;
     }
 
     .hero-progress-container {
