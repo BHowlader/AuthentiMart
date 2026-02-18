@@ -627,16 +627,17 @@
     }
 
     .logo-text {
-        display: none;
+        display: inline;
+        font-size: 1.3rem;
     }
 
     .logo-image {
-        height: 58px;
+        height: 70px;
         width: auto;
         max-width: none;
         object-fit: contain;
-        margin-top: -12px;
-        margin-bottom: -10px;
+        margin-top: -16px;
+        margin-bottom: -14px;
     }
 
     .navbar-search {
@@ -660,6 +661,10 @@
 
     .navbar-container {
         gap: 12px;
+    }
+
+    .logo-text {
+        display: none;
     }
 
     .action-btn {
@@ -691,7 +696,7 @@
     }
 
     .logo-image {
-        height: 50px;
+        height: 62px;
         width: auto;
         max-width: none;
         object-fit: contain;
