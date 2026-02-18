@@ -683,7 +683,8 @@
     }
 
     .mobile-search input {
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
+        /* Prevent zoom on iOS */
     }
 }
 
@@ -767,7 +768,7 @@
     }
 
     .logo-image {
-        height: 54px;
+        height: 62px;
         margin-top: -12px;
         margin-bottom: -10px;
     }
